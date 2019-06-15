@@ -3,7 +3,7 @@
 ## Team
 
 **Student**:   
-Ben Walch <b.walch@student.uibk.ac.at> \
+Ben Walch <b.walch@student.uibk.ac.at>  
 **Supervisor**:  
 Sasko Ristov <sashko@dps.uibk.ac.at>
 
@@ -37,13 +37,3 @@ Additionally, one (or both) of the following features will be implemented:
 - Representation of existing workflows
 - All User Interactions
 - Additional Features
-
-### Timetable
-| when     |        what      |
-|------|:------------------:|
-| June | Initial presentation |
-| June, July | Get into the topic |
-| July | Prototyping / Proof-of-concept / example |
-| August to October  | Application Development and writing thesis |
-| November | Finalization |
-| November, December | Final Presentation
