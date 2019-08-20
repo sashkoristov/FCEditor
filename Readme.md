@@ -37,3 +37,24 @@ Additionally, one (or both) of the following features will be implemented:
 - Representation of existing workflows
 - All User Interactions
 - Additional Features
+
+## Getting started
+
+### Requirements (Development)
+
+* Java (JDK 12)
+* Maven
+* Node v12
+
+**Build and run**
+
+1. `mvn compile`
+2. `mvn package`
+3. `sh target/bin/webapp`
+
+**Frontend**
+
+1. cd into `src/main/webapp`
+2. `npm ci` (recommended when package-lock.json present) or `npm i`
+3. `npm run dev`
+
