@@ -1,9 +1,13 @@
 import React from "react";
 
+import GraphEditor from './GraphEditor';
+
 class App extends React.Component {
 
     render() {
-        return 'I am a react App';
+        return <div>
+            <GraphEditor />
+        </div>;
     }
 }
 export default App;

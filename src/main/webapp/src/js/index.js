@@ -1,15 +1,9 @@
-import "../scss/main.scss";
-
-import t from './mxgraph';
-
-window.onload = () => {
-    t.main(document.getElementById('graphContainer'));
-};
-
-/*
 import React from "react";
 import ReactDOM from "react-dom";
 
-import App from "./container/App";
+import "../scss/main.scss";
 
-ReactDOM.render(<App />, document.getElementById('root'));*/
+import App from "./components/App";
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<App />, rootElement);

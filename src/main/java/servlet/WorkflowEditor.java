@@ -9,13 +9,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "Home", urlPatterns = { "" })
-public class Home extends HttpServlet {
+@WebServlet(name = "WorkflowEditor", urlPatterns = { "" })
+public class WorkflowEditor extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    request.getSession().setAttribute("title", "Home");
-    request.getSession().setAttribute("description", "Home description");
+    request.getSession().setAttribute("title", "Serverless Workflow Editor");
+    request.getSession().setAttribute("description", "An editor for creating serverless Workflows");
     request.getRequestDispatcher("index.jsp").forward(request, response);
   }
 }

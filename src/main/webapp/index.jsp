@@ -11,9 +11,8 @@
 <body>
 
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
 
-  <div id="graphContainer"></div>
+  <div id="root"></div>
 
   <script src="dist/main.js"></script>
 
