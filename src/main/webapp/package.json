@@ -13,11 +13,14 @@
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.4.4",
+    "@babel/plugin-proposal-optional-chaining": "^7.6.0",
     "@babel/preset-env": "^7.5.5",
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.6",
     "copy-webpack-plugin": "^5.0.4",
     "css-loader": "^3.2.0",
+    "file-loader": "^4.2.0",
     "node-sass": "^4.12.0",
     "sass-loader": "^7.2.0",
     "style-loader": "^1.0.0",
@@ -25,9 +28,13 @@
     "webpack-cli": "^3.3.7"
   },
   "dependencies": {
+    "@coreui/coreui": "^2.1.12",
+    "@coreui/react": "^2.5.4",
+    "bootstrap": "^4.3.1",
+    "font-awesome": "^4.7.0",
+    "mxgraph": "3.9.12",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
-    "mxgraph": "3.9.12",
-    "bootstrap": "^4.3.1"
+    "react-router-dom": "^5.1.2"
   }
 }

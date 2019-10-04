@@ -5,7 +5,7 @@ window.mxLoadResources = false;
 //window.mxLoadStylesheets = false;
 
 const mxgraph = mx({
-    mxBasePath: '/dist/mxgraph'
+    mxBasePath: 'dist/mxgraph'
 });
 
 // decode bug https://github.com/jgraph/mxgraph/issues/49

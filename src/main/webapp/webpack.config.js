@@ -26,6 +26,41 @@ module.exports = (env, argv) => {
                             loader: "sass-loader" // compiles Sass to CSS
                         }
                     ]
+                },
+                {
+                    test: /\.css$/,
+                    use: [
+                        {
+                            loader: "style-loader" // creates style nodes from JS strings
+                        },
+                        {
+                            loader: "css-loader" // translates CSS into CommonJS
+                        }
+                    ]
+                },
+                {
+                    test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: '[name].[ext]',
+                                outputPath: '../fonts/'
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.(jpg|png|gif)$/,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: '[name].[ext]',
+                                outputPath: '../images/'
+                            }
+                        }
+                    ]
                 }
             ]
         },
