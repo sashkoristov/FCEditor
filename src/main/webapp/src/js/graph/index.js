@@ -2,7 +2,8 @@ import mxgraph from '../mxgraph';
 
 import BaseFunction from "../afcl/functions/BaseFunction";
 
-const { mxGraph, mxMultiplicity, mxUtils } = mxgraph;
+const { mxGraph, mxShape, mxMultiplicity, mxUtils } = mxgraph;
+import * as cellDefs from './cells';
 
 class Graph extends mxGraph {
 
@@ -10,7 +11,7 @@ class Graph extends mxGraph {
     // https://jgraph.github.io/mxgraph/docs/js-api/files/model/mxCell-js.html#mxCell
     convertValueToString(cell) {
         if (cell.value instanceof BaseFunction) {
-            return cell.value.label;
+            return cell.value.getLabel();
         }
         return super.convertValueToString(cell);
     }
@@ -25,6 +26,17 @@ class Graph extends mxGraph {
         }
         super.cellLabelChanged(cell, newValue, autoSize);
     }
+
+    getAllConnectionConstraints(terminal, source) {
+        if (terminal != null && terminal.cell != null)
+        {
+            if (cellDefs[terminal.cell.style].connectionConstraints) {
+                return cellDefs[terminal.cell.style].connectionConstraints
+            }
+        }
+        return null;
+    }
+
 }
 
 class Multiplicity extends mxMultiplicity {

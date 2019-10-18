@@ -3,7 +3,9 @@ import React from 'react';
 class Functions extends React.Component {
 
     render() {
-        return <h1>Functions</h1>
+        return <div className="animated fadeIn">
+
+        </div>
     }
 }
 

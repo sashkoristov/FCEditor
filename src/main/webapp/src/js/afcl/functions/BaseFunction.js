@@ -1,7 +1,11 @@
 class BaseFunction {
 
     constructor(label) {
-        this.label = label;
+        this._label = label;
+    }
+
+    getLabel() {
+        return this._label;
     }
 
 }

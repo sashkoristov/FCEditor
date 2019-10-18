@@ -3,6 +3,8 @@
 *.iml
 
 src/main/webapp/dist
+src/main/webapp/fonts
+src/main/webapp/images
 node_modules
 
 target

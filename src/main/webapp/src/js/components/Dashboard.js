@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Row, Col, Card, CardHeader, CardBody, CardText, CardLink } from 'reactstrap';
 
 class Dashboard extends React.Component {
@@ -11,7 +12,7 @@ class Dashboard extends React.Component {
                         <CardHeader>Editor</CardHeader>
                         <CardBody>
                             <CardText>This is the body blah blah</CardText>
-                            <CardLink href="#/editor">Go to Editor</CardLink>
+                            <Link to="/editor" className="card-link">Go to Editor</Link>
                         </CardBody>
                     </Card>
                 </Col>
@@ -20,7 +21,7 @@ class Dashboard extends React.Component {
                         <CardHeader>Function Repository</CardHeader>
                         <CardBody>
                             <CardText>This is the body blah blah</CardText>
-                            <CardLink href="#/functions">Go to Functions</CardLink>
+                            <Link to="/functions" className="card-link">Go to Functions</Link>
                         </CardBody>
                     </Card>
                 </Col>
