@@ -1,5 +1,5 @@
-import BaseFunction from "./BaseFunction";
+import CompoundParallel from "./CompoundParallel";
 
-class Parallel extends BaseFunction {}
+class Parallel extends CompoundParallel {}
 
 export default Parallel;
