@@ -7,6 +7,7 @@ import mxgraph from '../mxgraph';
 const {
     mxClient,
     mxCodec,
+    mxCellState,
     mxConstants,
     mxEvent,
     mxHierarchicalLayout,
@@ -18,6 +19,12 @@ const {
 import * as afcl from '../afcl/';
 import * as cellDefs from '../graph/cells';
 import * as mxGraphOverrides from '../graph/';
+import * as utils from '../utils/';
+import { edgeStyle } from '../graph/styles';
+import JsonCodec from '../graph/JsonCodec';
+import axios from "axios";
+
+import FuntionsContext, {FunctionsContextProvider} from '../context/FunctionsContext';
 
 class WorkflowEditor extends React.Component {
 
@@ -25,7 +32,7 @@ class WorkflowEditor extends React.Component {
         super(props);
 
         this.state = {
-            graph: {},
+            graph: {}
         };
     }
 
@@ -72,6 +79,7 @@ class WorkflowEditor extends React.Component {
         graph.setAllowDanglingEdges(false);
         graph.setMultigraph(false);
         graph.setDisconnectOnMove(false);
+        graph.setPortsEnabled(false);
 
         // key handler
         const keyHandler = new mxKeyHandler(graph);
@@ -84,6 +92,19 @@ class WorkflowEditor extends React.Component {
 
         // Disables floating connections (only connections via ports allowed)
         graph.connectionHandler.isConnectableCell = cell => { return false; };
+
+        graph.connectionHandler.createEdgeState = (me) => {
+            var edge = graph.createEdge(null, null, null, null, null);
+            return new mxCellState(graph.view, edge, graph.getCellStyle(edge));
+        };
+
+        graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
+            var edge = evt.getProperty('cell');
+            var source = graph.getModel().getTerminal(edge, true);
+            var target = graph.getModel().getTerminal(edge, false);
+
+            this._onCellConnected(edge, source, target);
+        });
 
         // style
         this._setGraphStyle();
@@ -100,7 +121,7 @@ class WorkflowEditor extends React.Component {
         }
 
         // Specifies the default edge style
-        graph.getStylesheet().getDefaultEdgeStyle()[mxConstants.STYLE_EDGE] = mxConstants.EDGESTYLE_ORTHOGONAL;
+        graph.getStylesheet().putDefaultEdgeStyle(edgeStyle);
     };
 
     _setConstraints = () => {
@@ -148,6 +169,35 @@ class WorkflowEditor extends React.Component {
             )
         );
 
+        // Compound Parallel need exactly one incoming and one outcoming connections at each port
+        graph.multiplicities.push(
+            new mxGraphOverrides.Multiplicity(
+                false, afcl.functions.Parallel, null, null, 1, 1, null,
+                'Parallel functions must have 1 incoming connection',
+            )
+        );
+        graph.multiplicities.push(
+            new mxGraphOverrides.Multiplicity(
+                true, afcl.functions.Parallel, null, null, 1, 1, null,
+                'Parallel functions must have 1 outgoing connection',
+            )
+        );
+
+
+        // Functions need exactly one incoming/outcoming connections
+        graph.multiplicities.push(
+            new mxGraphOverrides.Multiplicity(
+                false, afcl.functions.AtomicFunction, null, null, 1, 1, null,
+                'Atomic functions must have 1 incoming connection',
+            )
+        );
+        graph.multiplicities.push(
+            new mxGraphOverrides.Multiplicity(
+                true, afcl.functions.AtomicFunction, null, null, 1, 1, null,
+                'Atomic functions must have 1 outgoing connection',
+            )
+        );
+
         // Conditions need exactly one incoming/two outcoming connections
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
@@ -161,6 +211,25 @@ class WorkflowEditor extends React.Component {
                 'If-Then-Else must have 2 outgoing connections'
             )
         );
+    };
+
+    _onCellConnected = (edge, source, target) => {
+        const { graph } = this.state;
+
+        // connection comes from switch - set a case label
+        if (source.value instanceof afcl.functions.Switch) {
+            edge.setValue('Case ...');
+        }
+
+        if (source.value instanceof afcl.functions.IfThenElse) {
+            let style = graph.getCellStyle(edge);
+            if (style[mxConstants.STYLE_SOURCE_PORT] == 'yes') {
+                edge.setValue('Yes');
+            }
+            if (style[mxConstants.STYLE_SOURCE_PORT] == 'no') {
+                edge.setValue('No');
+            }
+        }
     };
 
     _addStart = () => {
@@ -187,8 +256,8 @@ class WorkflowEditor extends React.Component {
         this._addCell('End', cellDefs.end);
     };
 
-    _addMerge = () => {
-        this._addCell(null, cellDefs.merge);
+    _addJoin = () => {
+        this._addCell(null, cellDefs.join);
     };
 
     _addFn = (type) => {
@@ -254,13 +323,25 @@ class WorkflowEditor extends React.Component {
         layout.execute(graph.getDefaultParent());
     };
 
-    _exportXml = () => {
+    _showXml = () => {
         const {graph} = this.state;
 
-        var enc = new mxCodec(mxUtils.createXmlDocument());
-        var node = enc.encode(graph.getModel());
+        const enc = new mxCodec(mxUtils.createXmlDocument());
+        const xmlModel = enc.encode(graph.getModel());
 
-        console.log(mxUtils.getXml(node));
+        mxUtils.popup(mxUtils.getPrettyXml(xmlModel), true);
+
+    };
+
+    _showJson = () => {
+        const {graph} = this.state;
+
+        const encoder = new JsonCodec();
+        const jsonModel = encoder.decode(graph.getModel());
+
+        const jsonString = utils.jsonStringifyWithoutCircular(jsonModel);
+
+        mxUtils.popup(jsonString, true);
     };
 
     render() {
@@ -268,17 +349,18 @@ class WorkflowEditor extends React.Component {
             <ButtonGroup>
                 <Button onClick={this._addStart}>Start</Button>
                 <Button onClick={this._addEnd}>End</Button>
-                <Button onClick={this._addMerge}>Merge</Button>
+                <Button onClick={this._addJoin}>Join</Button>
                 <UncontrolledButtonDropdown>
                     <DropdownToggle caret>
                         Function
                     </DropdownToggle>
                     <DropdownMenu>
-                        <DropdownItem onClick={() => this._addFn('Fn 1')}>Fn 1</DropdownItem>
-                        <DropdownItem onClick={() => this._addFn('Fn 2')}>Fn 2</DropdownItem>
-                        <DropdownItem onClick={() => this._addFn('Fn xy')}>Fn xy</DropdownItem>
-                        <DropdownItem divider />
-                        <DropdownItem>Add Function ...</DropdownItem>
+                        <FuntionsContext.Consumer>
+                            {fc => (
+                                fc.functions.map(fn => <DropdownItem
+                                    onClick={() => this._addFn(fn.name)}>{fn.name}</DropdownItem>)
+                            )}
+                        </FuntionsContext.Consumer>
                     </DropdownMenu>
                 </UncontrolledButtonDropdown>
                 <Button onClick={this._addIfThenElse}>If-Then-Else</Button>
@@ -292,7 +374,8 @@ class WorkflowEditor extends React.Component {
                         <DropdownItem onClick={this._addParallelFor}>ParallelFor</DropdownItem>
                     </DropdownMenu>
                 </UncontrolledButtonDropdown>
-                <Button onClick={this._exportXml}>Export XML</Button>
+                <Button onClick={this._showXml}>Show XML</Button>
+                <Button onClick={this._showJson}>Show JSON</Button>
                 <Button onClick={this._applyLayout}>Apply Layout</Button>
             </ButtonGroup>
             <div className="graph-wrapper">
