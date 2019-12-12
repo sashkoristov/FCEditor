@@ -7,9 +7,7 @@ class App extends React.Component {
 
     render() {
         return <HashRouter>
-            <Switch>
-                <Route path="/" name="Dashboard" component={Main} />
-            </Switch>
+            <Main />
         </HashRouter>
     }
 }

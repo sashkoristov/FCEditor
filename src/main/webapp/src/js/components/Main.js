@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { Redirect, Route, Switch } from 'react-router-dom';
+import {Redirect, Route, Switch} from 'react-router-dom';
 import * as router from 'react-router-dom';
-import { Container, Nav, NavItem, NavTitle, NavLink, Badge, DropdownToggle, DropdownMenu } from 'reactstrap';
+import {Container, Nav, NavItem, NavTitle, NavLink, Badge, DropdownToggle, DropdownMenu} from 'reactstrap';
 
 import {
     AppFooter,
@@ -25,7 +25,7 @@ import navigation from '../navigation.js';
 // routes config
 import routes from '../routes.js';
 
-import WorkflowEditor from './WorkflowEditor';
+import { FunctionsContextProvider } from "../context/FunctionsContext";
 
 class Main extends React.Component {
 
@@ -67,18 +67,20 @@ class Main extends React.Component {
                     <main className="main">
                         <AppBreadcrumb appRoutes={routes} router={router}/>
                         <Container fluid>
-                            <Switch>
-                                {routes.map((route, idx) => {
-                                        return route.component ? (
+                            <FunctionsContextProvider>
+                                <Switch>
+                                    {routes.map((route, idx) => {
+                                            return route.component ? (
                                                 <Route key={idx} path={route.path} exact={route.exact} name={route.name}
                                                        render={props => (
                                                            <route.component {...props} />
-                                                       )}/>)
-                                            : (null);
-                                    },
-                                )}
-                                <Redirect from="/" to="/dashboard"/>
-                            </Switch>
+                                                       )}/>
+                                            ) : (null);
+                                        },
+                                    )}
+                                    <Redirect from="/" to="/dashboard"/>
+                                </Switch>
+                            </FunctionsContextProvider>
                         </Container>
                     </main>
                 </div>
