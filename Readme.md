@@ -46,6 +46,10 @@ Additionally, one (or both) of the following features will be implemented:
 * Maven
 * Node v12
 
+**Install dependencies**  
+1. `mvn install`
+2. If using an IDE, reimport - e.g if using IntelliJ: right click on Project -> Maven -> Reimport
+
 **Build and run**
 
 1. `mvn compile`
