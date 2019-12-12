@@ -1,0 +1,107 @@
+\documentclass[a4paper,11pt,pdftex,halfparskip,cleardoubleempty]{scrbook}
+
+\raggedbottom
+
+% \usepackage{fancyhdr}
+
+\usepackage[utf8]{inputenc}
+\usepackage{wrapfig}
+\usepackage[pdftex]{graphicx}
+\usepackage{eso-pic}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{listings}
+
+\setlength{\tabcolsep}{20pt}
+\renewcommand{\arraystretch}{4}
+
+\graphicspath{{img/}}
+\newcommand*{\xchapter}{\stepcounter{chapter}\setcounter{section}{0}\addchap}
+\renewcommand*{\thesection}{\arabic{section}}
+
+% define medatata
+\def\MTitle{High-Level Modeling and Low-Level Adaption of Serverless Function Choreographies}
+\def\MAuthor{Benjamin Walch}
+\def\MKeywords{Serverless \sep Function Choreography Language}
+\def\MOrg{Universit{\"a}t Innsbruck}
+\def\MDate{\today}
+\def\MInstitution{Department of Computer Science}
+\def\MSupervisor{Dr. Shashko Ristov}
+\def\MGroup{Distributed and Parallel Systems}
+
+%
+% \pagestyle{fancy}
+% \fancyhf{}
+% \fancyhead[L]{\leftmark}
+% \fancyhead[R]{\thepage}
+% \fancyfoot[R]{B. Walch}
+% \fancyfoot[L]{Fastlane}
+
+\begin{document}
+
+\input{titlepage}
+
+\cleardoublepage
+
+\input{legalpage}
+
+\cleardoublepage
+
+\pagenumbering{arabic}
+\pagestyle{plain}
+
+\section*{Abstract}
+"Run code, not Server" is the most recent term of cloud computing providers.
+With the rise of the serverless technology during the last years, \emph{FaaS} became more and more popular.
+The Distributed and Parallel Systems Group from University of Innsbruck are doing research in this topic.
+One of the results of this research is an API, which was developed for describing serverless application workflows programmatically.
+The product which results in using that API is the workflow being described in a generated YAML file.
+This file can be further processed by (other) machines.
+% workflows are abstract
+% AFCL
+
+The aim of this bachelor project is to develop a visual workflow editor, which makes modeling of workflows possible at a high level of abstraction. Additionally, composed workflows can be saved, reopened and edited. The tool should also be able to optimize  given workflows for multiple \emph{FaaS} provider(s) in case of quotas and limits, and also in case of performance.
+
+\cleardoublepage
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+
+With the rise of \emph{FaaS}, a high level of flexibility in execution of code appeared. Global Players like Amazon, Google, IBM and Microsoft jumped on the train and provide their infrastructure to Developers, able to deploy functions and execute them in the cloud. Each system has its own definitions on how to define, deploy, run and execute code. 
+
+\label{sec:introduction}
+\subsection{Motivation}
+
+\section{Background}
+
+\subsection{FaaS}
+\subsection{AFCL}
+
+\section{Overview}
+
+
+\section{Software Architecture}
+
+
+\subsection{Frontend}
+\subsection{Backend}
+
+
+\section{Outlook}
+
+
+
+\section{Conclusion}
+
+
+% causes to print all bibliography
+\nocite{*}
+
+\bibliographystyle{IEEEtran}
+\bibliography{thesis.bib}
+
+\end{document} 
