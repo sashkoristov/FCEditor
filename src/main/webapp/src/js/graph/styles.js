@@ -10,11 +10,13 @@ cellStyle[mxConstants.STYLE_ROTATABLE] = false;
 cellStyle[mxConstants.STYLE_FONTSIZE] = 12;
 cellStyle[mxConstants.STYLE_HORIZONTAL] = true;
 cellStyle[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = mxConstants.NONE;
+cellStyle[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER;
 cellStyle[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE;
 cellStyle[mxConstants.STYLE_FILLCOLOR] = '#0582CA';
 cellStyle[mxConstants.STYLE_STROKECOLOR] = '#006494';
 cellStyle[mxConstants.STYLE_FONTCOLOR] = '#fff';
 cellStyle[mxConstants.STYLE_STROKEWIDTH] = 4;
+cellStyle[mxConstants.STYLE_PERIMETER_SPACING] = 4;
 
 edgeStyle[mxConstants.STYLE_ROUNDED] = true;
 edgeStyle[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = '#fff';

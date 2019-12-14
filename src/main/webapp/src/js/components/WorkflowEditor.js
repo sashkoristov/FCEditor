@@ -21,7 +21,6 @@ import * as cellDefs from '../graph/cells';
 import * as mxGraphOverrides from '../graph/';
 import * as utils from '../utils/';
 import { edgeStyle } from '../graph/styles';
-import JsonCodec from '../graph/JsonCodec';
 import axios from "axios";
 
 import FuntionsContext, {FunctionsContextProvider} from '../context/FunctionsContext';
@@ -236,7 +235,7 @@ class WorkflowEditor extends React.Component {
         const { graph } = this.state;
         let parent = graph.getDefaultParent();
         for (let i in parent.children) {
-            if (parent.children[i].style == cellDefs.start.name) {
+            if (parent.children[i].style === cellDefs.start.name) {
                 mxUtils.alert('Already a start cell in graph!');
                 return;
             }
@@ -248,7 +247,7 @@ class WorkflowEditor extends React.Component {
         const { graph } = this.state;
         let parent = graph.getDefaultParent();
         for (let i in parent.children) {
-            if (parent.children[i].style == cellDefs.end.name) {
+            if (parent.children[i].style === cellDefs.end.name) {
                 mxUtils.alert('Already an end cell in graph!');
                 return;
             }
@@ -333,17 +332,6 @@ class WorkflowEditor extends React.Component {
 
     };
 
-    _showJson = () => {
-        const {graph} = this.state;
-
-        const encoder = new JsonCodec();
-        const jsonModel = encoder.decode(graph.getModel());
-
-        const jsonString = utils.jsonStringifyWithoutCircular(jsonModel);
-
-        mxUtils.popup(jsonString, true);
-    };
-
     render() {
         return <div className="animated fadeIn">
             <ButtonGroup>
@@ -375,7 +363,6 @@ class WorkflowEditor extends React.Component {
                     </DropdownMenu>
                 </UncontrolledButtonDropdown>
                 <Button onClick={this._showXml}>Show XML</Button>
-                <Button onClick={this._showJson}>Show JSON</Button>
                 <Button onClick={this._applyLayout}>Apply Layout</Button>
             </ButtonGroup>
             <div className="graph-wrapper">

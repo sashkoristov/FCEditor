@@ -1,13 +1,13 @@
 import mxgraph from '../mxgraph';
 import { cellStyle } from './styles';
 
-const { mxUtils, mxConstants, mxPerimeter, mxStylesheet } = mxgraph;
+const { mxUtils, mxConstants, mxPerimeter } = mxgraph;
 
 let start = {
     name: 'start',
     style: mxUtils.clone(cellStyle),
-    width: 44,
-    height: 44,
+    width: 46,
+    height: 46,
     ports: {
         out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH}
     }
@@ -121,4 +121,15 @@ container.style[mxConstants.STYLE_SWIMLANE_LINE] = 'none';
 container.style[mxConstants.STYLE_FILLCOLOR] = 'rgba(255, 255, 255, .5)';
 container.style[mxConstants.STYLE_SWIMLANE_FILLCOLOR] = 'rgba(255, 255, 255, .5)';
 
-export { start, end, join, fn, cond, multicond, container };
+let port = {
+    name: 'port',
+    style: mxUtils.clone(cellStyle),
+    width: 12,
+    height: 12,
+};
+port.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_ELLIPSE;
+port.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
+port.style[mxConstants.STYLE_PERIMETER_SPACING] = 6;
+port.style[mxConstants.STYLE_FONTSTYLE] = 2;
+
+export { start, end, join, fn, cond, multicond, container, port };

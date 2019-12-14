@@ -68,6 +68,7 @@ module.exports = (env, argv) => {
         watchOptions: {
             ignored: /node_modules/
         },
+        devtool: argv.mode === 'development' ? 'source-map' : 'none',
         plugins: [
             new CopyPlugin([
                 { from: 'node_modules/mxgraph/javascript/src/css/*.css', to: 'mxgraph/css/', flatten: true },
