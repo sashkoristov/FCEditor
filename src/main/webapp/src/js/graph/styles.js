@@ -1,5 +1,10 @@
+/**
+ * default cell and edge style definitions
+ *
+ * @author Ben Walch, 2018-2019
+ */
 import mxgraph from '../mxgraph';
-const { mxConstants, mxPerimeter, mxStylesheet } = mxgraph;
+const { mxConstants, mxEdgeStyle, mxStylesheet } = mxgraph;
 
 const cellStyle = new mxStylesheet().getDefaultVertexStyle();
 const edgeStyle = new mxStylesheet().getDefaultEdgeStyle();
@@ -20,7 +25,12 @@ cellStyle[mxConstants.STYLE_PERIMETER_SPACING] = 4;
 
 edgeStyle[mxConstants.STYLE_ROUNDED] = true;
 edgeStyle[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = '#fff';
+edgeStyle[mxConstants.STYLE_LABEL_PADDING] = '4px';
 edgeStyle[mxConstants.STYLE_STROKEWIDTH] = 2;
-edgeStyle[mxConstants.STYLE_EDGE] = mxConstants.EDGESTYLE_ORTHOGONAL;
+edgeStyle[mxConstants.STYLE_EDITABLE] = true;
+edgeStyle[mxConstants.STYLE_FONTCOLOR] = '#051923';
+edgeStyle[mxConstants.STYLE_FONTSIZE] = 12;
+edgeStyle[mxConstants.STYLE_FONTSTYLE] = mxConstants.FONT_BOLD;
+edgeStyle[mxConstants.STYLE_EDGE] = mxEdgeStyle.OrthConnector;
 
 export { cellStyle, edgeStyle };

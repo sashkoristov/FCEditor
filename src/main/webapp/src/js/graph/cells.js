@@ -1,3 +1,8 @@
+/**
+ * Custom cell definitions and constants
+ *
+ * @author Ben Walch, 2018-2019
+ */
 import mxgraph from '../mxgraph';
 import { cellStyle } from './styles';
 
@@ -38,16 +43,16 @@ end.style[mxConstants.STYLE_STROKEWIDTH] = 4;
 let join = {
     name: 'join',
     style: mxUtils.clone(cellStyle),
-    width: 32,
-    height: 24,
+    width: 40,
+    height: 28,
     ports: {
-        ins: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
-        outs: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
+        in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
+        out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
     }
 };
 join.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RHOMBUS;
 join.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter;
-join.style[mxConstants.STYLE_STROKEWIDTH] = 0;
+join.style[mxConstants.STYLE_STROKEWIDTH] = 4;
 
 let fn = {
     name: 'fn',
@@ -87,7 +92,7 @@ let multicond = {
     height: 60,
     ports: {
         in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
-        outs: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
+        out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
     }
 };
 multicond.style[mxConstants.STYLE_FILLCOLOR] = '#660E7A';
