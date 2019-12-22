@@ -37,7 +37,20 @@ class Graph extends mxGraph {
     }
 
     /**
+     *
+     * @param mxCell cell
+     */
+    getLabel(cell) {
+        if (cell.style == cellDefs.fork.name || cell.style == cellDefs.join.name) {
+            return '';
+        }
+        return super.getLabel(cell);
+    }
+
+    /**
      * converts a cell's user object to a string
+     *
+     * @param mxCell cell
      *
      * @see https://jgraph.github.io/mxgraph/docs/js-api/files/model/mxCell-js.html#mxCell
      */
@@ -74,6 +87,18 @@ class Graph extends mxGraph {
     }
 
     /**
+     * returns true if cell is a port
+     *
+     * @param mxCell cell
+     * @returns {boolean}
+     */
+    isPort(cell) {
+        //let geo = this.getCellGeometry(cell);
+        //return (geo != null) ? geo.relative : false;
+        return super.isPort(cell);
+    };
+
+    /**
      * returns true if a connection between source and target is valid
      *
      * @param mxCell source
@@ -83,6 +108,17 @@ class Graph extends mxGraph {
      */
     isValidConnection(source, target) {
         return super.isValidConnection(source, target)
+    }
+
+    /**
+     * validates the given cell
+     *
+     * @param mxCell cell
+     * @returns {string|null}
+     */
+    getCellValidationError(cell) {
+        // super call validates all multiplicities, etc
+        return super.getCellValidationError(cell);
     }
 
     /**
@@ -100,6 +136,16 @@ class Graph extends mxGraph {
         if (err) {
             return err;
         }
+
+        if (source.id == target.id) {
+            return 'connection must not connect to itself';
+        }
+
+        // connection can only be between cells with the same parent
+        if (source.parent != target.parent) {
+            return 'connection cells must not have different parents';
+        }
+
         // enforce port constraints:
         // an 'in' port must not connect to another 'in' port
         // an 'out' port must not connect to another 'out' port

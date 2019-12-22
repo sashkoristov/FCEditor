@@ -5,11 +5,12 @@
  */
 
 import mxgraph from '../../mxgraph';
-
 const {
     mxConnectionHandler,
     mxCellState
 } = mxgraph;
+
+import * as cellDefs from '../cells';
 
 class ConnectionHandler extends mxConnectionHandler {
 
@@ -19,6 +20,9 @@ class ConnectionHandler extends mxConnectionHandler {
      * @param mxCell cell
      */
     isConnectableCell(cell) {
+        if (cell && (cell.style == cellDefs.fork.name || cell.style == cellDefs.join.name)) {
+            return true;
+        }
         return false;
     };
 

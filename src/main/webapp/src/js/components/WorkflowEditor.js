@@ -21,6 +21,7 @@ const {
     mxEdgeHandler,
     mxRubberband,
     mxUtils,
+    mxPoint,
     mxImage
 } = mxgraph;
 
@@ -120,10 +121,8 @@ class WorkflowEditor extends React.Component {
 
         graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
             var edge = evt.getProperty('cell');
-            var source = evt.getProperty('terminal');
-            var target = evt.getProperty('target');
 
-            this._onCellConnected(edge, source, target);
+            this._onCellConnected(edge, edge.source, edge.target);
         });
 
         // activate validation
@@ -137,9 +136,9 @@ class WorkflowEditor extends React.Component {
         // gets the respecitve port image
         graph.connectionHandler.constraintHandler.getImageForConstraint = (state, constraint, point) => {
             switch (constraint.id) {
-                case 'yes':
+                case 'then':
                     return new mxImage(checkImg, 16, 16);
-                case 'no':
+                case 'else':
                     return new mxImage(cancelImg, 16, 16);
                 default:
                     return graph.connectionHandler.constraintHandler.pointImage;
@@ -255,8 +254,22 @@ class WorkflowEditor extends React.Component {
 
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
-                true, 'join', null, null, 1, 1, null,
-                'Join must have exactly 1 outgoing connection'
+                true, 'merge', null, null, 1, 1, null,
+                'Merge must have exactly 1 outgoing connection'
+            )
+        );
+
+        // fork must not have incoming connections
+        graph.multiplicities.push(
+            new mxGraphOverrides.Multiplicity(
+                false, 'fork', null, null, 0, 0, null, 'Fork must not have incoming connections'
+            )
+        );
+
+        // join must not have incoming connections
+        graph.multiplicities.push(
+            new mxGraphOverrides.Multiplicity(
+                true, 'join', null, null, 0, 0, null, 'Join must not have outgoing connections'
             )
         );
     };
@@ -271,11 +284,13 @@ class WorkflowEditor extends React.Component {
 
         if (source.value instanceof afcl.functions.IfThenElse) {
             let style = graph.getCellStyle(edge);
-            if (style[mxConstants.STYLE_SOURCE_PORT] == 'yes') {
-                edge.setValue('Yes');
+            if (style[mxConstants.STYLE_SOURCE_PORT] == 'then') {
+                edge.setValue('then');
+                edge.setStyle(mxUtils.setStyle(edge.style, 'strokeColor', mxConstants.VALID_COLOR));
             }
-            if (style[mxConstants.STYLE_SOURCE_PORT] == 'no') {
-                edge.setValue('No');
+            if (style[mxConstants.STYLE_SOURCE_PORT] == 'else') {
+                edge.setValue('else');
+                edge.setStyle(mxUtils.setStyle(edge.style, 'strokeColor', mxConstants.INVALID_COLOR));
             }
         }
     };
@@ -304,8 +319,8 @@ class WorkflowEditor extends React.Component {
         this._addCell('End', cellDefs.end);
     };
 
-    _addJoin = () => {
-        this._addCell('join', cellDefs.join);
+    _addMerge = () => {
+        this._addCell('merge', cellDefs.merge);
     };
 
     _addFn = (type) => {
@@ -352,7 +367,25 @@ class WorkflowEditor extends React.Component {
         // Adds cells to the model in a single step
         graph.getModel().beginUpdate();
         try {
-            graph.insertVertex(parent, null, userObj, 20, 20, cell.width ?? 80, cell.height ?? 40, cell.name);
+            let v = graph.insertVertex(parent, null, userObj, 20, 20, cell.width ?? 80, cell.height ?? 40, cell.name);
+
+            // add sub cells, if any
+            if (cellDefs.container.subCells) {
+                for (let subCell in cell.subCells) {
+                    let subV = graph.insertVertex(
+                        v,
+                        null,
+                        subCell,
+                        cell.subCells[subCell].x,
+                        cell.subCells[subCell].y,
+                        cellDefs[subCell].width,
+                        cellDefs[subCell].height,
+                        cellDefs[subCell].name,
+                        cell.subCells[subCell].relative
+                    );
+                    subV.geometry.offset = cell.subCells[subCell].offset
+                }
+            }
         } finally {
             // Updates the display
             graph.getModel().endUpdate();
@@ -386,7 +419,7 @@ class WorkflowEditor extends React.Component {
             <ButtonGroup>
                 <Button onClick={this._addStart}>Start</Button>
                 <Button onClick={this._addEnd}>End</Button>
-                <Button onClick={this._addJoin}>Join</Button>
+                <Button onClick={this._addMerge}>Merge</Button>
                 <UncontrolledButtonDropdown>
                     <DropdownToggle caret>
                         Function

@@ -40,8 +40,8 @@ end.style[mxConstants.STYLE_FONTCOLOR] = '#000';
 end.style[mxConstants.STYLE_STROKECOLOR] = '#ccc';
 end.style[mxConstants.STYLE_STROKEWIDTH] = 4;
 
-let join = {
-    name: 'join',
+let merge = {
+    name: 'merge',
     style: mxUtils.clone(cellStyle),
     width: 40,
     height: 28,
@@ -50,9 +50,9 @@ let join = {
         out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
     }
 };
-join.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RHOMBUS;
-join.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter;
-join.style[mxConstants.STYLE_STROKEWIDTH] = 4;
+merge.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RHOMBUS;
+merge.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter;
+merge.style[mxConstants.STYLE_STROKEWIDTH] = 4;
 
 let fn = {
     name: 'fn',
@@ -76,8 +76,8 @@ let cond = {
     height: 60,
     ports: {
         in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
-        yes: {x: 0.75, y: 0.75, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
-        no: {x: 0.25, y: 0.75, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH}
+        then: {x: 0.75, y: 0.75, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
+        else: {x: 0.25, y: 0.75, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH}
     }
 };
 cond.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RHOMBUS;
@@ -98,14 +98,32 @@ let multicond = {
 multicond.style[mxConstants.STYLE_FILLCOLOR] = '#660E7A';
 multicond.style[mxConstants.STYLE_STROKECOLOR] = '#888';
 
+
+let fork = {
+    name: 'fork',
+    style: mxUtils.clone(cellStyle),
+    width: 54,
+    height: 6
+};
+fork.style[mxConstants.STYLE_FILLCOLOR] = '#000';
+fork.style[mxConstants.STYLE_STROKEWIDTH] = 0;
+fork.style[mxConstants.STYLE_PERIMETER_SPACING] = 2;
+
+let join = mxUtils.clone(fork);
+join.name = 'join';
+
 let container = {
     name: 'container',
     style: mxUtils.clone(cellStyle),
     width: 200,
     height: 300,
     ports: {
-        in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_ALL},
-        out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_ALL},
+        in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
+        out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
+    },
+    subCells: {
+        fork: {x: 0.5, y: 0.025, offset: {x: -fork.width/2, y: 0}, relative: true, style: 'fork'},
+        join: {x: 0.5, y: 0.975, offset: {x: -join.width/2, y: -join.height}, relative: true, style: 'join'}
     }
 };
 container.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE;
@@ -137,4 +155,4 @@ port.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
 port.style[mxConstants.STYLE_PERIMETER_SPACING] = 6;
 port.style[mxConstants.STYLE_FONTSTYLE] = 2;
 
-export { start, end, join, fn, cond, multicond, container, port };
+export { start, end, merge, fn, cond, multicond, container, fork, join, port };
