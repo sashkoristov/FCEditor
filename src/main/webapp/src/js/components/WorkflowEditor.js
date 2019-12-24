@@ -32,7 +32,7 @@ import cancelImg from '../../assets/images/cancel.svg';
 import * as afcl from '../afcl/';
 import * as cellDefs from '../graph/cells';
 import * as mxGraphOverrides from '../graph';
-import {edgeStyle} from '../graph/styles';
+import {cellStyle, edgeStyle} from '../graph/styles';
 import axios from "axios";
 
 import FuntionsContext, {FunctionsContextProvider} from '../context/FunctionsContext';
@@ -46,7 +46,10 @@ class WorkflowEditor extends React.Component {
         super(props);
 
         this.state = {
-            graph: {}
+            graph: {},
+            workflow: {
+                name: 'Untitled'
+            }
         };
     }
 
@@ -79,7 +82,7 @@ class WorkflowEditor extends React.Component {
     _configureGraph = () => {
         const {graph} = this.state;
 
-        graph.gridSize = 8;
+        graph.gridSize = 4;
         graph.setPanning(true);
         graph.setTooltips(true);
         graph.setConnectable(true);
@@ -125,11 +128,6 @@ class WorkflowEditor extends React.Component {
             this._onCellConnected(edge, edge.source, edge.target);
         });
 
-        // activate validation
-        graph.getModel().addListener(mxEvent.CHANGE, () => {
-            graph.validateGraph();
-        });
-
         // sets the port image
         graph.connectionHandler.constraintHandler.pointImage = new mxImage(pointImg, 16, 16);
 
@@ -156,41 +154,46 @@ class WorkflowEditor extends React.Component {
     _setGraphStyle = () => {
         const {graph} = this.state;
 
-        for (let key in cellDefs) {
-            graph.getStylesheet().putCellStyle(cellDefs[key].name, cellDefs[key].style);
-        }
+        // Specifies the default cell style
+        graph.getStylesheet().putDefaultVertexStyle(cellStyle)
 
         // Specifies the default edge style
         graph.getStylesheet().putDefaultEdgeStyle(edgeStyle);
+
+        for (let key in cellDefs) {
+            graph.getStylesheet().putCellStyle(cellDefs[key].name, cellDefs[key].style);
+        }
     };
 
     _setConstraints = () => {
         const {graph} = this.state;
 
-        // Start needs exactly one outcoming connection
+        // Start must not have incomming connections
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
-                false, 'Start', null, null, 0, 0, null,
+                false, cellDefs.start.name, null, null, 0, 0, null,
                 'Start must not have incoming connections',
             )
         );
+        // Start needs exactly one outcoming connection
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
-                true, 'Start', null, null, 1, 1, null,
-                'Start must have exactly 1 outgoing connection',
+                true, cellDefs.start.name, null, null, 1, 1, null,
+                'Start must have exactly one outgoing connection',
             )
         );
 
         // End needs exactly one incoming connection
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
-                false, 'End', null, null, 1, 1, null,
-                'End must have exactly 1 incoming connection',
+                false, cellDefs.end.name, null, null, 1, 1, null,
+                'End must have exactly one incoming connection',
             )
         );
+        // End must not have outgoing connections
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
-                true, 'End', null, null, 0, 0, null,
+                true, cellDefs.end.name, null, null, 0, 0, null,
                 'End must not have outgoing connections',
             )
         );
@@ -209,7 +212,7 @@ class WorkflowEditor extends React.Component {
             )
         );
 
-        // Compound Parallel need exactly one incoming and one outcoming connections at each port
+        // Compound Parallel need exactly one incoming and one outcoming connection
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
                 false, afcl.functions.Parallel, null, null, 1, 1, null,
@@ -223,22 +226,7 @@ class WorkflowEditor extends React.Component {
             )
         );
 
-
-        // Functions need exactly one incoming/outcoming connections
-        graph.multiplicities.push(
-            new mxGraphOverrides.Multiplicity(
-                false, afcl.functions.AtomicFunction, null, null, 1, 1, null,
-                'Atomic functions must have exactly 1 incoming connection',
-            )
-        );
-        graph.multiplicities.push(
-            new mxGraphOverrides.Multiplicity(
-                true, afcl.functions.AtomicFunction, null, null, 1, 1, null,
-                'Atomic functions must have exactly 1 outgoing connection',
-            )
-        );
-
-        // Conditions need exactly one incoming/two outcoming connections
+        // If-then-else need exactly one incoming/two outcoming connections
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
                 false, afcl.functions.IfThenElse, null, null, 1, 1, null,
@@ -252,9 +240,10 @@ class WorkflowEditor extends React.Component {
             )
         );
 
+        // merge must have exactly one outgoing
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
-                true, 'merge', null, null, 1, 1, null,
+                true, cellDefs.merge.name, null, null, 1, 1, null,
                 'Merge must have exactly 1 outgoing connection'
             )
         );
@@ -262,14 +251,14 @@ class WorkflowEditor extends React.Component {
         // fork must not have incoming connections
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
-                false, 'fork', null, null, 0, 0, null, 'Fork must not have incoming connections'
+                false, cellDefs.fork.name, null, null, 0, 0, null, 'Fork must not have incoming connections'
             )
         );
 
         // join must not have incoming connections
         graph.multiplicities.push(
             new mxGraphOverrides.Multiplicity(
-                true, 'join', null, null, 0, 0, null, 'Join must not have outgoing connections'
+                true, cellDefs.join.name, null, null, 0, 0, null, 'Join must not have outgoing connections'
             )
         );
     };
@@ -286,11 +275,11 @@ class WorkflowEditor extends React.Component {
             let style = graph.getCellStyle(edge);
             if (style[mxConstants.STYLE_SOURCE_PORT] == 'then') {
                 edge.setValue('then');
-                edge.setStyle(mxUtils.setStyle(edge.style, 'strokeColor', mxConstants.VALID_COLOR));
+                edge.setStyle(mxUtils.setStyle(edge.style, mxConstants.STYLE_STROKECOLOR, mxConstants.VALID_COLOR));
             }
             if (style[mxConstants.STYLE_SOURCE_PORT] == 'else') {
                 edge.setValue('else');
-                edge.setStyle(mxUtils.setStyle(edge.style, 'strokeColor', mxConstants.INVALID_COLOR));
+                edge.setStyle(mxUtils.setStyle(edge.style, mxConstants.STYLE_STROKECOLOR, mxConstants.INVALID_COLOR));
             }
         }
     };
@@ -299,7 +288,7 @@ class WorkflowEditor extends React.Component {
         const {graph} = this.state;
         let parent = graph.getDefaultParent();
         for (let i in parent.children) {
-            if (parent.children[i].style === cellDefs.start.name) {
+            if (parent.children[i].type && parent.children[i].type === cellDefs.start.name) {
                 mxUtils.alert('Already a start cell in graph!');
                 return;
             }
@@ -311,7 +300,7 @@ class WorkflowEditor extends React.Component {
         const {graph} = this.state;
         let parent = graph.getDefaultParent();
         for (let i in parent.children) {
-            if (parent.children[i].style === cellDefs.end.name) {
+            if (parent.children[i].type && parent.children[i].type === cellDefs.end.name) {
                 mxUtils.alert('Already an end cell in graph!');
                 return;
             }
@@ -368,6 +357,7 @@ class WorkflowEditor extends React.Component {
         graph.getModel().beginUpdate();
         try {
             let v = graph.insertVertex(parent, null, userObj, 20, 20, cell.width ?? 80, cell.height ?? 40, cell.name);
+            v.setType(cell.name);
 
             // add sub cells, if any
             if (cellDefs.container.subCells) {
@@ -383,7 +373,8 @@ class WorkflowEditor extends React.Component {
                         cellDefs[subCell].name,
                         cell.subCells[subCell].relative
                     );
-                    subV.geometry.offset = cell.subCells[subCell].offset
+                    subV.getGeometry().offset = cell.subCells[subCell].offset;
+                    subV.setType(cellDefs[subCell].name);
                 }
             }
         } finally {
@@ -397,20 +388,32 @@ class WorkflowEditor extends React.Component {
         graph.isEnabled() && graph.removeCells();
     };
 
-    _applyLayout = () => {
-        const {graph} = this.state;
-
-        var layout = new mxHierarchicalLayout(graph);
-        layout.execute(graph.getDefaultParent());
-    };
-
     _showXml = () => {
         const {graph} = this.state;
 
+        if (graph.isEmpty()) {
+            return;
+        }
         const enc = new mxCodec(mxUtils.createXmlDocument());
         const xmlModel = enc.encode(graph.getModel());
 
         mxUtils.popup(mxUtils.getPrettyXml(xmlModel), true);
+
+    };
+
+    _validateGraph = () => {
+        const {graph} = this.state;
+        graph.validateGraph();
+    };
+
+    _saveWorkflow = () => {
+        const { graph } = this.state;
+
+        const workflowName = mxUtils.prompt('Save as ...', this.state.workflow.name);
+
+        if (workflowName != '') {
+            // axios.post
+        }
 
     };
 
@@ -445,7 +448,8 @@ class WorkflowEditor extends React.Component {
                     </DropdownMenu>
                 </UncontrolledButtonDropdown>
                 <Button onClick={this._showXml}>Show XML</Button>
-                <Button onClick={this._applyLayout}>Apply Layout</Button>
+                <Button onClick={this._validateGraph}>Validate Graph</Button>
+                <Button onClick={this._saveWorkflow}>Save</Button>
             </ButtonGroup>
             <div className="graph-wrapper">
                 <div id="graph" className="graph" ref="graphContainer"/>

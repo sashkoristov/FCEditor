@@ -7,6 +7,7 @@ import mxgraph from '../../mxgraph';
 const { mxGraph, mxConstants, mxMultiplicity, mxUtils, mxConnectionConstraint, mxPoint, mxConstraintHandler, mxImage, mxCell, mxRectangle } = mxgraph;
 
 import ConnectionHandler from '../handler/ConnectionHandler';
+import Cell from '../model/Cell';
 import * as afcl from '../../afcl';
 import * as cellDefs from '../cells';
 
@@ -28,6 +29,25 @@ class Graph extends mxGraph {
     }
 
     /**
+     *
+     * @param mxCell parent
+     * @param string id
+     * @param obj value
+     * @param float x
+     * @param float y
+     * @param float width
+     * @param float height
+     * @param string style
+     * @param boolean relative
+     */
+    createVertex(parent, id, value, x, y, width, height, style, relative) {
+        let v = super.createVertex(parent, id, value, x, y, width, height, style, relative);
+
+        // copy all properties and methods of 'v' to our custom cell obj and return that
+        return Object.assign(new Cell(), v);
+    }
+
+    /**
      * Initializes the graph
      *
      * @param DOMNode container
@@ -37,11 +57,19 @@ class Graph extends mxGraph {
     }
 
     /**
+     * returns true if graph is empty
+     */
+    isEmpty() {
+        let parent = this.getDefaultParent();
+        return !parent.children || parent.children?.length == 0;
+    }
+
+    /**
      *
      * @param mxCell cell
      */
     getLabel(cell) {
-        if (cell.style == cellDefs.fork.name || cell.style == cellDefs.join.name) {
+        if (cell.type == cellDefs.fork.name || cell.type == cellDefs.join.name) {
             return '';
         }
         return super.getLabel(cell);
@@ -111,12 +139,84 @@ class Graph extends mxGraph {
     }
 
     /**
+     *
+     * @param mxCell target
+     * @param [mxCell] cells
+     * @param mxEvent mouseEvent
+     *
+     * @return boolean
+     */
+    isValidDropTarget(target, cells, mouseEvent) {
+        // disallow start and end cells to be dropped in 'container' cells (swimlanes)
+        if (target.type && target.type == cellDefs.container.name) {
+            for (let cell of cells) {
+                if (cell.type && (cell.type == cellDefs.start.name || cell.type == cellDefs.end.name)) {
+                    return false;
+                }
+            }
+        }
+        return super.isValidDropTarget(target, cells, mouseEvent);
+    }
+
+    /**
+     *
+     * @param mxCell cell
+     * @param object context
+     */
+    validateCell(cell, context) {
+        if (cell.value instanceof afcl.functions.BaseFunction) {
+            return this._checkCell(cell);
+        }
+        return super.validateCell(cell, context);
+    }
+
+    _checkCell(cell) {
+        // cells at outermost level
+        if (cell.parent == this.getDefaultParent()) {
+            let error = '';
+            if (!this._hasPathToCell(cell, cellDefs.start.name, 'up')) {
+                error += 'no path to a start node found' + "\n";
+            }
+            if (!this._hasPathToCell(cell, cellDefs.end.name, 'down')) {
+                error += 'no path to an end node found' + "\n";
+            }
+            return error.length > 0 ? error : null;
+        }
+        // cells in swimlanes
+        else if (cell.parent.value instanceof afcl.functions.CompoundParallel) {
+            let error = '';
+            if (!this._hasPathToCell(cell, cellDefs.fork.name, 'up')) {
+                error += 'no path to fork found' + "\n";
+            }
+            if (!this._hasPathToCell(cell, cellDefs.join.name, 'down')) {
+                error += 'no path to join found' + "\n";
+            }
+            return error.length > 0 ? error : null;
+        }
+        return null;
+    }
+
+    _hasPathToCell(cell, name, direction) {
+        if (cell.type && cell.type == name) {
+            return true;
+        }
+        if (cell.edges && cell.edges.length > 0) {
+            let edge = cell.edges.filter((edge) => { return direction == 'up' ? edge.target == cell : edge.source == cell })[0];
+            if (edge) {
+                return this._hasPathToCell((direction == 'up' ? edge.source : edge.target), name, direction);
+            }
+        }
+        return false;
+    }
+
+    /**
      * validates the given cell
      *
      * @param mxCell cell
      * @returns {string|null}
      */
     getCellValidationError(cell) {
+
         // super call validates all multiplicities, etc
         return super.getCellValidationError(cell);
     }
@@ -138,12 +238,12 @@ class Graph extends mxGraph {
         }
 
         if (source.id == target.id) {
-            return 'connection must not connect to itself';
+            return 'source and target of a connection must not be the same';
         }
 
         // connection can only be between cells with the same parent
         if (source.parent != target.parent) {
-            return 'connection cells must not have different parents';
+            return 'source and target cells of a connection must not have different parents';
         }
 
         // enforce port constraints:
@@ -162,10 +262,10 @@ class Graph extends mxGraph {
             }
             if (sourcePort != null && targetPort != null) {
                 if (sourcePort == 'in') {
-                    return 'connection must not have input port as source';
+                    return 'input port of node is not valid for a connection source';
                 }
                 if (targetPort == 'out') {
-                    return 'connection must not have output port as target';
+                    return 'output port of node is not valid for a connection target';
                 }
                 if (sourcePort == targetPort) {
                     return 'source port and target port must not be the same';

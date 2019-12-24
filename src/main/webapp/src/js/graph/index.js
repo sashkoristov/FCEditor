@@ -28,7 +28,7 @@ mxUtils.getPortConstraints = function(terminal, edge, source, defaultValue)
 
     // set the constraints for vertices inside container cells
     // this can be the general default behaviour (maybe ?)
-    if (terminal.cell.parent.style == cellDefs.container.name) {
+    if (terminal.cell.parent.type && terminal.cell.parent.type == cellDefs.container.name) {
         return source ? mxConstants.DIRECTION_MASK_SOUTH : mxConstants.DIRECTION_MASK_NORTH;
     }
 

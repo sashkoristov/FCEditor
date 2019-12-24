@@ -19,6 +19,9 @@ class Multiplicity extends mxMultiplicity {
                     return false;
                 }
             }
+            if (typeof value == 'string' && typeof type == 'string') {
+                return value.toLowerCase() == type.toLowerCase();
+            }
         }
         return super.checkType(graph, value, type, attr, attrValue);
     }

@@ -20,7 +20,7 @@ class ConnectionHandler extends mxConnectionHandler {
      * @param mxCell cell
      */
     isConnectableCell(cell) {
-        if (cell && (cell.style == cellDefs.fork.name || cell.style == cellDefs.join.name)) {
+        if (cell && cell.type && (cell.type === cellDefs.fork.name || cell.type === cellDefs.join.name)) {
             return true;
         }
         return false;
