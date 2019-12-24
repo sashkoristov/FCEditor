@@ -2,13 +2,12 @@ package persistence;
 
 import java.io.Serializable;
 
-public class Function implements Serializable {
+public class Function extends DomainObject {
 
     public String name;
-    public String id;
 
     public Function(String id, String name) {
-        this.id = id;
+        super(id);
         this.name = name;
     }
 }

@@ -11,15 +11,14 @@ import java.io.PrintWriter;
 import java.util.UUID;
 
 import com.google.gson.Gson;
-import persistence.Function;
-import persistence.FunctionRepository;
-import persistence.Repository;
+import persistence.*;
 
 @WebServlet(name = "Api", urlPatterns = { "/api/*" })
 public class Api extends HttpServlet {
 
     private Gson gson = new Gson();
-    private Repository<Function> functionRepository = new FunctionRepository();
+    private Repository<Function> functionRepository = new FunctionRepository("functions.ser");
+    private Repository<Workflow> workflowRepository = new WorkflowRepository("workflows.ser");
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -36,6 +35,12 @@ public class Api extends HttpServlet {
             sendResponseJson(resp, functionRepository.findAll());
             return;
         }
+
+        if (pathInfo.equals("/workflow")) {
+            sendResponseJson(resp, workflowRepository.findAll());
+            return;
+        }
+
     }
 
     @Override
@@ -47,26 +52,40 @@ public class Api extends HttpServlet {
             return;
         }
 
+        StringBuilder buffer = new StringBuilder();
+        BufferedReader reader = req.getReader();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            buffer.append(line);
+        }
+
+        String payload = buffer.toString();
+
         if (pathInfo.equals("/function")) {
-            StringBuilder buffer = new StringBuilder();
-            BufferedReader reader = req.getReader();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-            }
+            Function f = gson.fromJson(payload, Function.class);
+            f.id = UUID.randomUUID().toString();
 
-            String payload = buffer.toString();
-
-            Function obj = gson.fromJson(payload, Function.class);
-            obj.id = UUID.randomUUID().toString();
-
-            if (obj == null) {
+            if (f == null) {
                 sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
-            functionRepository.add(obj);
 
-            sendResponseJson(resp, obj);
+            functionRepository.add(f);
+
+            sendResponseJson(resp, f);
+        }
+        if (pathInfo.equals("/workflow")) {
+            Workflow w = gson.fromJson(payload, Workflow.class);
+            w.id = UUID.randomUUID().toString();
+
+            if (w == null) {
+                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            workflowRepository.add(w);
+
+            sendResponseJson(resp, w);
         }
     }
 
@@ -96,6 +115,24 @@ public class Api extends HttpServlet {
             }
 
             functionRepository.remove(id);
+            sendResponseJson(resp, "Deleted");
+        }
+
+        if (pathInfo.contains("/workflow/")) {
+            String[] pathSegments = pathInfo.split("/");
+            if (pathSegments.length != 3) {
+                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            String id = pathSegments[pathSegments.length-1];
+
+            if (!workflowRepository.has(id)) {
+                sendResponseJson(resp, "Not Found", HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            workflowRepository.remove(id);
             sendResponseJson(resp, "Deleted");
         }
     }
