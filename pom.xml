@@ -53,7 +53,7 @@
           <artifactId>afcl-api</artifactId>
           <version>1.0</version>
           <scope>system</scope>
-          <systemPath>${project.basedir}/src/main/resources/WorkflowAPI.jar</systemPath>
+          <systemPath>${project.basedir}/src/main/resources/afclAPI.jar</systemPath>
       </dependency>
   </dependencies>
   <build>
