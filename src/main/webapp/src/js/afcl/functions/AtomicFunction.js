@@ -5,11 +5,11 @@ class AtomicFunction extends BaseFunction {
     constructor(label, type = null) {
         super(label);
 
-        this._type = type;
+        this.type = type;
     }
 
     getType() {
-        return this._type;
+        return this.type;
     }
 
 

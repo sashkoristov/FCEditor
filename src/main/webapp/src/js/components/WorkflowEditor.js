@@ -11,8 +11,10 @@ import {ButtonGroup, Button, UncontrolledButtonDropdown, DropdownToggle, Dropdow
 import mxgraph from '../mxgraph';
 
 const {
+    mxCell,
     mxClient,
     mxCodec,
+    mxCodecRegistry,
     mxCellState,
     mxConstants,
     mxEvent,
@@ -144,11 +146,15 @@ class WorkflowEditor extends React.Component {
             return graph.connectionHandler.constraintHandler.pointImage;
         };
 
+        // I/O (https://jgraph.github.io/mxgraph/docs/js-api/files/io/mxCellCodec-js.html)
+        mxCodecRegistry.getCodec(mxCell).template = new mxGraphOverrides.Cell();
+        mxCodecRegistry.addAlias(mxUtils.getFunctionName(mxGraphOverrides.Cell), mxUtils.getFunctionName(mxCell));
+
         // style
         this._setGraphStyle();
 
         // constraints
-        this._setConstraints();
+        this._setGraphConstraints();
     };
 
     _setGraphStyle = () => {
@@ -165,7 +171,7 @@ class WorkflowEditor extends React.Component {
         }
     };
 
-    _setConstraints = () => {
+    _setGraphConstraints = () => {
         const {graph} = this.state;
 
         // Start must not have incomming connections
@@ -336,7 +342,7 @@ class WorkflowEditor extends React.Component {
     _addParallel = () => {
         this._addCell(
             new afcl.functions.Parallel('Parallel'),
-            cellDefs.container
+            cellDefs.parallel
         );
     };
 
@@ -344,11 +350,11 @@ class WorkflowEditor extends React.Component {
     _addParallelFor = () => {
         this._addCell(
             new afcl.functions.ParallelFor('ParallelFor'),
-            cellDefs.container
+            cellDefs.parallelFor
         );
     };
 
-    _addCell = (userObj, cell) => {
+    _addCell = (userObj, cellDef) => {
         const {graph} = this.state;
 
         var parent = graph.getDefaultParent();
@@ -356,25 +362,25 @@ class WorkflowEditor extends React.Component {
         // Adds cells to the model in a single step
         graph.getModel().beginUpdate();
         try {
-            let v = graph.insertVertex(parent, null, userObj, 20, 20, cell.width ?? 80, cell.height ?? 40, cell.name);
-            v.setType(cell.name);
+            let v = graph.insertVertex(parent, null, userObj, 20, 20, cellDef.width ?? 80, cellDef.height ?? 40, cellDef.name);
+            v.setType(cellDef.type || cellDef.name);
 
             // add sub cells, if any
-            if (cellDefs.container.subCells) {
-                for (let subCell in cell.subCells) {
+            if (cellDef.subCells) {
+                for (let subCell in cellDef.subCells) {
                     let subV = graph.insertVertex(
                         v,
                         null,
                         subCell,
-                        cell.subCells[subCell].x,
-                        cell.subCells[subCell].y,
+                        cellDef.subCells[subCell].x,
+                        cellDef.subCells[subCell].y,
                         cellDefs[subCell].width,
                         cellDefs[subCell].height,
                         cellDefs[subCell].name,
-                        cell.subCells[subCell].relative
+                        true
                     );
-                    subV.getGeometry().offset = cell.subCells[subCell].offset;
-                    subV.setType(cellDefs[subCell].name);
+                    subV.getGeometry().offset = cellDef.subCells[subCell].offset;
+                    subV.setType(cellDefs[subCell].type || cellDefs[subCell].name);
                 }
             }
         } finally {
@@ -412,7 +418,7 @@ class WorkflowEditor extends React.Component {
         const workflowName = mxUtils.prompt('Save as ...', this.state.workflow.name);
 
         if (workflowName != '') {
-            // axios.post
+            // axios.post workflow name and body ...
         }
 
     };

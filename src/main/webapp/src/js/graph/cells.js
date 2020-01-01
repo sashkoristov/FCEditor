@@ -6,6 +6,8 @@
 import mxgraph from '../mxgraph';
 import { cellStyle } from './styles';
 
+import * as afcl from '../afcl';
+
 const { mxUtils, mxConstants, mxPerimeter } = mxgraph;
 
 let start = {
@@ -56,6 +58,7 @@ merge.style[mxConstants.STYLE_STROKEWIDTH] = 4;
 
 let fn = {
     name: 'fn',
+    type: mxUtils.getFunctionName(afcl.functions.AtomicFunction),
     style: mxUtils.clone(cellStyle),
     width: 100,
     height: 44,
@@ -71,6 +74,7 @@ fn.style[mxConstants.STYLE_ROUNDED] = true;
 
 let cond = {
     name: 'cond',
+    type: mxUtils.getFunctionName(afcl.functions.IfThenElse),
     style: mxUtils.clone(cellStyle),
     width: 70,
     height: 60,
@@ -87,6 +91,7 @@ cond.style[mxConstants.STYLE_SPACING_TOP] = 20;
 
 let multicond = {
     name: 'multicond',
+    type: mxUtils.getFunctionName(afcl.functions.Switch),
     style: mxUtils.clone(cond.style),
     width: 70,
     height: 60,
@@ -97,7 +102,6 @@ let multicond = {
 };
 multicond.style[mxConstants.STYLE_FILLCOLOR] = '#660E7A';
 multicond.style[mxConstants.STYLE_STROKECOLOR] = '#888';
-
 
 let fork = {
     name: 'fork',
@@ -122,8 +126,8 @@ let container = {
         out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
     },
     subCells: {
-        fork: {x: 0.5, y: 0.025, offset: {x: -fork.width/2, y: 0}, relative: true, style: fork.name},
-        join: {x: 0.5, y: 0.975, offset: {x: -join.width/2, y: -join.height}, relative: true, style: join.name}
+        fork: {x: 0.5, y: 0.025, offset: {x: -fork.width/2, y: 0}, style: fork.name},
+        join: {x: 0.5, y: 0.975, offset: {x: -join.width/2, y: -join.height}, style: join.name}
     }
 };
 container.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE;
@@ -133,16 +137,25 @@ container.style[mxConstants.STYLE_RESIZABLE] = true;
 container.style[mxConstants.STYLE_STARTSIZE] = 22;
 container.style[mxConstants.STYLE_DASHED] = true;
 container.style[mxConstants.STYLE_FONTCOLOR] = 'black';
-container.style[mxConstants.STYLE_FONTSIZE] = 14
+container.style[mxConstants.STYLE_FONTSIZE] = 14;
 container.style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP;
 container.style[mxConstants.STYLE_LABEL_POSITION] = mxConstants.ALIGN_LEFT;
-container.style[mxConstants.STYLE_SPACING_LEFT] = 160;
 container.style[mxConstants.STYLE_SPACING_TOP] = 10;
 container.style[mxConstants.STYLE_LABEL_WIDTH] = 100;
 container.style[mxConstants.STYLE_STROKECOLOR] = 'black';
 container.style[mxConstants.STYLE_SWIMLANE_LINE] = 'none';
 container.style[mxConstants.STYLE_FILLCOLOR] = 'rgba(255, 255, 255, .5)';
 container.style[mxConstants.STYLE_SWIMLANE_FILLCOLOR] = 'rgba(255, 255, 255, .5)';
+
+let parallel = mxUtils.clone(container);
+parallel.name = 'parallel';
+parallel.type = mxUtils.getFunctionName(afcl.functions.Parallel);
+parallel.style[mxConstants.STYLE_SPACING_LEFT] = 160;
+
+let parallelFor = mxUtils.clone(container);
+parallelFor.name = 'parallelFor';
+parallelFor.type = mxUtils.getFunctionName(afcl.functions.ParallelFor);
+parallelFor.style[mxConstants.STYLE_SPACING_LEFT] = 180;
 
 let port = {
     name: 'port',
@@ -155,4 +168,16 @@ port.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
 port.style[mxConstants.STYLE_PERIMETER_SPACING] = 6;
 port.style[mxConstants.STYLE_FONTSTYLE] = 2;
 
-export { start, end, merge, fn, cond, multicond, container, fork, join, port };
+export {
+    start,
+    end,
+    merge,
+    fn,
+    cond,
+    multicond,
+    parallel,
+    parallelFor,
+    fork,
+    join,
+    port
+};

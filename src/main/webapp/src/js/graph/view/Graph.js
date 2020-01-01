@@ -148,7 +148,7 @@ class Graph extends mxGraph {
      */
     isValidDropTarget(target, cells, mouseEvent) {
         // disallow start and end cells to be dropped in 'container' cells (swimlanes)
-        if (target.type && target.type == cellDefs.container.name) {
+        if (this.isSwimlane(target)) {
             for (let cell of cells) {
                 if (cell.type && (cell.type == cellDefs.start.name || cell.type == cellDefs.end.name)) {
                     return false;
@@ -285,7 +285,7 @@ class Graph extends mxGraph {
     getAllConnectionConstraints(terminal, source) {
         if (terminal != null && terminal.cell != null)
         {
-            if (terminal.cell.isVertex() && cellDefs[terminal.cell.style].ports) {
+            if (terminal.cell.isVertex() && cellDefs[terminal.cell.style] && cellDefs[terminal.cell.style].ports) {
                 var ports = cellDefs[terminal.cell.style].ports;
                 var cstrs = [];
 

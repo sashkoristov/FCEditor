@@ -2,11 +2,14 @@ import mxgraph from "../mxgraph";
 
 const {
     mxConstants,
-    mxUtils
+    mxUtils,
+    mxCodec,
+    mxLog
 } = mxgraph;
 
 import * as cellDefs from './cells';
-import Graph from './view/graph';
+import Graph from './view/Graph';
+import Cell from './model/Cell';
 import Multiplicity from './view/Multiplicity';
 
 // ToDo: override better?
@@ -28,11 +31,20 @@ mxUtils.getPortConstraints = function(terminal, edge, source, defaultValue)
 
     // set the constraints for vertices inside container cells
     // this can be the general default behaviour (maybe ?)
-    if (terminal.cell.parent.type && terminal.cell.parent.type == cellDefs.container.name) {
+    if (terminal.cell.parent.type == cellDefs.parallel.type || terminal.cell.parent.type == cellDefs.parallelFor.type) {
         return source ? mxConstants.DIRECTION_MASK_SOUTH : mxConstants.DIRECTION_MASK_NORTH;
     }
 
     return mxUtilsGetPortConstraints.apply(this, arguments);
 };
 
-export { Graph, Multiplicity }
+var oldEncode = mxCodec.prototype.encode;
+mxCodec.prototype.encode = function(obj)
+{
+    console.log('mxCodec.encode: obj='+mxUtils.getFunctionName(obj.constructor));
+    console.log(obj)
+
+    return oldEncode.apply(this, arguments);
+};
+
+export { Graph, Multiplicity, Cell }

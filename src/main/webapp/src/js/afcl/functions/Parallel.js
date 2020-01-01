@@ -1,5 +1,5 @@
-import CompoundParallel from "./CompoundParallel";
+import Compound from "./Compound";
 
-class Parallel extends CompoundParallel {}
+class Parallel extends Compound {}
 
 export default Parallel;
