@@ -4,6 +4,8 @@ import {Redirect, Route, Switch} from 'react-router-dom';
 import * as router from 'react-router-dom';
 import {Container, Nav, NavItem, NavTitle, NavLink, Badge, DropdownToggle, DropdownMenu} from 'reactstrap';
 
+import minimizedBrand from '@coreui/icons/svg/brand/cib-coreui-c.svg';
+
 import {
     AppFooter,
     AppHeader,
@@ -15,7 +17,7 @@ import {
     AppSidebarForm,
     AppSidebarHeader,
     AppSidebarMinimizer,
-    AppSidebarNav as AppSidebarNav,
+    AppSidebarNav,
     AppSidebarToggler,
 } from '@coreui/react';
 
@@ -34,7 +36,10 @@ class Main extends React.Component {
             <div className="app">
                 <AppHeader fixed>
                     <AppSidebarToggler className="d-lg-none" display="md" mobile/>
-                    <AppNavbarBrand>Serverless</AppNavbarBrand>
+                    <AppNavbarBrand
+                        full={{ src: '', width: 89, height: 25, alt: 'CoreUI Logo' }}
+                        minimized={{ src: minimizedBrand, width: 30, height: 30, alt: 'CoreUI Logo' }}
+                    />
                     {/*<Nav className="ml-auto" navbar>
                         <NavItem className="d-md-down-none">
                             <NavLink href="#"><i className="fa fa-bell icons font-xl d-block"></i><Badge pill
@@ -66,7 +71,7 @@ class Main extends React.Component {
                     </AppSidebar>
                     <main className="main">
                         <AppBreadcrumb appRoutes={routes} router={router}/>
-                        <Container fluid>
+                        <div className="main-content">
                             <FunctionsContextProvider>
                                 <Switch>
                                     {routes.map((route, idx) => {
@@ -81,7 +86,7 @@ class Main extends React.Component {
                                     <Redirect from="/" to="/dashboard"/>
                                 </Switch>
                             </FunctionsContextProvider>
-                        </Container>
+                        </div>
                     </main>
                 </div>
                 <AppFooter>

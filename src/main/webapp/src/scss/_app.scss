@@ -1,0 +1,17 @@
+.main {
+  display: flex;
+  flex-direction: column;
+
+  > .main-content {
+    width: 100%;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+}
+
+.breadcrumb {
+  margin-bottom: 0;
+}

@@ -127,7 +127,7 @@ let container = {
     },
     subCells: {
         fork: {x: 0.5, y: 0.025, offset: {x: -fork.width/2, y: 0}, style: fork.name},
-        join: {x: 0.5, y: 0.975, offset: {x: -join.width/2, y: -join.height}, style: join.name}
+        join: {x: 0.5, y: 0.970, offset: {x: -join.width/2, y: -join.height}, style: join.name}
     }
 };
 container.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE;

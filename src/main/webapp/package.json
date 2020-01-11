@@ -28,8 +28,9 @@
     "webpack-cli": "^3.3.7"
   },
   "dependencies": {
-    "@coreui/coreui": "^2.1.12",
+    "@coreui/coreui": "^2.1.16",
     "@coreui/react": "^2.5.4",
+    "@coreui/icons": "^1.0.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.25",
     "@fortawesome/free-solid-svg-icons": "^5.11.2",
     "@fortawesome/react-fontawesome": "^0.1.7",

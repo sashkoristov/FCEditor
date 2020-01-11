@@ -3,21 +3,21 @@ export default {
         {
             name: 'Dashboard',
             url: '/dashboard',
-            icon: 'fa fa-home',
+            icon: 'cil-speedometer',
         },
         {
             title: true,
-            name: 'Serverless'
+            name: 'Tools'
         },
         {
             name: 'Editor',
             url: '/editor',
-            icon: 'fa fa-edit',
+            icon: 'cil-browser',
         },
         {
             name: 'Functions',
             url: '/functions',
-            icon: 'fa fa-database',
+            icon: 'cil-functions',
         },
     ]
 };

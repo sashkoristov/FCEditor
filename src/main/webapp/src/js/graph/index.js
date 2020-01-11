@@ -4,12 +4,13 @@ const {
     mxConstants,
     mxUtils,
     mxCodec,
-    mxLog
+    mxLog,
 } = mxgraph;
 
 import * as cellDefs from './cells';
 import Graph from './view/Graph';
 import Cell from './model/Cell';
+import Codec from './io/Codec';
 import Multiplicity from './view/Multiplicity';
 
 // ToDo: override better?
@@ -38,13 +39,17 @@ mxUtils.getPortConstraints = function(terminal, edge, source, defaultValue)
     return mxUtilsGetPortConstraints.apply(this, arguments);
 };
 
-var oldEncode = mxCodec.prototype.encode;
-mxCodec.prototype.encode = function(obj)
+// DEBUGGING
+
+/*
+var oldDecode = mxCodec.prototype.decode;
+mxCodec.prototype.decode = function(dec, node, into)
 {
-    console.log('mxCodec.encode: obj='+mxUtils.getFunctionName(obj.constructor));
-    console.log(obj)
+    console.log('mxCodec.decode:');
+    console.log(node);
 
-    return oldEncode.apply(this, arguments);
+    return oldDecode.apply(this, arguments);
 };
+ */
 
-export { Graph, Multiplicity, Cell }
+export { Graph, Multiplicity, Cell, Codec }

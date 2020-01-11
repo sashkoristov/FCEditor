@@ -3,10 +3,23 @@
  *
  * @author Ben Walch, 2018-2019
  */
+
+import axios from "axios";
 import React from "react";
 import ReactDOM from "react-dom";
 
-import {ButtonGroup, Button, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem} from 'reactstrap';
+import {
+    ButtonGroup,
+    Button,
+    Modal,
+    ModalHeader,
+    ModalBody,
+    UncontrolledButtonDropdown,
+    DropdownToggle,
+    DropdownMenu,
+    DropdownItem,
+    Spinner
+} from 'reactstrap';
 
 import mxgraph from '../mxgraph';
 
@@ -15,6 +28,7 @@ const {
     mxClient,
     mxCodec,
     mxCodecRegistry,
+    mxObjectCodec,
     mxCellState,
     mxConstants,
     mxEvent,
@@ -31,11 +45,12 @@ import pointImg from '../../assets/images/point.svg';
 import checkImg from '../../assets/images/check.svg';
 import cancelImg from '../../assets/images/cancel.svg';
 
+import WorkflowUploadForm from './WorkflowUploadForm';
+
 import * as afcl from '../afcl/';
 import * as cellDefs from '../graph/cells';
 import * as mxGraphOverrides from '../graph';
 import {cellStyle, edgeStyle} from '../graph/styles';
-import axios from "axios";
 
 import FuntionsContext, {FunctionsContextProvider} from '../context/FunctionsContext';
 
@@ -51,7 +66,8 @@ class WorkflowEditor extends React.Component {
             graph: {},
             workflow: {
                 name: 'Untitled'
-            }
+            },
+            isLoading: false
         };
     }
 
@@ -413,54 +429,97 @@ class WorkflowEditor extends React.Component {
     };
 
     _saveWorkflow = () => {
-        const { graph } = this.state;
+        const {graph} = this.state;
 
         const workflowName = mxUtils.prompt('Save as ...', this.state.workflow.name);
 
         if (workflowName != '') {
-            // axios.post workflow name and body ...
+            const enc = new mxGraphOverrides.Codec(mxUtils.createXmlDocument());
+            const xmlDoc = enc.encode(graph.getModel());
+
+            axios.post('api/workflow', {
+                name: workflowName,
+                body: mxUtils.getPrettyXml(xmlDoc)
+            });
         }
 
     };
 
+    // Parses the mxGraph XML file format
+    _loadWorkflow = (name) => {
+
+        const {graph} = this.state;
+
+        axios.get('api/workflow')
+            .then(response => {
+                let workflows = response.data;
+
+                let xmlDoc = mxUtils.parseXml(workflows[0]['body']);
+
+                var dec = new mxGraphOverrides.Codec(xmlDoc);
+
+                dec.decode(xmlDoc.documentElement, graph.getModel());
+            });
+    };
+
+    _showWorkflowFileDialog = () => {
+        this.setState({
+            isLoading: true
+        });
+    };
+
     render() {
-        return <div className="animated fadeIn">
-            <ButtonGroup>
-                <Button onClick={this._addStart}>Start</Button>
-                <Button onClick={this._addEnd}>End</Button>
-                <Button onClick={this._addMerge}>Merge</Button>
-                <UncontrolledButtonDropdown>
-                    <DropdownToggle caret>
-                        Function
-                    </DropdownToggle>
-                    <DropdownMenu>
-                        <FuntionsContext.Consumer>
-                            {fc => (
-                                fc.functions.map(fn => <DropdownItem
-                                    onClick={() => this._addFn(fn.name)}>{fn.name}</DropdownItem>)
-                            )}
-                        </FuntionsContext.Consumer>
-                    </DropdownMenu>
-                </UncontrolledButtonDropdown>
-                <Button onClick={this._addIfThenElse}>If-Then-Else</Button>
-                <Button onClick={this._addSwitch}>Switch</Button>
-                <UncontrolledButtonDropdown>
-                    <DropdownToggle caret>
-                        Compound Parallel
-                    </DropdownToggle>
-                    <DropdownMenu>
-                        <DropdownItem onClick={this._addParallel}>Parallel</DropdownItem>
-                        <DropdownItem onClick={this._addParallelFor}>ParallelFor</DropdownItem>
-                    </DropdownMenu>
-                </UncontrolledButtonDropdown>
-                <Button onClick={this._showXml}>Show XML</Button>
-                <Button onClick={this._validateGraph}>Validate Graph</Button>
-                <Button onClick={this._saveWorkflow}>Save</Button>
-            </ButtonGroup>
-            <div className="graph-wrapper">
-                <div id="graph" className="graph" ref="graphContainer"/>
+        if (this.state.isLoading) {
+            return <div>
+                <Spinner size="lg" />
             </div>
-        </div>
+        }
+        return <>
+            <div className="animated fadeIn position-relative w-100 h-100">
+                <ButtonGroup className="graph-toolbar">
+                    <Button onClick={this._addStart}>Start</Button>
+                    <Button onClick={this._addEnd}>End</Button>
+                    <Button onClick={this._addMerge}>Merge</Button>
+                    <UncontrolledButtonDropdown>
+                        <DropdownToggle caret>
+                            Function
+                        </DropdownToggle>
+                        <DropdownMenu>
+                            <FuntionsContext.Consumer>
+                                {fc => (
+                                    fc.functions.map(fn => <DropdownItem
+                                        onClick={() => this._addFn(fn.name)}>{fn.name}</DropdownItem>)
+                                )}
+                            </FuntionsContext.Consumer>
+                        </DropdownMenu>
+                    </UncontrolledButtonDropdown>
+                    <Button onClick={this._addIfThenElse}>If-Then-Else</Button>
+                    <Button onClick={this._addSwitch}>Switch</Button>
+                    <UncontrolledButtonDropdown>
+                        <DropdownToggle caret>
+                            Compound Parallel
+                        </DropdownToggle>
+                        <DropdownMenu>
+                            <DropdownItem onClick={this._addParallel}>Parallel</DropdownItem>
+                            <DropdownItem onClick={this._addParallelFor}>ParallelFor</DropdownItem>
+                        </DropdownMenu>
+                    </UncontrolledButtonDropdown>
+                    <Button onClick={this._showXml}>Show XML</Button>
+                    <Button onClick={this._validateGraph}>Validate Graph</Button>
+                    <Button onClick={this._saveWorkflow}>Save</Button>
+                    <Button onClick={this._showWorkflowFileDialog}>Load</Button>
+                </ButtonGroup>
+                <div className="graph-wrapper">
+                    <div id="graph" className="graph" ref="graphContainer"/>
+                </div>
+            </div>
+            <Modal isOpen={this.state.isLoadWorkflowModalOpen}>
+                <ModalHeader toggle={this._toggleLoadWorkflowModal}>Modal Header</ModalHeader>
+                <ModalBody>
+                    <WorkflowUploadForm />
+                </ModalBody>
+            </Modal>
+            </>
     }
 
 }

@@ -19,6 +19,7 @@ class Multiplicity extends mxMultiplicity {
                     return false;
                 }
             }
+            // ToDo: better comparison if type / value matches?
             if (typeof value == 'string' && typeof type == 'string') {
                 return value.toLowerCase() == type.toLowerCase();
             }

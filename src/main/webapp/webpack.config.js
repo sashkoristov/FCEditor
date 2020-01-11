@@ -44,7 +44,6 @@ module.exports = (env, argv) => {
                         {
                             loader: 'file-loader',
                             options: {
-                                name: '[name].[ext]',
                                 outputPath: '../fonts/'
                             }
                         }

@@ -1,3 +1,19 @@
+.graph-toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+}
+.graph-wrapper {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+}
+
 #graph {
   background-color: $white;
 }
