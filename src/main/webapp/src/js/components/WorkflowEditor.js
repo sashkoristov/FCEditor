@@ -46,6 +46,7 @@ import checkImg from '../../assets/images/check.svg';
 import cancelImg from '../../assets/images/cancel.svg';
 
 import WorkflowUploadForm from './WorkflowUploadForm';
+import FileUpload from './FileUpload';
 
 import * as afcl from '../afcl/';
 import * as cellDefs from '../graph/cells';
@@ -437,7 +438,7 @@ class WorkflowEditor extends React.Component {
             const enc = new mxGraphOverrides.Codec(mxUtils.createXmlDocument());
             const xmlDoc = enc.encode(graph.getModel());
 
-            axios.post('api/workflow', {
+            axios.post('api/workflow/save', {
                 name: workflowName,
                 body: mxUtils.getPrettyXml(xmlDoc)
             });
@@ -446,20 +447,30 @@ class WorkflowEditor extends React.Component {
     };
 
     // Parses the mxGraph XML file format
-    _loadWorkflow = (name) => {
+    _loadWorkflow = (file) => {
+
+        const formData = new FormData();
+        formData.append('file', file);
+        const config = {
+            headers: {
+                'content-type': 'multipart/form-data'
+            }
+        };
+
+        axios.post('api/workflow/load');
 
         const {graph} = this.state;
 
-        axios.get('api/workflow')
-            .then(response => {
-                let workflows = response.data;
+        console.log(file);
 
+/*
                 let xmlDoc = mxUtils.parseXml(workflows[0]['body']);
 
                 var dec = new mxGraphOverrides.Codec(xmlDoc);
 
                 dec.decode(xmlDoc.documentElement, graph.getModel());
-            });
+
+ */
     };
 
     _showWorkflowFileDialog = () => {
@@ -507,7 +518,7 @@ class WorkflowEditor extends React.Component {
                     <Button onClick={this._showXml}>Show XML</Button>
                     <Button onClick={this._validateGraph}>Validate Graph</Button>
                     <Button onClick={this._saveWorkflow}>Save</Button>
-                    <Button onClick={this._showWorkflowFileDialog}>Load</Button>
+                    <FileUpload onSelect={(file) => this._loadWorkflow(file)} />
                 </ButtonGroup>
                 <div className="graph-wrapper">
                     <div id="graph" className="graph" ref="graphContainer"/>

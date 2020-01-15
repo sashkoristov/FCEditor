@@ -1,6 +1,6 @@
 package persistence;
 
-import java.util.Collection;
+import persistence.dto.Function;
 
 public class FunctionRepository extends FileBasedRepository<Function> {
 

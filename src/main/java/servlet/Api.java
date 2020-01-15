@@ -10,15 +10,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.UUID;
 
+import afcl.utils.Utils;
 import com.google.gson.Gson;
 import persistence.*;
+import service.WorkflowConversionService;
 
 @WebServlet(name = "Api", urlPatterns = { "/api/*" })
 public class Api extends HttpServlet {
 
     private Gson gson = new Gson();
-    private Repository<Function> functionRepository = new FunctionRepository("functions.ser");
-    private Repository<Workflow> workflowRepository = new WorkflowRepository("workflows.ser");
+    private Repository<persistence.dto.Function> functionRepository = new FunctionRepository("functions.ser");
+    //private Repository<Workflow> workflowRepository = new WorkflowRepository("workflows.ser");
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -36,10 +38,12 @@ public class Api extends HttpServlet {
             return;
         }
 
+        /*
         if (pathInfo.equals("/workflow")) {
             sendResponseJson(resp, workflowRepository.findAll());
             return;
         }
+         */
 
     }
 
@@ -62,7 +66,7 @@ public class Api extends HttpServlet {
         String payload = buffer.toString();
 
         if (pathInfo.equals("/function")) {
-            Function f = gson.fromJson(payload, Function.class);
+            persistence.dto.Function f = gson.fromJson(payload, persistence.dto.Function.class);
             f.id = UUID.randomUUID().toString();
 
             if (f == null) {
@@ -74,18 +78,31 @@ public class Api extends HttpServlet {
 
             sendResponseJson(resp, f);
         }
-        if (pathInfo.equals("/workflow")) {
-            Workflow w = gson.fromJson(payload, Workflow.class);
-            w.id = UUID.randomUUID().toString();
+        if (pathInfo.contains("/workflow")) {
+            persistence.dto.Workflow wDto = gson.fromJson(payload, persistence.dto.Workflow.class);
 
-            if (w == null) {
+            if (wDto == null) {
                 sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
-            workflowRepository.add(w);
+            if (pathInfo.contains("/workflow/save")) {
 
-            sendResponseJson(resp, w);
+                afcl.Workflow w = WorkflowConversionService.fromXml(wDto.body);
+
+                Utils.writeYamlNoValidation(w, wDto.name + ".yaml");
+
+                sendResponseJson(resp);
+            }
+
+            if (pathInfo.contains("/workflow/load")) {
+                afcl.Workflow w = Utils.readYAMLNoValidation("workflow.yaml");
+
+                String xml = WorkflowConversionService.toXml(w);
+
+                sendResponseXml(resp, xml);
+
+            }
         }
     }
 
@@ -117,24 +134,21 @@ public class Api extends HttpServlet {
             functionRepository.remove(id);
             sendResponseJson(resp, "Deleted");
         }
+    }
 
-        if (pathInfo.contains("/workflow/")) {
-            String[] pathSegments = pathInfo.split("/");
-            if (pathSegments.length != 3) {
-                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
+    private void sendResponseXml(HttpServletResponse resp, String text) throws IOException {
+        resp.setContentType("text/xml");
+        resp.setStatus(HttpServletResponse.SC_OK);
 
-            String id = pathSegments[pathSegments.length-1];
-
-            if (!workflowRepository.has(id)) {
-                sendResponseJson(resp, "Not Found", HttpServletResponse.SC_NOT_FOUND);
-                return;
-            }
-
-            workflowRepository.remove(id);
-            sendResponseJson(resp, "Deleted");
+        if (text != null) {
+            PrintWriter out = resp.getWriter();
+            out.print(text);
+            out.flush();
         }
+    }
+
+    private void sendResponseJson(HttpServletResponse resp) throws IOException {
+        sendResponseJson(resp, null, HttpServletResponse.SC_OK);
     }
 
     private void sendResponseJson(HttpServletResponse resp, Object obj) throws IOException {
@@ -145,9 +159,10 @@ public class Api extends HttpServlet {
         resp.setContentType("application/json");
         resp.setStatus(status);
 
-        PrintWriter out = resp.getWriter();
-
-        out.print(gson.toJson(obj));
-        out.flush();
+        if (obj != null) {
+            PrintWriter out = resp.getWriter();
+            out.print(gson.toJson(obj));
+            out.flush();
+        }
     }
 }

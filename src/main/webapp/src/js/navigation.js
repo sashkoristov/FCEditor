@@ -19,5 +19,10 @@ export default {
             url: '/functions',
             icon: 'cil-functions',
         },
+        {
+            name: 'Settings',
+            url: '/settings',
+            icon: 'cil-cog',
+        },
     ]
 };
