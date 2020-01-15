@@ -30,9 +30,9 @@ export class FunctionsContextProvider extends React.Component {
         );
     }
 
-    _add = (name) => {
+    _add = (fn) => {
         this.setState({ isLoading: true });
-        axios.post(apiPath, { name: name })
+        axios.post(apiPath, fn)
             .then(response => {
                 this.setState({
                     functions: [ response.data, ...this.state.functions ],

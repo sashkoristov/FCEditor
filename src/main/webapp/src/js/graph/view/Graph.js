@@ -72,7 +72,7 @@ class Graph extends mxGraph {
         if (cell.type == cellDefs.fork.name || cell.type == cellDefs.join.name) {
             return '';
         }
-        return super.getLabel(cell);
+        return super.getName(cell);
     }
 
     /**
@@ -84,7 +84,7 @@ class Graph extends mxGraph {
      */
     convertValueToString(cell) {
         if (cell.value instanceof afcl.functions.BaseFunction) {
-            return cell.value.getLabel();
+            return cell.value.getName();
         }
         return super.convertValueToString(cell);
     }

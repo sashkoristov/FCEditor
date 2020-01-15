@@ -2,13 +2,14 @@ package service;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 
-import afcl.functions.AtomicFunction;
-import afcl.functions.IfThenElse;
+import afcl.functions.*;
+import afcl.functions.objects.Section;
 import org.xml.sax.InputSource;
 import org.w3c.dom.*;
 
@@ -46,38 +47,68 @@ public class WorkflowConversionService {
         if (n.getNodeType() == Node.ELEMENT_NODE) {
             Element el = (Element)n;
             if (el.hasAttribute("vertex")) {
+                System.out.println(el.getAttribute("type"));
+                Node edge = getNode(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "']");
+                NodeList edges = getNodes(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "']");
                 switch (el.getAttribute("type")) {
                     case "start":
-                        System.out.println("Start");
-                        Node edge = getNode(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "']");
                         generateFunctions(edge, doc, functionsList);
                         break;
                     case "AtomicFunction":
-                        System.out.println("AtomicFunction");
                         Element fnEl = getDirectChild(el, "AtomicFunction");
-                        AtomicFunction f = generateAtomicFunction(fnEl);
-                        functionsList.add(f);
-                        // follow the edges
-                        NodeList edges = getNodes(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "']");
-                        for (int i = 0; i < edges.getLength(); i++) {
-                           generateFunctions(edges.item(i), doc, functionsList);
-                        }
+                        AtomicFunction fn = generateAtomicFunction(fnEl);
+                        functionsList.add(fn);
+                        generateFunctions(edge, doc, functionsList);
                         break;
                     case "IfThenElse":
-                        System.out.println("IfThenElse");
                         Element iteEl = (Element) getDirectChild(el,"IfThenElse");
                         IfThenElse ite = generateIfThenElse(iteEl);
-                        functionsList.add(ite);
-
                         Node thenNode = getNode(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "'][@value='then']");
-                        ite.setThen(generateFunctions(thenNode, thenNode.getOwnerDocument(), null));
+                        ite.setThen(generateFunctions(thenNode, doc, null));
                         Node elseNode = getNode(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "'][@value='else']");
-                        ite.setElse(generateFunctions(elseNode, elseNode.getOwnerDocument(), null));
+                        ite.setElse(generateFunctions(elseNode, doc, null));
+                        functionsList.add(ite);
                         break;
                     case "Switch":
+                        Element switchEl = (Element) getDirectChild(el, "Switch");
+                        Switch sw = generateSwitch(switchEl);
+                        // follow the edges
+                        for (int i = 0; i < edges.getLength(); i++) {
+                            //generateFunctions(edges.item(i), doc, functionsList);
+                        }
+                        functionsList.add(sw);
+                        break;
+                    case "Parallel":
+                        Element parEl = (Element) getDirectChild(el, "Parallel");
+                        Parallel par = generateParallel(parEl);
+                        List<Section> parallelSection = new ArrayList<>();
+
+                        Element pForkEl = (Element) getNode(doc, "/mxGraphModel/root/Cell[@parent='" + el.getAttribute("id") + "'][@type='fork']");
+                        NodeList pForkEdges = getNodes(doc, "/mxGraphModel/root/Cell[@source='" + pForkEl.getAttribute("id") + "']");
+                        for (int i = 0; i < pForkEdges.getLength(); i++) {
+                            parallelSection.add(new Section(generateFunctions(pForkEdges.item(i), doc, null)));
+                        }
+                        par.setParallelBody(parallelSection);
+                        functionsList.add(par);
+                        break;
+                    case "ParallelFor":
+                        Element parForEl = (Element) getDirectChild(el, "ParallelFor");
+                        ParallelFor parFor = generateParallelFor(parForEl);
+
+                        Node forkNode = getNode(doc, "/mxGraphModel/root/Cell[@parent='" + el.getAttribute("id") + "'][@type='fork']");
+                        parFor.setLoopBody(generateFunctions(forkNode, doc, null));
+                        functionsList.add(parFor);
+                        break;
+                    case "fork":
+                        for (int i = 0; i < edges.getLength(); i++) {
+                            generateFunctions(edges.item(i), doc, functionsList);
+                        }
+                        break;
                     case "merge":
                     case "join":
+                    case "end":
                         return functionsList;
+
                 }
             }
             if (el.hasAttribute("edge")) {
@@ -101,6 +132,21 @@ public class WorkflowConversionService {
     protected static IfThenElse generateIfThenElse(Element iteEl) {
         IfThenElse ite = new IfThenElse();
         return ite;
+    }
+
+    protected static Switch generateSwitch(Element switchEl) {
+        Switch sw = new Switch();
+        return sw;
+    }
+
+    protected static Parallel generateParallel(Element parEl) {
+        Parallel par = new Parallel();
+        return par;
+    }
+
+    protected static ParallelFor generateParallelFor(Element parForEl) {
+        ParallelFor parFor = new ParallelFor();
+        return parFor;
     }
 
     protected static Element getDirectChild(Element parent, String tagName)

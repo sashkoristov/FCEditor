@@ -29,7 +29,7 @@ class Functions extends React.Component {
                                     <Button
                                         onClick={() => {
                                             if (this.state.newFnName.length > 0) {
-                                                fc.add(this.state.newFnName);
+                                                fc.add({name: this.state.newFnName});
                                                 this.setState({newFnName: ''});
                                             }
                                         }}>

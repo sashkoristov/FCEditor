@@ -1,15 +1,15 @@
 class BaseFunction {
 
-    constructor(label) {
-        this.label = label;
+    constructor(name) {
+        this.name = name;
     }
 
-    getLabel() {
-        return this.label;
+    getName() {
+        return this.name;
     }
 
-    setLabel(label) {
-        this.label = label;
+    setName(name) {
+        this.name = name;
     }
 
 }

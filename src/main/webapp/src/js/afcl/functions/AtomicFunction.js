@@ -2,14 +2,18 @@ import BaseFunction from './BaseFunction';
 
 class AtomicFunction extends BaseFunction {
 
-    constructor(label, type = null) {
-        super(label);
+    constructor(name, type = null) {
+        super(name);
 
         this.type = type;
     }
 
     getType() {
         return this.type;
+    }
+
+    setType(type) {
+        this.type = type;
     }
 
 
