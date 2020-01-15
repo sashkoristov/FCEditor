@@ -3,6 +3,7 @@ package service;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 
@@ -15,25 +16,21 @@ import afcl.*;
 
 public class WorkflowConversionService {
 
-    static ArrayList<Function> workflowBody = new ArrayList();
-
     public static Workflow fromXml(String xml) {
 
-        workflowBody.clear();
+        Workflow w = new Workflow();
 
         try {
             Document doc = getDocument(xml);
 
             Node startNode = getNode(doc, "/mxGraphModel/root/Cell[@type='start']");
 
-            processNode(startNode, doc);
+            List<Function> functions = generateFunctions(startNode, doc, null);
+            w.setWorkflowBody(functions);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        Workflow w = new Workflow();
-        w.setWorkflowBody(workflowBody);
 
         return w;
     }
@@ -42,51 +39,77 @@ public class WorkflowConversionService {
         return "";
     }
 
-    protected static void processNode(Node n, Document doc) throws Exception {
+    protected static List<Function> generateFunctions(Node n, Document doc, List<Function> functionsList) throws Exception {
+        if (functionsList == null) {
+            functionsList = new ArrayList<>();
+        }
         if (n.getNodeType() == Node.ELEMENT_NODE) {
             Element el = (Element)n;
             if (el.hasAttribute("vertex")) {
                 switch (el.getAttribute("type")) {
                     case "start":
                         System.out.println("Start");
+                        Node edge = getNode(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "']");
+                        generateFunctions(edge, doc, functionsList);
+                        break;
                     case "AtomicFunction":
-                        Element fnEl = (Element) el.getElementsByTagName("AtomicFunction").item(0);
+                        System.out.println("AtomicFunction");
+                        Element fnEl = getDirectChild(el, "AtomicFunction");
                         AtomicFunction f = generateAtomicFunction(fnEl);
-                        workflowBody.add(f);
+                        functionsList.add(f);
                         // follow the edges
                         NodeList edges = getNodes(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "']");
                         for (int i = 0; i < edges.getLength(); i++) {
-                            processNode(edges.item(i), doc);
+                           generateFunctions(edges.item(i), doc, functionsList);
                         }
+                        break;
                     case "IfThenElse":
-                        Element iteEl = (Element) el.getElementsByTagName("IfThenElse").item(0);
+                        System.out.println("IfThenElse");
+                        Element iteEl = (Element) getDirectChild(el,"IfThenElse");
                         IfThenElse ite = generateIfThenElse(iteEl);
+                        functionsList.add(ite);
+
+                        Node thenNode = getNode(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "'][@value='then']");
+                        ite.setThen(generateFunctions(thenNode, thenNode.getOwnerDocument(), null));
+                        Node elseNode = getNode(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "'][@value='else']");
+                        ite.setElse(generateFunctions(elseNode, elseNode.getOwnerDocument(), null));
+                        break;
                     case "Switch":
                     case "merge":
+                    case "join":
+                        return functionsList;
                 }
             }
             if (el.hasAttribute("edge")) {
                 System.out.println("Following edge to target " + el.getAttribute("target"));
                 Node t = getNode(doc, "/mxGraphModel/root/Cell[@id='" + el.getAttribute("target") + "']");
-                processNode(t, doc);
+                generateFunctions(t, doc, functionsList);
             }
         } else {
             System.out.println("Node is not an element: ");
             System.out.println(n);
         }
+        return functionsList;
     }
 
     protected static AtomicFunction generateAtomicFunction(Element fnEl) {
         AtomicFunction f = new AtomicFunction();
-        f.setName(fnEl.getAttribute("name"));
+        f.setName(fnEl.getAttribute("label"));
         return f;
     }
 
-    protected static AtomicFunction generateIfThenElse(Element iteEl) {
+    protected static IfThenElse generateIfThenElse(Element iteEl) {
         IfThenElse ite = new IfThenElse();
-        Node thenNode = getNode(iteEl.getOwnerDocument(), "/mxGraphModel/root/Cell[@source='" + iteEl.getAttribute("id") + "'][@value='then']");
+        return ite;
+    }
 
-        return f;
+    protected static Element getDirectChild(Element parent, String tagName)
+    {
+        for(Node child = parent.getFirstChild(); child != null; child = child.getNextSibling())
+        {
+            if(child instanceof Element && tagName.equals(child.getNodeName())) return (Element) child;
+        }
+        return null;
     }
 
     protected static NodeList getNodes(Document doc, String xPathExpr) throws XPathException {
@@ -103,7 +126,6 @@ public class WorkflowConversionService {
         XPathExpression xPathExpression = xPath.compile(xPathExpr);
 
         return (Node) xPathExpression.evaluate(doc, XPathConstants.NODE);
-
     }
 
     protected static Document getDocument(String xml) throws Exception {

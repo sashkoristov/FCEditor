@@ -42,19 +42,23 @@ Additionally, one (or both) of the following features will be implemented:
 
 ### Requirements (Development)
 
-* Java (JDK 12)
+* Java (JDK >= 12)
 * Maven
 * Node v12
 
 **Install dependencies**  
-1. `mvn install`
-2. If using an IDE, reimport - e.g if using IntelliJ: right click on Project -> Maven -> Reimport
+`mvn install`  
+
+If using an IDE, reimport - e.g if using IntelliJ:  
+right click on Project -> Maven -> Reimport
 
 **Build and run**
-
 1. `mvn compile`
 2. `mvn package`
 3. `sh target/bin/webapp`
+
+If using an IDE, create a build configuration - e.g if using IntelliJ:  
+Run -> Edit Configurations -> Add a configuration and select ``launch.Main`` as main class.
 
 **Frontend**
 
