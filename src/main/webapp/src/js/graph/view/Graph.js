@@ -72,7 +72,7 @@ class Graph extends mxGraph {
         if (cell.type == cellDefs.fork.name || cell.type == cellDefs.join.name) {
             return '';
         }
-        return super.getName(cell);
+        return super.getLabel(cell);
     }
 
     /**
