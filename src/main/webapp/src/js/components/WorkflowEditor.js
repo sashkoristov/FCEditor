@@ -1,7 +1,7 @@
 /**
  * Workflow Editor Component
  *
- * @author Ben Walch, 2018-2019
+ * @author Ben Walch, 2019-2020
  */
 
 import axios from "axios";
@@ -9,6 +9,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import {
+    Row,
+    Col,
+    Card, CardHeader, CardBody, CardText, CardLink,
     ButtonGroup,
     Button,
     Modal,
@@ -55,6 +58,12 @@ import {cellStyle, edgeStyle} from '../graph/styles';
 
 import FuntionsContext, {FunctionsContextProvider} from '../context/FunctionsContext';
 
+import CellProperties from './editor/CellProperties';
+import FunctionProperties from './editor/FunctionProperties';
+import IfThenElseProperties from './editor/IfThenElseProperties';
+import SwitchProperties from './editor/SwitchProperties';
+import ParallelForProperties from './editor/ParallelForProperties';
+
 /**
  * Workflow Editor Component
  */
@@ -65,6 +74,7 @@ class WorkflowEditor extends React.Component {
 
         this.state = {
             graph: {},
+            selectedCell: null,
             workflow: {
                 name: 'Untitled'
             },
@@ -141,6 +151,15 @@ class WorkflowEditor extends React.Component {
             return terminal;
         };
 
+        // on select callback
+        graph.selectionCellsHandler.addListener(mxEvent.ADD, (sender, evt) => {
+            this._onCellSelectionChange();
+        });
+        graph.selectionCellsHandler.addListener(mxEvent.REMOVE, (sender, evt) => {
+            this._onCellSelectionChange();
+        });
+
+        // on connect callback
         graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
             var edge = evt.getProperty('cell');
 
@@ -286,6 +305,24 @@ class WorkflowEditor extends React.Component {
         );
     };
 
+    _onCellSelectionChange = () => {
+        const { graph } = this.state;
+        let selectedCells = graph.getSelectionCells();
+        if (selectedCells.length == 1) {
+            if (this.state.selectedCell != selectedCells[0]) {
+                this._onCellSelected(selectedCells[0]);
+            }
+        } else {
+            this._onCellSelected(null);
+        }
+    }
+
+    _onCellSelected = (cell) => {
+        this.setState({
+            selectedCell: cell
+        });
+    }
+
     _onCellConnected = (edge, source, target) => {
         const {graph} = this.state;
 
@@ -298,11 +335,9 @@ class WorkflowEditor extends React.Component {
             let style = graph.getCellStyle(edge);
             if (style[mxConstants.STYLE_SOURCE_PORT] == 'then') {
                 edge.setValue('then');
-                edge.setStyle(mxUtils.setStyle(edge.style, mxConstants.STYLE_STROKECOLOR, mxConstants.VALID_COLOR));
             }
             if (style[mxConstants.STYLE_SOURCE_PORT] == 'else') {
                 edge.setValue('else');
-                edge.setStyle(mxUtils.setStyle(edge.style, mxConstants.STYLE_STROKECOLOR, mxConstants.INVALID_COLOR));
             }
         }
     };
@@ -335,9 +370,9 @@ class WorkflowEditor extends React.Component {
         this._addCell('merge', cellDefs.merge);
     };
 
-    _addFn = (type) => {
+    _addFn = (fnObj) => {
         this._addCell(
-            new afcl.functions.AtomicFunction(type),
+            new afcl.functions.AtomicFunction(fnObj.name, fnObj.type),
             cellDefs.fn
         );
     };
@@ -486,51 +521,67 @@ class WorkflowEditor extends React.Component {
             </div>
         }
         return <>
-            <div className="animated fadeIn position-relative w-100 h-100">
-                <ButtonGroup className="graph-toolbar">
-                    <Button onClick={this._addStart}>Start</Button>
-                    <Button onClick={this._addEnd}>End</Button>
-                    <Button onClick={this._addMerge}>Merge</Button>
-                    <UncontrolledButtonDropdown>
-                        <DropdownToggle caret>
-                            Function
-                        </DropdownToggle>
-                        <DropdownMenu>
-                            <FuntionsContext.Consumer>
-                                {fc => (
-                                    fc.functions.map(fn => <DropdownItem
-                                        onClick={() => this._addFn(fn.name)}>{fn.name}</DropdownItem>)
-                                )}
-                            </FuntionsContext.Consumer>
-                        </DropdownMenu>
-                    </UncontrolledButtonDropdown>
-                    <Button onClick={this._addIfThenElse}>If-Then-Else</Button>
-                    <Button onClick={this._addSwitch}>Switch</Button>
-                    <UncontrolledButtonDropdown>
-                        <DropdownToggle caret>
-                            Compound Parallel
-                        </DropdownToggle>
-                        <DropdownMenu>
-                            <DropdownItem onClick={this._addParallel}>Parallel</DropdownItem>
-                            <DropdownItem onClick={this._addParallelFor}>ParallelFor</DropdownItem>
-                        </DropdownMenu>
-                    </UncontrolledButtonDropdown>
-                    <Button onClick={this._showXml}>Show XML</Button>
-                    <Button onClick={this._validateGraph}>Validate Graph</Button>
-                    <Button onClick={this._saveWorkflow}>Save</Button>
-                    <FileUpload onSelect={(file) => this._loadWorkflow(file)} />
-                </ButtonGroup>
-                <div className="graph-wrapper">
-                    <div id="graph" className="graph" ref="graphContainer"/>
-                </div>
-            </div>
+            <Row>
+                <Col xs="10">
+                    <div className="animated fadeIn position-relative w-100 h-100">
+                        <ButtonGroup className="graph-toolbar">
+                            <Button light onClick={this._addStart}>Start</Button>
+                            <Button onClick={this._addEnd}>End</Button>
+                            <Button onClick={this._addMerge}>Merge</Button>
+                            <UncontrolledButtonDropdown>
+                                <DropdownToggle caret>
+                                    Function
+                                </DropdownToggle>
+                                <DropdownMenu>
+                                    <FuntionsContext.Consumer>
+                                        {fc => (
+                                            fc.functions.map(fn => <DropdownItem
+                                                onClick={() => this._addFn(fn)}>{fn.name}</DropdownItem>)
+                                        )}
+                                    </FuntionsContext.Consumer>
+                                </DropdownMenu>
+                            </UncontrolledButtonDropdown>
+                            <Button onClick={this._addIfThenElse}>If-Then-Else</Button>
+                            <Button onClick={this._addSwitch}>Switch</Button>
+                            <UncontrolledButtonDropdown>
+                                <DropdownToggle caret>
+                                    Compound Parallel
+                                </DropdownToggle>
+                                <DropdownMenu>
+                                    <DropdownItem onClick={this._addParallel}>Parallel</DropdownItem>
+                                    <DropdownItem onClick={this._addParallelFor}>ParallelFor</DropdownItem>
+                                </DropdownMenu>
+                            </UncontrolledButtonDropdown>
+                            <Button onClick={this._showXml}>Show XML</Button>
+                            <Button onClick={this._validateGraph}>Validate</Button>
+                            <Button onClick={this._saveWorkflow}>Save</Button>
+                            <FileUpload onSelect={(file) => this._loadWorkflow(file)} />
+                        </ButtonGroup>
+                        <div className="graph-wrapper">
+                            <div id="graph" className="graph" ref="graphContainer"/>
+                        </div>
+                    </div>
+                </Col>
+                <Col xs="2">
+                    <Card>
+                        <CardHeader>Properties</CardHeader>
+                        <CardBody>
+                            {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction ? <FunctionProperties obj={this.state.selectedCell.value} /> : null}
+                            {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse ? <IfThenElseProperties obj={this.state.selectedCell.value} /> : null}
+                            {this.state.selectedCell?.value instanceof afcl.functions.Switch ? <SwitchProperties obj={this.state.selectedCell.value} /> : null}
+                            {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor ? <ParallelForProperties obj={this.state.selectedCell.value} /> : null}
+                            {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : 'No cell selected' }
+                        </CardBody>
+                    </Card>
+                </Col>
+            </Row>
             <Modal isOpen={this.state.isLoadWorkflowModalOpen}>
                 <ModalHeader toggle={this._toggleLoadWorkflowModal}>Modal Header</ModalHeader>
                 <ModalBody>
                     <WorkflowUploadForm />
                 </ModalBody>
             </Modal>
-            </>
+        </>
     }
 
 }
