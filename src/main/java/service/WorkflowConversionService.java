@@ -61,7 +61,7 @@ public class WorkflowConversionService {
                         generateFunctions(edge, doc, functionsList);
                         break;
                     case "IfThenElse":
-                        Element iteEl = (Element) getDirectChild(el,"IfThenElse");
+                        Element iteEl = getDirectChild(el,"IfThenElse");
                         IfThenElse ite = generateIfThenElse(iteEl);
                         Node thenNode = getNode(doc, "/mxGraphModel/root/Cell[@source='" + el.getAttribute("id") + "'][@value='then']");
                         ite.setThen(generateFunctions(thenNode, doc, null));
@@ -70,7 +70,7 @@ public class WorkflowConversionService {
                         functionsList.add(ite);
                         break;
                     case "Switch":
-                        Element switchEl = (Element) getDirectChild(el, "Switch");
+                        Element switchEl = getDirectChild(el, "Switch");
                         Switch sw = generateSwitch(switchEl);
                         // follow the edges
                         for (int i = 0; i < edges.getLength(); i++) {
@@ -79,7 +79,7 @@ public class WorkflowConversionService {
                         functionsList.add(sw);
                         break;
                     case "Parallel":
-                        Element parEl = (Element) getDirectChild(el, "Parallel");
+                        Element parEl = getDirectChild(el, "Parallel");
                         Parallel par = generateParallel(parEl);
                         List<Section> parallelSection = new ArrayList<>();
 
@@ -92,7 +92,7 @@ public class WorkflowConversionService {
                         functionsList.add(par);
                         break;
                     case "ParallelFor":
-                        Element parForEl = (Element) getDirectChild(el, "ParallelFor");
+                        Element parForEl = getDirectChild(el, "ParallelFor");
                         ParallelFor parFor = generateParallelFor(parForEl);
 
                         Node forkNode = getNode(doc, "/mxGraphModel/root/Cell[@parent='" + el.getAttribute("id") + "'][@type='fork']");
@@ -125,7 +125,8 @@ public class WorkflowConversionService {
 
     protected static AtomicFunction generateAtomicFunction(Element fnEl) {
         AtomicFunction f = new AtomicFunction();
-        f.setName(fnEl.getAttribute("label"));
+        f.setName(fnEl.getAttribute("name"));
+        f.setType(fnEl.getAttribute("type"));
         return f;
     }
 

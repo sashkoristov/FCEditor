@@ -71,7 +71,7 @@ class Main extends React.Component {
                     </AppSidebar>
                     <main className="main">
                         <AppBreadcrumb appRoutes={routes} router={router}/>
-                        <div className="main-content">
+                        <Container fluid>
                             <FunctionsContextProvider>
                                 <Switch>
                                     {routes.map((route, idx) => {
@@ -86,7 +86,7 @@ class Main extends React.Component {
                                     <Redirect from="/" to="/dashboard"/>
                                 </Switch>
                             </FunctionsContextProvider>
-                        </div>
+                        </Container>
                     </main>
                 </div>
                 <AppFooter>

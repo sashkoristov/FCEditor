@@ -70,7 +70,7 @@ module.exports = (env, argv) => {
         plugins: [
             new CopyPlugin([
                 { from: 'node_modules/mxgraph/javascript/src/css/*.css', to: 'mxgraph/css/', flatten: true },
-                { from: 'node_modules/mxgraph/javascript/src/images/*.gif', to: 'mxgraph/images/', flatten: true },
+                { from: 'node_modules/mxgraph/javascript/src/images/*', to: 'mxgraph/images/', flatten: true },
                 { from: 'node_modules/mxgraph/javascript/src/resources/*.txt', to: 'mxgraph/resources/', flatten: true },
             ])
         ]

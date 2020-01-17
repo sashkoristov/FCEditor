@@ -10,7 +10,7 @@ src/main/webapp/images
 node_modules
 
 target
-tomcat.8080
+tomcat.*
 
 doc/*.log
 doc/*.toc

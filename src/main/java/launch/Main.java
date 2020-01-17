@@ -13,12 +13,6 @@ import org.apache.catalina.Context;
 import org.apache.catalina.WebResourceSet;
 import org.apache.catalina.webresources.EmptyResourceSet;
 
-// import java.io.FileReader;
-
-// import javax.script.ScriptEngine;
-// import javax.script.ScriptEngineManager;
-// import javax.script.ScriptException;
-
 public class Main {
 
     public static void main(String[] args) throws Exception {
