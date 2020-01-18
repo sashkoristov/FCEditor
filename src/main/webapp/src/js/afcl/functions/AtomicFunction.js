@@ -6,8 +6,8 @@ class AtomicFunction extends BaseFunction {
         super(name);
 
         this.type = type;
-        this.dataIn = null;
-        this.dataOut = null;
+        this.dataIn = '';
+        this.dataOut = '';
     }
 
     getType() {
