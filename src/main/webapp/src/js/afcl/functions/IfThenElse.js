@@ -5,7 +5,7 @@ class IfThenElse extends BaseFunction {
     constructor(name) {
         super(name);
 
-        this.condition = null;
+        this.condition = '';
     }
 
     getCondition() {
