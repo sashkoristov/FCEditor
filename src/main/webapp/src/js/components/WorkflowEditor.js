@@ -14,6 +14,7 @@ import {
     Card, CardHeader, CardBody, CardText, CardLink,
     ButtonGroup,
     Button,
+    Badge,
     Modal,
     ModalHeader,
     ModalBody,
@@ -59,9 +60,10 @@ import {cellStyle, edgeStyle} from '../graph/styles';
 import FuntionsContext, {FunctionsContextProvider} from '../context/FunctionsContext';
 
 import CellProperties from './editor/CellProperties';
-import FunctionProperties from './editor/FunctionProperties';
+import AtomicFunctionProperties from './editor/AtomicFunctionProperties';
 import IfThenElseProperties from './editor/IfThenElseProperties';
 import SwitchProperties from './editor/SwitchProperties';
+import ParallelProperties from './editor/ParallelProperties';
 import ParallelForProperties from './editor/ParallelForProperties';
 
 /**
@@ -169,7 +171,7 @@ class WorkflowEditor extends React.Component {
         // sets the port image
         graph.connectionHandler.constraintHandler.pointImage = new mxImage(pointImg, 16, 16);
 
-        // gets the respecitve port image
+        // gets the respective port image
         graph.connectionHandler.constraintHandler.getImageForConstraint = (state, constraint, point) => {
             switch (constraint.id) {
                 case 'then':
@@ -443,7 +445,7 @@ class WorkflowEditor extends React.Component {
 
     _removeSelected = () => {
         const {graph} = this.state;
-        graph.isEnabled() && graph.removeCells();
+        graph.isEnabled() && graph.removeCells(graph.getSelectionCells());
     };
 
     _showXml = () => {
@@ -522,12 +524,11 @@ class WorkflowEditor extends React.Component {
         }
         return <>
             <Row>
-                <Col xs="10">
+                <Col xs="9">
                     <div className="animated fadeIn position-relative w-100 h-100">
                         <ButtonGroup className="graph-toolbar">
-                            <Button light onClick={this._addStart}>Start</Button>
+                            <Button light="true" onClick={this._addStart}>Start</Button>
                             <Button onClick={this._addEnd}>End</Button>
-                            <Button onClick={this._addMerge}>Merge</Button>
                             <UncontrolledButtonDropdown>
                                 <DropdownToggle caret>
                                     Function
@@ -536,13 +537,14 @@ class WorkflowEditor extends React.Component {
                                     <FuntionsContext.Consumer>
                                         {fc => (
                                             fc.functions.map(fn => <DropdownItem
-                                                onClick={() => this._addFn(fn)}>{fn.name}</DropdownItem>)
+                                                onClick={() => this._addFn(fn)}>{fn.name}<Badge>{fn.type}</Badge></DropdownItem>)
                                         )}
                                     </FuntionsContext.Consumer>
                                 </DropdownMenu>
                             </UncontrolledButtonDropdown>
                             <Button onClick={this._addIfThenElse}>If-Then-Else</Button>
                             <Button onClick={this._addSwitch}>Switch</Button>
+                            <Button onClick={this._addMerge}>Merge</Button>
                             <UncontrolledButtonDropdown>
                                 <DropdownToggle caret>
                                     Compound Parallel
@@ -562,13 +564,14 @@ class WorkflowEditor extends React.Component {
                         </div>
                     </div>
                 </Col>
-                <Col xs="2">
+                <Col xs="3">
                     <Card>
                         <CardHeader>Properties</CardHeader>
                         <CardBody>
-                            {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction ? <FunctionProperties obj={this.state.selectedCell.value} /> : null}
+                            {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction ? <AtomicFunctionProperties obj={this.state.selectedCell.value} /> : null}
                             {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse ? <IfThenElseProperties obj={this.state.selectedCell.value} /> : null}
                             {this.state.selectedCell?.value instanceof afcl.functions.Switch ? <SwitchProperties obj={this.state.selectedCell.value} /> : null}
+                            {this.state.selectedCell?.value instanceof afcl.functions.Parallel ? <ParallelProperties obj={this.state.selectedCell.value} /> : null}
                             {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor ? <ParallelForProperties obj={this.state.selectedCell.value} /> : null}
                             {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : 'No cell selected' }
                         </CardBody>

@@ -1,10 +1,31 @@
 import React from 'react';
 
-import { Row, Col, Form, FormGroup, Label, Input, Button, Table, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap';
+import { Row, Col, Form, FormGroup, Label, Input, Button, Table, Badge, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { types } from '../afcl';
+
 import FunctionsContext from '../context/FunctionsContext';
+
+const PROVIDERS = {
+    aws: {
+        name: 'AWS Lambda',
+        icon: 'cib-amazon-aws'
+    },
+    google: {
+        name: 'Google Cloud',
+        icon: 'cib-google-cloud'
+    },
+    azure: {
+        name: 'Microsoft Azure',
+        icon: 'cib-microsoft'
+    },
+    ibm: {
+        name: 'IBM Cloud',
+        icon: 'cib-ibm'
+    }
+};
 
 const INITIAL_STATE = {
     newFn: {
@@ -14,7 +35,7 @@ const INITIAL_STATE = {
         url: ''
     },
     isAddFunctionModalOpen: false
-}
+};
 
 class Functions extends React.Component {
 
@@ -58,10 +79,8 @@ class Functions extends React.Component {
                                             <Col xs="4">
                                                 <Label>Type</Label>
                                                 <Input value={this.state.newFn.type} type="select" onChange={e => this.setState({newFn: {...this.state.newFn, type: e.target.value}})}>
-                                                    <option></option>
-                                                    <option value="void">None</option>
-                                                    <option value="string">String</option>
-                                                    <option value="number">Number</option>
+                                                    <option value="">None</option>
+                                                    {Object.keys(types).map(type => <option value={type}>{types[type]}</option> )}
                                                 </Input>
                                             </Col>
                                         </Row>
@@ -72,11 +91,7 @@ class Functions extends React.Component {
                                                 <Label>Provider</Label>
                                                 <Input value={this.state.newFn.provider} type="select" onChange={e => this.setState({newFn: {...this.state.newFn, provider: e.target.value}})}>
                                                     <option></option>
-                                                    <option value="AWS">AWS Lamda</option>
-                                                    <option value="IBM">IBM Cloud</option>
-                                                    <option value="AZURE">Microsoft Azure</option>
-                                                    <option value="GOOGLE">Google Cloud</option>
-                                                    <option value="WHISK">Apache OpenWhisk</option>
+                                                    {Object.keys(PROVIDERS).map(providerId => <option value={providerId}>{PROVIDERS[providerId].name}</option> )}
                                                 </Input>
                                             </Col>
                                             <Col xs="8">
@@ -93,7 +108,7 @@ class Functions extends React.Component {
                             </ModalFooter>
                         </Modal>
                         <div className="mb-4">
-                            <Button onClick={this._toggleAddFunctionModal}>Add Fn</Button>
+                            <Button onClick={this._toggleAddFunctionModal}><span className="cil-plus"></span> Add Function</Button>
                         </div>
                         <div>
                             {fc.isLoading ? "Loading" : null}
@@ -112,10 +127,14 @@ class Functions extends React.Component {
                                 {fc.functions.map(fn => <tr>
                                         <td>{fn.id}</td>
                                         <td>{fn.name}</td>
-                                        <td>{fn.type}</td>
-                                        <td>{fn.provider}</td>
+                                        <td><Badge color="secondary">{fn.type}</Badge></td>
+                                        <td>
+                                            <a title={PROVIDERS[fn.provider]?.name} className="text-lg">
+                                                <span className={PROVIDERS[fn.provider]?.icon + " font-2xl"}></span>
+                                            </a>
+                                        </td>
                                         <td>{fn.url}</td>
-                                        <td><Button outline color="secondary"
+                                        <td><Button outline color="dark"
                                                     onClick={() => confirm('Really delete ?') ? fc.remove(fn.id) : null}>
                                             <FontAwesomeIcon icon={faTrash} />
                                         </Button>

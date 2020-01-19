@@ -5,7 +5,11 @@ class Switch extends BaseFunction {
     constructor(name) {
         super(name);
 
-        this.dataEval = null;
+        this.dataEval = {
+            name: '',
+            type: '',
+            source: ''
+        };
     }
 
     getDataEval() {

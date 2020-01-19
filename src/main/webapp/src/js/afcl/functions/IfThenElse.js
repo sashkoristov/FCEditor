@@ -5,7 +5,10 @@ class IfThenElse extends BaseFunction {
     constructor(name) {
         super(name);
 
-        this.condition = '';
+        this.condition = {
+            combinedWith: '',
+            conditions: []
+        };
     }
 
     getCondition() {

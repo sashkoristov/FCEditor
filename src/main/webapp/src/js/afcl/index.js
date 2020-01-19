@@ -16,4 +16,12 @@ let functions = {
     ParallelFor,
 };
 
-export { functions };
+let types = {
+    void: 'None',
+    bool: 'Boolean',
+    number: 'Number',
+    string: 'String',
+    collection: 'Collection'
+};
+
+export { functions, types };
