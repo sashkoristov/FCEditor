@@ -61,11 +61,15 @@ class IfThenElseProperties extends React.Component {
                 <Form>
                     <div className="font-weight-bold text-muted text-uppercase small mb-1">Condition</div>
                     <FormGroup>
-                        <Input size="sm" placeholder="Combined with" value={this.state.condition.combinedWith} onChange={e => this.setState({condition: {...this.state.condition, combinedWith: e.target.value}})} />
+                        <Input type="select" size="sm" value={this.state.condition.combinedWith} onChange={e => this.setState({condition: {...this.state.condition, combinedWith: e.target.value}})}>
+                            <option value="">Combined with</option>
+                            <option value="or">Or</option>
+                            <option value="and">And</option>
+                        </Input>
                     </FormGroup>
                     <div className="font-weight-bold text-muted text-uppercase small mb-1">Conditions</div>
                     {this.state.condition.conditions.map((condition, index) => <>
-                            <div className="text-right"><a onClick={() => this._removeConditionItem(index)}><span className="cil-x"></span></a></div>
+                            <div className="text-right"><a class="text-danger p-1" onClick={() => this._removeConditionItem(index)}><span className="cil-x"></span></a></div>
                             <div className="mb-1">
                                 <Input size="sm" placeholder="Data 1" value={condition.data1} onChange={e => this._handleConditionItemChange(index, 'data1', e.target.value)} />
                             </div>
@@ -73,7 +77,14 @@ class IfThenElseProperties extends React.Component {
                                 <Input size="sm" placeholder="Data 2" value={condition.data2} onChange={e => this._handleConditionItemChange(index, 'data2', e.target.value)} />
                             </div>
                             <div className="mb-1">
-                                <Input size="sm" placeholder="Operator" value={condition.operator} onChange={e => this._handleConditionItemChange(index, 'operator', e.target.value)} />
+                                <Input type="select" size="sm" value={condition.operator} onChange={e => this._handleConditionItemChange(index, 'operator', e.target.value)}>
+                                    <option value="">Operator</option>
+                                    <option value="<">less than</option>
+                                    <option value="<=">less than or equal</option>
+                                    <option value="=">equal</option>
+                                    <option value=">=">greater than or equal</option>
+                                    <option value=">">greater than</option>
+                                </Input>
                             </div>
                             <FormGroup check inline>
                                 <Label check>

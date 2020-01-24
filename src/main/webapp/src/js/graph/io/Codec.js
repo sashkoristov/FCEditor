@@ -1,7 +1,7 @@
 /**
  * custom implementation of class 'mxCodec'
  *
- * @author Ben Walch, 2018-2019
+ * @author Ben Walch, 2019-2020
  */
 import mxgraph from '../../mxgraph';
 
@@ -21,7 +21,7 @@ class Codec extends mxCodec {
 
             try
             {
-                ctor = afcl.functions[node.nodeName];
+                ctor = afcl.functions[node.nodeName] ?? afcl.objects[node.nodeName];
             }
             catch (err)
             {

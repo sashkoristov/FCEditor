@@ -4,24 +4,40 @@ class Compound extends BaseFunction {
 
     constructor(name = '') {
         super(name);
-        this.dataIn = '';
-        this.dataOut = '';
+        this.dataIns = [];
+        this.dataOuts = [];
     }
 
-    getDataIn() {
-        return this.dataIn;
+    getDataIns() {
+        return this.dataIns;
     }
 
-    setDataIn(dataIn) {
-        this.dataIn = dataIn;
+    setDataIns(dataIns) {
+        this.dataIns = dataIns;
     }
 
-    getDataOut() {
-        return this.dataOut;
+    addDataIn(dataIn) {
+        this.dataIns.push(dataIn);
     }
 
-    setDataOut(dataOut) {
-        this.dataOut = dataOut;
+    removeDataIn(name) {
+        this.dataIns = this.dataIns.filter(d => d.name != name);
+    }
+
+    getDataOuts() {
+        return this.dataOuts;
+    }
+
+    setDataOuts(dataOuts) {
+        this.dataOuts = dataOuts;
+    }
+
+    addDataOut(dataOut) {
+        this.dataOuts.push(dataOut);
+    }
+
+    removeDataOut(name) {
+        this.dataOuts = this.dataOuts.filter(d => d.name != name);
     }
 
 }

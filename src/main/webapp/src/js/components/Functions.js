@@ -30,7 +30,7 @@ const PROVIDERS = {
 const INITIAL_STATE = {
     newFn: {
         name: '',
-        type: '',
+        type: types.void,
         provider: '',
         url: ''
     },
@@ -79,7 +79,6 @@ class Functions extends React.Component {
                                             <Col xs="4">
                                                 <Label>Type</Label>
                                                 <Input value={this.state.newFn.type} type="select" onChange={e => this.setState({newFn: {...this.state.newFn, type: e.target.value}})}>
-                                                    <option value="">None</option>
                                                     {Object.keys(types).map(type => <option value={type}>{types[type]}</option> )}
                                                 </Input>
                                             </Col>
@@ -134,7 +133,7 @@ class Functions extends React.Component {
                                             </a>
                                         </td>
                                         <td>{fn.url}</td>
-                                        <td><Button outline color="dark"
+                                        <td><Button color="dark"
                                                     onClick={() => confirm('Really delete ?') ? fc.remove(fn.id) : null}>
                                             <FontAwesomeIcon icon={faTrash} />
                                         </Button>

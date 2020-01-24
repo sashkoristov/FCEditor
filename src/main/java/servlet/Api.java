@@ -89,6 +89,7 @@ public class Api extends HttpServlet {
             if (pathInfo.contains("/workflow/save")) {
 
                 afcl.Workflow w = WorkflowConversionService.fromXml(wDto.body);
+                w.setName(wDto.name);
 
                 Utils.writeYamlNoValidation(w, wDto.name + ".yaml");
 

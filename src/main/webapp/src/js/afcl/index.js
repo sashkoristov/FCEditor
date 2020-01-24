@@ -16,6 +16,14 @@ let functions = {
     ParallelFor,
 };
 
+import DataIns from './objects/DataIns';
+import DataOuts from './objects/DataOuts';
+
+let objects = {
+    DataIns,
+    DataOuts,
+};
+
 let types = {
     void: 'None',
     bool: 'Boolean',
@@ -24,4 +32,4 @@ let types = {
     collection: 'Collection'
 };
 
-export { functions, types };
+export { functions, objects, types };

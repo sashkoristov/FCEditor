@@ -9,6 +9,9 @@ import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 
 import afcl.functions.*;
+import afcl.functions.objects.DataIns;
+import afcl.functions.objects.DataOuts;
+import afcl.functions.objects.DataOutsAtomic;
 import afcl.functions.objects.Section;
 import org.xml.sax.InputSource;
 import org.w3c.dom.*;
@@ -127,7 +130,47 @@ public class WorkflowConversionService {
         AtomicFunction f = new AtomicFunction();
         f.setName(fnEl.getAttribute("name"));
         f.setType(fnEl.getAttribute("type"));
+        for (Node propNode = fnEl.getFirstChild(); propNode != null; propNode = propNode.getNextSibling()) {
+            if (propNode.getNodeName().equals("Array") && propNode instanceof Element) {
+                Element propEl = (Element) propNode;
+                switch (propEl.getAttribute("as")) {
+                    case "dataIns":
+                        List<DataIns> dataInsList = new ArrayList<>();
+                        for (Node dataInsNode = propNode.getFirstChild(); dataInsNode != null; dataInsNode = dataInsNode.getNextSibling()) {
+                            if (dataInsNode.getNodeName().equals("DataIns") && dataInsNode instanceof Element) {
+                                dataInsList.add(generateDataIns((Element)dataInsNode));
+                            }
+                        }
+                        f.setDataIns(dataInsList);
+                        break;
+                    case "dataOuts":
+                        List<DataOutsAtomic> dataOutsList = new ArrayList<>();
+                        for (Node dataOutsNode = propNode.getFirstChild(); dataOutsNode != null; dataOutsNode = dataOutsNode.getNextSibling()) {
+                            if (dataOutsNode.getNodeName().equals("DataOuts") && dataOutsNode instanceof Element) {
+                                dataOutsList.add(generateDataOutsAtomic((Element)dataOutsNode));
+                            }
+                        }
+                        f.setDataOuts(dataOutsList);
+                        break;
+                }
+            }
+        }
         return f;
+    }
+
+    protected static DataIns generateDataIns(Element dataInsEl) {
+        DataIns dataIns = new DataIns();
+        dataIns.setName(dataInsEl.getAttribute("name"));
+        dataIns.setType(dataInsEl.getAttribute("type"));
+        dataIns.setSource(dataInsEl.getAttribute("source"));
+        return dataIns;
+    }
+
+    protected static DataOutsAtomic generateDataOutsAtomic(Element dataOutsEl) {
+        DataOutsAtomic dataOuts = new DataOutsAtomic();
+        dataOuts.setName(dataOutsEl.getAttribute("name"));
+        dataOuts.setType(dataOutsEl.getAttribute("type"));
+        return dataOuts;
     }
 
     protected static IfThenElse generateIfThenElse(Element iteEl) {
