@@ -8,6 +8,7 @@ import React from 'react';
 import { Container, Row, Col, Card, CardTitle, CardBody, Form, FormGroup, Label, Input, Button, Badge } from 'reactstrap';
 
 import DataInsProperties from './DataInsProperties';
+import DataOutsProperties from './DataOutsProperties';
 
 import * as afcl from '../../afcl';
 
@@ -62,7 +63,7 @@ class FunctionProperties extends React.Component {
                     <div className="font-weight-bold text-muted mb-1">Input data</div>
                     {this.state.dataIns.map((dataIn, index) => <>
                             <div className="text-right"><Button size="sm" color="danger" onClick={() => this._removeDataItem('dataIns', index)}><span className="cil-minus"></span></Button></div>
-                            <DataInsProperties obj={dataIn} key={"AtomicFn-DataIn-" + index} index={index} changeHandler={this._handleDataItemChange} />
+                            <DataInsProperties obj={dataIn} index={index} changeHandler={this._handleDataItemChange} key={"AtomicFunction-DataIns-" + index} />
                             <hr />
                         </>
                     )}
@@ -71,19 +72,8 @@ class FunctionProperties extends React.Component {
                 <Form>
                     <div className="font-weight-bold text-muted mb-1">Output Data</div>
                     {this.state.dataOuts.map((dataOut, index) => <>
-                            <div className="text-right"><a className="text-danger p-1" onClick={() => this._removeDataItem('dataOuts', index)}><span className="cil-x"></span></a></div>
-                            <div className="mb-1">
-                                <Input size="sm" placeholder="name" value={dataOut.name} onChange={e => this._handleDataItemChange('dataOuts', index, 'name', e.target.value)} />
-                            </div>
-                            <div className="mb-1">
-                                <Input size="sm" type="select" placeholder="type" value={dataOut.type} onChange={e => this._handleDataItemChange('dataOuts', index, 'type', e.target.value)}>
-                                    <option></option>
-                                    {Object.keys(afcl.types).map(t => <option value={t}>{afcl.types[t]}</option>)}
-                                </Input>
-                            </div>
-                            <div className="mb-1">
-                                <Input size="sm" placeholder="source" value={dataOut.source} onChange={e => this._handleDataItemChange('dataOuts', index, 'source', e.target.value)} />
-                            </div>
+                            <div className="text-right"><Button size="sm" color="danger" onClick={() => this._removeDataItem('dataOuts', index)}><span className="cil-minus"></span></Button></div>
+                            <DataOutsProperties obj={dataOut} index={index} changeHandler={this._handleDataItemChange} key={"AtomicFunction-DataOuts-" + index} />
                             <hr />
                         </>
                     )}

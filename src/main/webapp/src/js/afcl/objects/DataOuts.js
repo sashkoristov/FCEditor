@@ -1,32 +1,17 @@
-class DataOuts {
+import DataItem from './DataItem';
+
+class DataOuts extends DataItem {
     constructor() {
-        this.name = '';
-        this.type = '';
-        this.source = '';
+        super();
+        this.saveTo = '';
     }
 
-    getName() {
-        return this.name;
+    getSaveTo() {
+        return this.saveTo;
     }
 
-    setName(name) {
-        this.name = name;
-    }
-
-    getType() {
-        return this.type;
-    }
-
-    setType(type) {
-        this.type = type;
-    }
-
-    getSource() {
-        return this.source;
-    }
-
-    setSource(source) {
-        this.source = source;
+    setSaveTo(saveTo) {
+        this.saveTo = saveTo;
     }
 
 }
