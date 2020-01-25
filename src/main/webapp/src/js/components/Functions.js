@@ -4,8 +4,6 @@ import { Row, Col, Form, FormGroup, Label, Input, Button, Table, Badge, Modal, M
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { types } from '../afcl';
-
 import FunctionsContext from '../context/FunctionsContext';
 
 const PROVIDERS = {
@@ -30,7 +28,7 @@ const PROVIDERS = {
 const INITIAL_STATE = {
     newFn: {
         name: '',
-        type: types.void,
+        type: '',
         provider: '',
         url: ''
     },
@@ -78,8 +76,7 @@ class Functions extends React.Component {
                                             </Col>
                                             <Col xs="4">
                                                 <Label>Type</Label>
-                                                <Input value={this.state.newFn.type} type="select" onChange={e => this.setState({newFn: {...this.state.newFn, type: e.target.value}})}>
-                                                    {Object.keys(types).map(type => <option value={type}>{types[type]}</option> )}
+                                                <Input value={this.state.newFn.type} onChange={e => this.setState({newFn: {...this.state.newFn, type: e.target.value}})}>
                                                 </Input>
                                             </Col>
                                         </Row>

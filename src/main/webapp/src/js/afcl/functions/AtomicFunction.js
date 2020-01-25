@@ -30,8 +30,8 @@ class AtomicFunction extends BaseFunction {
         this.dataIns.push(dataIn);
     }
 
-    removeDataIn(name) {
-        this.dataIns = this.dataIns.filter(d => d.name != name);
+    removeDataIn(index) {
+        delete this.dataIns[index];
     }
 
     getDataOuts() {
@@ -46,8 +46,8 @@ class AtomicFunction extends BaseFunction {
         this.dataOuts.push(dataOut);
     }
 
-    removeDataOut(name) {
-        this.dataOuts = this.dataOuts.filter(d => d.name != name);
+    removeDataOut(index) {
+        delete this.dataOuts[index];
     }
 
 }

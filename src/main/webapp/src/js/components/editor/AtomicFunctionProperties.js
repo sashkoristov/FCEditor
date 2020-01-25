@@ -5,7 +5,9 @@
  */
 
 import React from 'react';
-import { Container, Row, Col, Card, CardHeader, CardBody, Form, FormGroup, Label, Input, Button, Badge } from 'reactstrap';
+import { Container, Row, Col, Card, CardTitle, CardBody, Form, FormGroup, Label, Input, Button, Badge } from 'reactstrap';
+
+import DataInsProperties from './DataInsProperties';
 
 import * as afcl from '../../afcl';
 
@@ -51,36 +53,25 @@ class FunctionProperties extends React.Component {
 
     render() {
         return <>
-                <div className="font-weight-bold mb-1">AtomicFunction</div>
+                <CardTitle className="h5">AtomicFunction</CardTitle>
                 <div className="mb-3">
                     <div>Name: {this.props.obj.getName()}</div>
                     <div>Type: <Badge>{this.props.obj.getType()}</Badge></div>
                 </div>
                 <Form>
-                    <div className="font-weight-bold text-muted text-uppercase small mb-1">Input data</div>
+                    <div className="font-weight-bold text-muted mb-1">Input data</div>
                     {this.state.dataIns.map((dataIn, index) => <>
-                            <div className="text-right"><a class="text-danger p-1" onClick={() => this._removeDataItem('dataIns', index)}><span className="cil-x"></span></a></div>
-                            <div className="mb-1">
-                                <Input size="sm" placeholder="name" value={dataIn.name} onChange={e => this._handleDataItemChange('dataIns', index, 'name', e.target.value)} />
-                            </div>
-                            <div className="mb-1">
-                                <Input size="sm" type="select" placeholder="type" value={dataIn.type} onChange={e => this._handleDataItemChange('dataIns', index, 'type', e.target.value)}>
-                                    <option></option>
-                                    {Object.keys(afcl.types).map(t => <option value={t}>{afcl.types[t]}</option>)}
-                                </Input>
-                            </div>
-                            <div className="mb-1">
-                                <Input size="sm" placeholder="source" value={dataIn.source} onChange={e => this._handleDataItemChange('dataIns', index, 'source', e.target.value)} />
-                            </div>
+                            <div className="text-right"><Button size="sm" color="danger" onClick={() => this._removeDataItem('dataIns', index)}><span className="cil-minus"></span></Button></div>
+                            <DataInsProperties obj={dataIn} key={"AtomicFn-DataIn-" + index} index={index} changeHandler={this._handleDataItemChange} />
                             <hr />
                         </>
                     )}
-                    <Button onClick={() => this._addDataItem('dataIns')} size="sm"><span className="cil-plus"></span></Button>
+                    <Button color="primary" onClick={() => this._addDataItem('dataIns')} size="sm"><span className="cil-plus"></span></Button>
                 </Form>
                 <Form>
-                    <div className="font-weight-bold text-muted text-uppercase small mb-1">Output Data</div>
+                    <div className="font-weight-bold text-muted mb-1">Output Data</div>
                     {this.state.dataOuts.map((dataOut, index) => <>
-                            <div className="text-right"><a class="text-danger p-1" onClick={() => this._removeDataItem('dataOuts', index)}><span className="cil-x"></span></a></div>
+                            <div className="text-right"><a className="text-danger p-1" onClick={() => this._removeDataItem('dataOuts', index)}><span className="cil-x"></span></a></div>
                             <div className="mb-1">
                                 <Input size="sm" placeholder="name" value={dataOut.name} onChange={e => this._handleDataItemChange('dataOuts', index, 'name', e.target.value)} />
                             </div>
@@ -96,7 +87,7 @@ class FunctionProperties extends React.Component {
                             <hr />
                         </>
                     )}
-                    <Button onClick={() => this._addDataItem('dataOuts')} size="sm"><span className="cil-plus"></span></Button>
+                    <Button color="primary" onClick={() => this._addDataItem('dataOuts')} size="sm"><span className="cil-plus"></span></Button>
                 </Form>
             </>
     }
