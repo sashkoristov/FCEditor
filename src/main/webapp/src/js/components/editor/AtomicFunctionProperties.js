@@ -62,8 +62,7 @@ class FunctionProperties extends React.Component {
                 <Form>
                     <div className="font-weight-bold text-muted mb-1">Input data</div>
                     {this.state.dataIns.map((dataIn, index) => <>
-                            <div className="text-right"><Button size="sm" color="danger" onClick={() => this._removeDataItem('dataIns', index)}><span className="cil-minus"></span></Button></div>
-                            <DataInsProperties obj={dataIn} index={index} changeHandler={this._handleDataItemChange} key={"AtomicFunction-DataIns-" + index} />
+                            <DataInsProperties obj={dataIn} index={index} changeHandler={this._handleDataItemChange} removeHandler={this._removeDataItem} key={"AtomicFunction-DataIns-" + index} />
                             <hr />
                         </>
                     )}
@@ -72,8 +71,7 @@ class FunctionProperties extends React.Component {
                 <Form>
                     <div className="font-weight-bold text-muted mb-1">Output Data</div>
                     {this.state.dataOuts.map((dataOut, index) => <>
-                            <div className="text-right"><Button size="sm" color="danger" onClick={() => this._removeDataItem('dataOuts', index)}><span className="cil-minus"></span></Button></div>
-                            <DataOutsProperties obj={dataOut} index={index} changeHandler={this._handleDataItemChange} key={"AtomicFunction-DataOuts-" + index} />
+                            <DataOutsProperties obj={dataOut} index={index} changeHandler={this._handleDataItemChange} removeHandler={this._removeDataItem} key={"AtomicFunction-DataOuts-" + index} />
                             <hr />
                         </>
                     )}

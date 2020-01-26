@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col, Card, CardTitle, InputGroup, InputGroupAddon, InputGroupText, Input, Button } from 'reactstrap';
+import { Row, Col, Card, CardTitle, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Label, Input, Button } from 'reactstrap';
 
 import * as afcl from '../../afcl';
 
@@ -63,6 +63,18 @@ class DataInsProperties extends React.Component {
 
     render() {
         return <>
+            <Row className="mb-1 no-gutters">
+                <Col>
+                    <FormGroup check inline>
+                        <Label check className="small mt-2">
+                            <Input type="checkbox" checked={this.props.obj.getPassing()} onChange={e => this.props.changeHandler('dataIns', this.props.index, 'passing', !this.props.obj.getPassing())} /> Passing
+                        </Label>
+                    </FormGroup>
+                </Col>
+                <Col>
+                    <div className="text-right"><Button size="sm" color="danger" onClick={() => this.props.removeHandler('dataIns', this.props.index)}><span className="cil-minus"></span></Button></div>
+                </Col>
+            </Row>
             <Row className="mb-1 no-gutters">
                 <Col className="pr-1">
                     <Input size="sm" placeholder="name" value={this.props.obj.getName()} onChange={e => this.props.changeHandler('dataIns', this.props.index, 'name', e.target.value)} />
