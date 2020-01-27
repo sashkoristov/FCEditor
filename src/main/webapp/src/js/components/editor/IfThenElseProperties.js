@@ -5,7 +5,9 @@
  */
 
 import React from 'react';
-import { Container, Row, Col, Form, FormGroup, Label, Input, Button } from 'reactstrap';
+import { Container, Row, Col, Card, CardTitle, Form, FormGroup, Label, Input, Button } from 'reactstrap';
+
+import * as afcl from '../../afcl';
 
 class IfThenElseProperties extends React.Component {
 
@@ -26,75 +28,73 @@ class IfThenElseProperties extends React.Component {
         this.props.obj.setCondition(this.state.condition);
     }
 
+    _handleConditionPropertyChange = (prop, newVal) => {
+        this.props.obj.condition[prop] = newVal;
+        this.setState(this.props.obj);
+    }
+
     _addConditionItem = () => {
-        let tmpState = {...this.state};
-        tmpState.condition.conditions.push({
-            data1: '',
-            data2: '',
-            operator: '',
-            negation: false
-        });
-        this.setState(tmpState);
+        this.props.obj.condition.addCondition(new afcl.objects.Condition());
+        this.setState(this.props.obj);
     }
 
     _removeConditionItem = (index) => {
-        let tmpState = {...this.state};
-        tmpState.condition.conditions.splice(index, 1);
-        this.setState(tmpState);
+        this.props.obj.condition.removeCondition(index);
+        this.setState(this.props.obj);
     }
 
     _handleConditionItemChange = (index, prop, newVal) => {
-        let tmpState = {...this.state};
-        tmpState.condition.conditions[index][prop] = newVal;
-        this.setState(tmpState);
-    }
-
-    _toggleConditionItemValue = (index, prop) => {
-        let tmpState = {...this.state};
-        tmpState.condition.conditions[index][prop] = !tmpState.condition.conditions[index][prop];
-        this.setState(tmpState);
+        this.props.obj.condition.conditions[index][prop] = newVal;
+        this.setState(this.props.obj);
     }
 
     render() {
         return <>
-                <div className="font-weight-bold mb-1">IfThenElse</div>
+                <CardTitle className="h5">IfThenElse</CardTitle>
                 <Form>
-                    <div className="font-weight-bold text-muted text-uppercase small mb-1">Condition</div>
+                    <div className="font-weight-bold text-muted mb-2">Condition</div>
                     <FormGroup>
-                        <Input type="select" size="sm" value={this.state.condition.combinedWith} onChange={e => this.setState({condition: {...this.state.condition, combinedWith: e.target.value}})}>
+                        <Input type="select" size="sm" value={this.state.condition.getCombinedWith()} onChange={e => this._handleConditionPropertyChange('combinedWith', e.target.value)}>
                             <option value="">Combined with</option>
                             <option value="or">Or</option>
                             <option value="and">And</option>
                         </Input>
                     </FormGroup>
-                    <div className="font-weight-bold text-muted text-uppercase small mb-1">Conditions</div>
-                    {this.state.condition.conditions.map((condition, index) => <>
-                            <div className="text-right"><a class="text-danger p-1" onClick={() => this._removeConditionItem(index)}><span className="cil-x"></span></a></div>
-                            <div className="mb-1">
-                                <Input size="sm" placeholder="Data 1" value={condition.data1} onChange={e => this._handleConditionItemChange(index, 'data1', e.target.value)} />
-                            </div>
-                            <div className="mb-1">
-                                <Input size="sm" placeholder="Data 2" value={condition.data2} onChange={e => this._handleConditionItemChange(index, 'data2', e.target.value)} />
-                            </div>
-                            <div className="mb-1">
-                                <Input type="select" size="sm" value={condition.operator} onChange={e => this._handleConditionItemChange(index, 'operator', e.target.value)}>
-                                    <option value="">Operator</option>
-                                    <option value="<">less than</option>
-                                    <option value="<=">less than or equal</option>
-                                    <option value="=">equal</option>
-                                    <option value=">=">greater than or equal</option>
-                                    <option value=">">greater than</option>
-                                </Input>
-                            </div>
-                            <FormGroup check inline>
-                                <Label check>
-                                    <Input type="checkbox" checked={condition.negation} onChange={e => this._toggleConditionItemValue(index, 'negation')} /> Negation
-                                </Label>
-                            </FormGroup>
-                            <hr/>
-                        </>
-                    )}
-                    <Button onClick={this._addConditionItem} size="sm"><span className="cil-plus"></span></Button>
+                    <Card className="my-2 p-2">
+                        <CardTitle className="font-weight-bold text-muted text-uppercase small mb-2">Conditions</CardTitle>
+                        {this.state.condition.getConditions().map((condition, index) => <>
+                                <div className="text-right"><Button color="danger" size="sm" onClick={() => this._removeConditionItem(index)}><span className="cil-minus"></span></Button></div>
+                                <div className="mb-1">
+                                    <Input size="sm" placeholder="data 1" value={condition.getData1()} onChange={e => this._handleConditionItemChange(index, 'data1', e.target.value)} />
+                                </div>
+                                <div className="mb-1">
+                                    <Input size="sm" placeholder="data 2" value={condition.getData2()} onChange={e => this._handleConditionItemChange(index, 'data2', e.target.value)} />
+                                </div>
+                                <div className="mb-1">
+                                    <Input type="select" size="sm" value={condition.getOperator()} onChange={e => this._handleConditionItemChange(index, 'operator', e.target.value)}>
+                                        <option value="">operator</option>
+                                        <option value="<">less than</option>
+                                        <option value="<=">less than or equal</option>
+                                        <option value="=">equal</option>
+                                        <option value=">=">greater than or equal</option>
+                                        <option value=">">greater than</option>
+                                        <option value="contains">contains</option>
+                                        <option value="startsWith">starts with</option>
+                                        <option value="endsWith">ends with</option>
+                                    </Input>
+                                </div>
+                                <FormGroup check inline>
+                                    <Label check className="small mt-2">
+                                        <Input type="checkbox" checked={condition.getNegation()} onChange={e => this._handleConditionItemChange(index, 'negation', !condition.getNegation())} /> Negation
+                                    </Label>
+                                </FormGroup>
+                                <hr/>
+                            </>
+                        )}
+                        <div>
+                            <Button color="primary" onClick={this._addConditionItem} size="sm"><span className="cil-plus"></span></Button>
+                        </div>
+                    </Card>
                 </Form>
             </>
     }

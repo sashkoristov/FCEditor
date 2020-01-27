@@ -1,15 +1,12 @@
 import BaseFunction from "./BaseFunction";
+import DataEval from "../objects/DataEval";
 
 class Switch extends BaseFunction {
 
     constructor(name) {
         super(name);
 
-        this.dataEval = {
-            name: '',
-            type: '',
-            source: ''
-        };
+        this.dataEval = new DataEval();
     }
 
     getDataEval() {

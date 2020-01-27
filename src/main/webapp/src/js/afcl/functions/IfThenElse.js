@@ -1,14 +1,12 @@
-import BaseFunction from "./BaseFunction";
+import BaseFunction from './BaseFunction';
+import CompositeCondition from '../objects/CompositeCondition';
 
 class IfThenElse extends BaseFunction {
 
     constructor(name) {
         super(name);
 
-        this.condition = {
-            combinedWith: '',
-            conditions: []
-        };
+        this.condition = new CompositeCondition();
     }
 
     getCondition() {

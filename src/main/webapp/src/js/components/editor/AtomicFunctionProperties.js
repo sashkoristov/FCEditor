@@ -34,22 +34,19 @@ class FunctionProperties extends React.Component {
     }
 
     _handleDataItemChange = (type, index, prop, newVal) => {
-        let tmpState = {...this.state};
-        tmpState[type][index][prop] = newVal;
-        this.setState(tmpState);
+        this.props.obj[type][index][prop] = newVal;
+        this.setState(this.props.obj);
     };
 
     _addDataItem = (type) => {
-        let tmpState = {...this.state};
         let className = type.charAt(0).toUpperCase() + type.slice(1);
-        tmpState[type].push(new afcl.objects[className]());
-        this.setState(tmpState);
+        this.props.obj[type].push(new afcl.objects[className]());
+        this.setState(this.props.obj);
     };
 
     _removeDataItem = (type, index) => {
-        let tmpState = {...this.state};
-        tmpState[type].splice(index,1);
-        this.setState(tmpState);
+        this.props.obj[type].splice(index,1);
+        this.setState(this.props.obj);
     }
 
     render() {

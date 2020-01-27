@@ -18,10 +18,16 @@ let functions = {
 
 import DataIns from './objects/DataIns';
 import DataOuts from './objects/DataOuts';
+import DataEval from './objects/DataEval';
+import CompositeCondition from './objects/CompositeCondition';
+import Condition from './objects/Condition';
 
 let objects = {
     DataIns,
     DataOuts,
+    DataEval,
+    CompositeCondition,
+    Condition
 };
 
 let types = {

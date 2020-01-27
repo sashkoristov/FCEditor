@@ -4,6 +4,7 @@ class DataIns extends DataItem {
     constructor() {
         super();
 
+        this.passing = false;
         this.value = '';
     }
 
