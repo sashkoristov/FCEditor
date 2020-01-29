@@ -18,14 +18,15 @@ class BaseFunction {
         return this.properties;
     }
 
-    addProperty(name, value) {
-        this.properties.push({
-            name: name,
-            value: value
-        });
+    addProperty(property) {
+        this.properties.push(property);
     }
 
-    getProperty(name) {
+    getProperty(index) {
+        return this.properties[index];
+    }
+
+    getPropertyByName(name) {
         return this.properties.find(p => p.name == name);
     }
 
@@ -34,7 +35,7 @@ class BaseFunction {
     }
 
     removeProperty(index) {
-        delete this.properties[index];
+        this.properties = this.properties.filter((p, i) => index != i);
     }
 
     setProperties(properties) {
@@ -45,14 +46,15 @@ class BaseFunction {
         return this.constraints;
     }
 
-    addConstraint(name, value) {
-        this.constraints.push({
-            name: name,
-            value: value
-        });
+    addConstraint(cstr) {
+        this.constraints.push(cstr);
     }
 
-    getConstraint(name) {
+    getConstraint(index) {
+        return this.constraints[index];
+    }
+
+    getConstraintByName(name) {
         return this.constraints.find(c => c.name == name);
     }
 
@@ -61,7 +63,7 @@ class BaseFunction {
     }
 
     removeConstraint(index) {
-        delete this.constraints[index];
+        this.constraints = this.constraints.filter((c, i) => index != i);
     }
 
     setConstraints(constraints) {

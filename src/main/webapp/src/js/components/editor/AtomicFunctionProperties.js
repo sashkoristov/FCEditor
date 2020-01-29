@@ -5,10 +5,12 @@
  */
 
 import React from 'react';
-import { Container, Row, Col, Card, CardTitle, CardBody, Form, FormGroup, Label, Input, Button, Badge } from 'reactstrap';
+import { Container, Row, Col, Card, CardTitle, Label, Button, Badge } from 'reactstrap';
 
 import DataInsProperties from './DataInsProperties';
 import DataOutsProperties from './DataOutsProperties';
+import Properties from './Properties';
+import Constraints from './Constraints';
 
 import * as afcl from '../../afcl';
 
@@ -56,7 +58,15 @@ class FunctionProperties extends React.Component {
                     <div>Name: {this.props.obj.getName()}</div>
                     <div>Type: <Badge>{this.props.obj.getType()}</Badge></div>
                 </div>
-                <Form>
+                <div className="mb-2">
+                    <div className="font-weight-bold text-muted mb-1">Properties</div>
+                    <Properties parentObj={this.props.obj} />
+                </div>
+                <div className="mb-2">
+                    <div className="font-weight-bold text-muted mb-1">Constraints</div>
+                    <Constraints parentObj={this.props.obj} />
+                </div>
+                <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-1">Input data</div>
                     {this.state.dataIns.map((dataIn, index) => <>
                             <DataInsProperties obj={dataIn} index={index} changeHandler={this._handleDataItemChange} removeHandler={this._removeDataItem} key={"AtomicFunction-DataIns-" + index} />
@@ -64,8 +74,8 @@ class FunctionProperties extends React.Component {
                         </>
                     )}
                     <Button color="primary" onClick={() => this._addDataItem('dataIns')} size="sm"><span className="cil-plus"></span></Button>
-                </Form>
-                <Form>
+                </div>
+                <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-1">Output Data</div>
                     {this.state.dataOuts.map((dataOut, index) => <>
                             <DataOutsProperties obj={dataOut} index={index} changeHandler={this._handleDataItemChange} removeHandler={this._removeDataItem} key={"AtomicFunction-DataOuts-" + index} />
@@ -73,7 +83,7 @@ class FunctionProperties extends React.Component {
                         </>
                     )}
                     <Button color="primary" onClick={() => this._addDataItem('dataOuts')} size="sm"><span className="cil-plus"></span></Button>
-                </Form>
+                </div>
             </>
     }
 
