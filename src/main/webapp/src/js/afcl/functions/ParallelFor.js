@@ -1,19 +1,20 @@
-import Compound from "./Compound";
+import Compound from './Compound';
+import LoopCounter from '../objects/LoopCounter';
 
 class ParallelFor extends Compound {
 
     constructor(name) {
         super(name);
 
-        this.loopCount = 0;
+        this.loopCounter = new LoopCounter();
     }
 
-    getLoopCount() {
-        return loopCount;
+    getLoopCounter() {
+        return this.loopCounter;
     }
 
-    setLoopCount(loopCount) {
-        this.loopCount = loopCount;
+    setLoopCount(loopCounter) {
+        this.loopCounter = loopCounter;
     }
 
 }

@@ -59,14 +59,6 @@ class FunctionProperties extends React.Component {
                     <div>Type: <Badge>{this.props.obj.getType()}</Badge></div>
                 </div>
                 <div className="mb-2">
-                    <div className="font-weight-bold text-muted mb-1">Properties</div>
-                    <Properties parentObj={this.props.obj} />
-                </div>
-                <div className="mb-2">
-                    <div className="font-weight-bold text-muted mb-1">Constraints</div>
-                    <Constraints parentObj={this.props.obj} />
-                </div>
-                <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-1">Input data</div>
                     {this.state.dataIns.map((dataIn, index) => <>
                             <DataInsProperties obj={dataIn} index={index} changeHandler={this._handleDataItemChange} removeHandler={this._removeDataItem} key={"AtomicFunction-DataIns-" + index} />
@@ -83,6 +75,14 @@ class FunctionProperties extends React.Component {
                         </>
                     )}
                     <Button color="primary" onClick={() => this._addDataItem('dataOuts')} size="sm"><span className="cil-plus"></span></Button>
+                </div>
+                <div className="mb-2">
+                    <div className="font-weight-bold text-muted mb-1">Properties</div>
+                    <Properties parentObj={this.props.obj} />
+                </div>
+                <div className="mb-2">
+                    <div className="font-weight-bold text-muted mb-1">Constraints</div>
+                    <Constraints parentObj={this.props.obj} />
                 </div>
             </>
     }
