@@ -25,8 +25,9 @@ import {
     Spinner
 } from 'reactstrap';
 
-import mxgraph from '../mxgraph';
+import FileSaver from 'file-saver';
 
+import mxgraph from '../mxgraph';
 const {
     mxCell,
     mxClient,
@@ -59,6 +60,7 @@ import {cellStyle, edgeStyle} from '../graph/styles';
 
 import FuntionsContext, {FunctionsContextProvider} from '../context/FunctionsContext';
 
+import WorkflowProperties from './editor/WorkflowProperties';
 import CellProperties from './editor/CellProperties';
 import AtomicFunctionProperties from './editor/AtomicFunctionProperties';
 import IfThenElseProperties from './editor/IfThenElseProperties';
@@ -77,9 +79,7 @@ class WorkflowEditor extends React.Component {
         this.state = {
             graph: {},
             selectedCell: null,
-            workflow: {
-                name: 'Untitled'
-            },
+            workflow: new afcl.Workflow('Untitled'),
             isLoading: false
         };
     }
@@ -449,16 +449,7 @@ class WorkflowEditor extends React.Component {
     };
 
     _showXml = () => {
-        const {graph} = this.state;
-
-        if (graph.isEmpty()) {
-            return;
-        }
-        const enc = new mxCodec(mxUtils.createXmlDocument());
-        const xmlModel = enc.encode(graph.getModel());
-
-        mxUtils.popup(mxUtils.getPrettyXml(xmlModel), true);
-
+        mxUtils.popup(this._getWorkflowXml(), true);
     };
 
     _validateGraph = () => {
@@ -466,21 +457,59 @@ class WorkflowEditor extends React.Component {
         graph.validateGraph();
     };
 
-    _saveWorkflow = () => {
+    _getWorkflowXml = () => {
+        const {workflow} = this.state;
+        const {graph} = this.state;
+        workflow.setBody(graph.getModel().cells);
+
+        const enc = new mxCodec(mxUtils.createXmlDocument());
+        const xmlModel = enc.encode(workflow);
+
+        return mxUtils.getPrettyXml(xmlModel);
+    }
+
+    _saveWorkflow = (type) => {
         const {graph} = this.state;
 
-        const workflowName = mxUtils.prompt('Save as ...', this.state.workflow.name);
-
-        if (workflowName != '') {
-            const enc = new mxGraphOverrides.Codec(mxUtils.createXmlDocument());
-            const xmlDoc = enc.encode(graph.getModel());
-
-            axios.post('api/workflow/save', {
-                name: workflowName,
-                body: mxUtils.getPrettyXml(xmlDoc)
-            });
+        if (this.state.workflow.getName().length == 0) {
+            alert('Please provide a name');
         }
 
+        switch (type) {
+            case 'xml':
+                var blob = new Blob([this._getWorkflowXml()], {type: "text/xml;charset=utf-8"});
+                FileSaver.saveAs(blob, this.state.workflow.getName() + '.xml');
+                break;
+            case 'yaml':
+                axios.post(
+                    'api/workflow/convert',
+                    this._getWorkflowXml(),
+                    {
+                        headers: {
+                            'Content-Type': 'text/xml',
+                            'Accept': 'application/x-yaml'
+                        }
+                    }
+                ).then(response => {
+                    var blob = new Blob([response.data], {type: "application/x-yaml;charset=utf-8"});
+                    FileSaver.saveAs(blob, this.state.workflow.getName() + '.yaml');
+                });
+            case 'json':
+                axios.post(
+                    'api/workflow/convert',
+                    this._getWorkflowXml(),
+                    {
+                        transformResponse: [(data) => { return data; }], //https://github.com/axios/axios/issues/907
+                        headers: {
+                            'Content-Type': 'text/xml',
+                            'Accept': 'application/json'
+                        }
+                    }
+                ).then(response => {
+                    var blob = new Blob([response.data], {type: "application/json;charset=utf-8"});
+                    FileSaver.saveAs(blob, this.state.workflow.getName() + '.json');
+                });
+        }
     };
 
     // Parses the mxGraph XML file format
@@ -500,14 +529,6 @@ class WorkflowEditor extends React.Component {
 
         console.log(file);
 
-/*
-                let xmlDoc = mxUtils.parseXml(workflows[0]['body']);
-
-                var dec = new mxGraphOverrides.Codec(xmlDoc);
-
-                dec.decode(xmlDoc.documentElement, graph.getModel());
-
- */
     };
 
     _showWorkflowFileDialog = () => {
@@ -554,9 +575,18 @@ class WorkflowEditor extends React.Component {
                                     <DropdownItem onClick={this._addParallelFor}>ParallelFor</DropdownItem>
                                 </DropdownMenu>
                             </UncontrolledButtonDropdown>
-                            <Button onClick={this._showXml}>Show XML</Button>
+                            <Button onClick={this._showXml}>XML</Button>
                             <Button onClick={this._validateGraph}>Validate</Button>
-                            <Button onClick={this._saveWorkflow}>Save</Button>
+                            <UncontrolledButtonDropdown>
+                                <DropdownToggle caret>
+                                    Save
+                                </DropdownToggle>
+                                <DropdownMenu>
+                                    <DropdownItem onClick={() => this._saveWorkflow('xml')}>XML<Badge color="secondary">GUI</Badge></DropdownItem>
+                                    <DropdownItem onClick={() => this._saveWorkflow('yaml')}>YAML</DropdownItem>
+                                    <DropdownItem onClick={() => this._saveWorkflow('json')}>JSON</DropdownItem>
+                                </DropdownMenu>
+                            </UncontrolledButtonDropdown>
                             <FileUpload onSelect={(file) => this._loadWorkflow(file)} />
                         </ButtonGroup>
                         <div className="graph-wrapper">
@@ -573,7 +603,7 @@ class WorkflowEditor extends React.Component {
                             {this.state.selectedCell?.value instanceof afcl.functions.Switch ? <SwitchProperties obj={this.state.selectedCell.value} /> : null}
                             {this.state.selectedCell?.value instanceof afcl.functions.Parallel ? <ParallelProperties obj={this.state.selectedCell.value} /> : null}
                             {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor ? <ParallelForProperties obj={this.state.selectedCell.value} /> : null}
-                            {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : 'No cell selected' }
+                            {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : <WorkflowProperties workflow={this.state.workflow} /> }
                         </CardBody>
                     </Card>
                 </Col>

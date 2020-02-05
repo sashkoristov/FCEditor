@@ -7,10 +7,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.UUID;
 
 import afcl.utils.Utils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.google.gson.Gson;
 import persistence.*;
 import service.WorkflowConversionService;
@@ -20,14 +24,13 @@ public class Api extends HttpServlet {
 
     private Gson gson = new Gson();
     private Repository<persistence.dto.Function> functionRepository = new FunctionRepository("functions.ser");
-    //private Repository<Workflow> workflowRepository = new WorkflowRepository("workflows.ser");
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         String pathInfo = req.getPathInfo();
 
-        if(pathInfo == null || pathInfo.equals("/")){
+        if (pathInfo == null || pathInfo.equals("/")){
 
             sendResponseJson(resp, "Serverless Workflow API");
             return;
@@ -37,14 +40,6 @@ public class Api extends HttpServlet {
             sendResponseJson(resp, functionRepository.findAll());
             return;
         }
-
-        /*
-        if (pathInfo.equals("/workflow")) {
-            sendResponseJson(resp, workflowRepository.findAll());
-            return;
-        }
-         */
-
     }
 
     @Override
@@ -79,30 +74,39 @@ public class Api extends HttpServlet {
             sendResponseJson(resp, f);
         }
         if (pathInfo.contains("/workflow")) {
-            persistence.dto.Workflow wDto = gson.fromJson(payload, persistence.dto.Workflow.class);
 
-            if (wDto == null) {
+            String contentType = req.getContentType();
+
+            // only accept xml
+            if (!"text/xml".equals(contentType) && !"application/xml".equals(contentType)) {
                 sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
-            if (pathInfo.contains("/workflow/save")) {
+            if (pathInfo.contains("/workflow/convert")) {
 
-                afcl.Workflow w = WorkflowConversionService.fromXml(wDto.body);
-                w.setName(wDto.name);
+                afcl.Workflow w = WorkflowConversionService.fromXml(payload);
 
-                Utils.writeYamlNoValidation(w, wDto.name + ".yaml");
+                String targetType = req.getHeader("Accept");
+                ObjectMapper om = new ObjectMapper();
 
-                sendResponseJson(resp);
-            }
+                switch (targetType) {
+                    case "application/x-yaml":
+                    case "text/yaml":
+                        YAMLFactory yf = new YAMLFactory();
+                        yf.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
+                        om = new ObjectMapper(yf);
 
-            if (pathInfo.contains("/workflow/load")) {
-                afcl.Workflow w = Utils.readYAMLNoValidation("workflow.yaml");
+                        sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".yaml");
+                        break;
+                    case "application/json":
+                        sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".json");
+                        break;
+                    default:
+                        break;
+                }
 
-                String xml = WorkflowConversionService.toXml(w);
-
-                sendResponseXml(resp, xml);
-
+                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
             }
         }
     }
@@ -163,7 +167,18 @@ public class Api extends HttpServlet {
         if (obj != null) {
             PrintWriter out = resp.getWriter();
             out.print(gson.toJson(obj));
-            out.flush();
+            out.close();
         }
+    }
+
+    private void sendResponseFile(HttpServletResponse resp, byte[] content, String contentType, String downloadName) throws IOException {
+        resp.setContentType(contentType);
+        resp.setHeader("Content-Disposition", "filename=" + downloadName);
+        resp.setContentLength(content.length);
+
+        OutputStream os = resp.getOutputStream();
+
+        os.write(content , 0, content.length);
+        os.close();
     }
 }

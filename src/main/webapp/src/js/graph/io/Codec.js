@@ -1,4 +1,4 @@
-/**
+ /**
  * custom implementation of class 'mxCodec'
  *
  * @author Ben Walch, 2019-2020
@@ -21,7 +21,7 @@ class Codec extends mxCodec {
 
             try
             {
-                ctor = afcl.functions[node.nodeName] ?? afcl.objects[node.nodeName];
+                ctor = afcl.functions[node.nodeName] ?? afcl.objects[node.nodeName] ?? afcl[node.nodeName];
             }
             catch (err)
             {

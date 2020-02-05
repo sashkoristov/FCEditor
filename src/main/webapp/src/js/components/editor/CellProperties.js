@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { CardTitle } from 'reactstrap';
 
 class CellProperties extends React.PureComponent {
 
@@ -14,7 +15,7 @@ class CellProperties extends React.PureComponent {
 
     render() {
         return <div>
-                <div><strong>Cell</strong></div>
+                <CardTitle className="h5">Cell</CardTitle>
                 <div>Id: {this.props.cell.id}</div>
                 <div>{this.props.cell.isVertex() ? 'Vertex: true' : 'Edge: true'}</div>
             </div>

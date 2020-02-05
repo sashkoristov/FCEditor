@@ -1,3 +1,5 @@
+import Workflow from './Workflow';
+
 import BaseFunction from './functions/BaseFunction';
 import AtomicFunction from './functions/AtomicFunction';
 import IfThenElse from './functions/IfThenElse';
@@ -38,4 +40,4 @@ let types = {
     collection: 'Collection'
 };
 
-export { functions, objects, types };
+export { Workflow, functions, objects, types };
