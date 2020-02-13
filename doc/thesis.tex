@@ -55,9 +55,9 @@
 "Run code, not Server" is the most recent term of cloud computing providers.
 With the rise of the serverless technology during the last years, \emph{FaaS} became more and more popular.
 The Distributed and Parallel Systems Group from University of Innsbruck are doing research in this topic.
-One of the results of this research is an API, which was developed for describing serverless application workflows programmatically.
-The product which results in using that API is the workflow being described in a generated YAML file.
-This file can be further processed by (other) machines.
+One of the results of this research is the (generic) specification of the "Abstract Function Choreography Language" (AFCL). Also, a Java API, to describe serverless application workflows programmatically.
+The product which results in using that API is the workflow being described in AFCL in a generated YAML or JSON file.
+This (textual) workflow definition can then be further processed by (other) machines.
 % workflows are abstract
 % AFCL
 
@@ -83,17 +83,116 @@ With the rise of \emph{FaaS}, a high level of flexibility in execution of code a
 
 \section{Overview}
 
+\section{Implementation}
+The Implementation of a Graphical User Interface as well as the optimization for Workflows were the main goals of this bachelor thesis. 
 
-\section{Software Architecture}
+\subsection{Requirements}
 
+\begin{itemize}
+	\item design for the overall application [coreUI]
+	\item clean and intuitive UI [bootstrap]
+	\item ability to add components/menu points easily [modularity]
+	\item good user experience [SPA]
+	\item frameworks: open source, large community (future-safe)
+	\item cross-browser [?]
+	\item performance [?]
+\end{itemize}
 
 \subsection{Frontend}
+
+One of the main parts of the application is the frontend. Since a web based frontend which, runs in the user's web browser, is a hard requirement, the core technologies are limited to HTML, CSS and JavaScript. Before the implementation - in a prototyping phase - different frameworks and libraries have been researched, tested and selected. For the selection, the following criteria have been taken into account:
+\begin{itemize}
+	\item open-source
+	\item good documentation
+	\item large and active community (future-proof)
+	\item stars on github / downloads on npmtrends
+	\item performance
+	\item learning curve
+\end{itemize}
+This criteria ensure the usage of well-documented and open-source software and makes it easier for others (dps) to extend the application later.
+The result of this phase was a working prototype as proof-of-concept.
+In the following sections, the setup and each technology and corresponding frameworks are described in detail.
+
+% add definitions here (EcmaScript JavaScript
+
+% \subsubsection{Development Workflow}
+\subsubsection{Setup}
+
+The setup of the frontend application is a selection of tools and technologies for modern and complex web development.
+Under the hood, JavaScript and several JavaScript Frameworks are in action to control the application with all its UI components. To give the application its look and feel, CSS and some CSS Frameworks are in use.
+As a basis, Node.js' package manager, npm, is used to manage and resolve the dependencies. Additionally, npm's CLI is used as tool to execute development and/or build tasks. \\
+Webpack does much of heavy-lifting, by bundling all sources with the assets into single files, and execute additional build steps by utilizing so-called 'loaders'.
+Babel is used as such a webpack loader, for compiling the ECMAScript and React JSX source code to browser-compatible JavaScript.
+The same applies for the CSS extension SASS, which is also integrated as a webpack loader, and is used to make the process of styling the user interface more efficient.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[trim={0 6.2cm 3.4cm 0},scale=0.6]{img/frontend-setup}
+  \caption{frontend development workflow}
+\end{figure}
+%%% TECHNOLOGIES / TOOLS %%%
+
+\subsubsection{npm}
+
+The node package manager\footnote{https://www.npmjs.org} is the world's largest software registry, where open-source software packages of developers and companies are shared all over the world. Over the last years, npm became a de-facto standard for package management in JavaScript development.
+
+\subsubsection{webpack}
+
+webpack is a module bundler, its main purpose is to bundle JavaScript code for usage in a browser.\footnote{https://webpack.js.org} In particular, multiple modules (often hundreds of) with dependencies [to each other] are processed and bundled into a few files. To be able to process other types of files than JavaScript or JSON, webpack offers the opportunity to configure a \textbf{loader}. In this application, the following loaders are configured:
+\begin{itemize}
+\item babel-loader, to transform ECMAScript and React JSX to browser-compatible JavaScript
+\item sass-loader, to transform SASS to CSS
+\item css-loader, to transform CSS to CommonJS
+\item file-loader, to handle static resources like images and fonts
+\end{itemize}
+
+\subsubsection{ECMAScript}
+
+The scripting language specification ECMAScript (ES) was created to standardize JavaScript. With the release of ES6 (also known as ECMAScript 2015), features like class declarations, module imports and arrow function expressions became possible. After ES6, every year a new edition of the ECMAScript standard was finalized and released, offering new features. Worth mentioning here is the rest/spread operator released with ES9, which occurs a lot in the source code of this thesis.\\
+% spread operator is a lot in use in source code
+Since current browsers only have partial support of ECMAScript, a compile 'transcompiler' (or transpiler) is needed to transform the ECMAScript source code to JavaScript common browsers are capable of interpreting.
+This process of compiling is done with Babel\footnote{https://babeljs.io}, which is configured to not only compile ECMAScript, but also JSX to JavaScript.
+
+\subsubsection{SASS}
+
+CSS, in its pure form, reaches its limits when one thinks about using variables, functions or nested rules. SASS\footnote{https://sass-lang.com} is a stylesheet language, which is compiled to CSS and offers the mentioned and even more features.
+A lot of CSS Frameworks also offer its source code in SASS with a large variable set which makes it easy to customize.
+
+%%% FRAMEWORKS %%%
+
+\subsection{Web Interface}
+
+The layout of the web interface is based on coreUI\footnote{https://coreui.io}, a admin panel template, built on top of the web toolkit Bootstrap\footnote{https://getbootstrap.com}. A clean and nested structure of components, which is typical for a React app, guarantees modularity and forms the whole application. The main component has four sub-components - where each of them consists again of multiple sub-components represent the core features of the app.
+
+\subsubsection{Dashboard}
+
+The dashboard is the entry point where the user lands after accessing the app. The purpose of this component is to give the user a quick overview of the application, provide short informational texts and links to the specific modules. 
+
+\subsubsection{Editor}
+\subsubsection{Functions}
+\subsubsection{Settings}
+
+
+\subsubsection{React}
+\subsubsection{mxGraph}
+\subsubsection{CoreUI}
+\subsubsection{Bootstrap}
+
+%% UI
+%% Routing
+%% React and Components
+%% mxGraph and User Objects
+
 \subsection{Backend}
 
+\subsubsection{General}
+\subsubsection{Maven}
+\subsubsection{Servlets}
+\subsubsection{Java and React}
 
-\section{Outlook}
+\subsection{Continuous Delivery}
 
-
+\section{Improvements}
 
 \section{Conclusion}
 
