@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Row, Col, Form, FormGroup, Label, Input, Button, Table, Badge, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap';
+import { Row, Col, Card, Form, FormGroup, Label, Input, Button, Table, Badge, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -99,14 +99,14 @@ class Functions extends React.Component {
                                 </Form>
                             </ModalBody>
                             <ModalFooter>
-                                <Button color="primary" onClick={this._addFunction}>Add Fn</Button>{' '}
+                                <Button color="primary" onClick={this._addFunction}>Add</Button>{' '}
                                 <Button color="secondary" onClick={this._toggleAddFunctionModal}>Cancel</Button>
                             </ModalFooter>
                         </Modal>
                         <div className="mb-4">
-                            <Button onClick={this._toggleAddFunctionModal}><span className="cil-plus"></span> Add Function</Button>
+                            <Button color="primary" onClick={this._toggleAddFunctionModal}><span className="cil-plus"></span> Add Function</Button>
                         </div>
-                        <div>
+                        <Card>
                             {fc.isLoading ? "Loading" : null}
                             <Table hover striped>
                                 <thead>
@@ -139,7 +139,7 @@ class Functions extends React.Component {
                                 )}
                                 </tbody>
                             </Table>
-                        </div>
+                        </Card>
                     </div>
                     }
                 </FunctionsContext.Consumer>

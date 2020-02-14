@@ -10,14 +10,14 @@ export default {
             name: 'Tools'
         },
         {
-            name: 'Editor',
-            url: '/editor',
-            icon: 'cil-browser',
-        },
-        {
             name: 'Functions',
             url: '/functions',
             icon: 'cil-functions',
+        },
+        {
+            name: 'Editor',
+            url: '/editor',
+            icon: 'cil-browser',
         },
         {
             name: 'Settings',

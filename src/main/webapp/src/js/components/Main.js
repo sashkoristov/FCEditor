@@ -4,8 +4,6 @@ import {Redirect, Route, Switch} from 'react-router-dom';
 import * as router from 'react-router-dom';
 import {Container, Nav, NavItem, NavTitle, NavLink, Badge, DropdownToggle, DropdownMenu} from 'reactstrap';
 
-import minimizedBrand from '@coreui/icons/svg/brand/cib-coreui-c.svg';
-
 import {
     AppFooter,
     AppHeader,
@@ -36,10 +34,15 @@ class Main extends React.Component {
             <div className="app">
                 <AppHeader fixed>
                     <AppSidebarToggler className="d-lg-none" display="md" mobile/>
-                    <AppNavbarBrand
+                    <a className="navbar-brand">
+                        <div className="navbar-brand-full font-weight-bold"><span className="navbar-brand-full__primary">AFCL</span><span className="navbar-brand-full__secondary text-primary">Toolkit</span></div>
+                        <div className="navbar-brand-minimized font-weight-bold small">AFCL</div>
+                    </a>
+                    {/*<AppNavbarBrand
                         full={{ src: '', width: 89, height: 25, alt: 'CoreUI Logo' }}
                         minimized={{ src: minimizedBrand, width: 30, height: 30, alt: 'CoreUI Logo' }}
-                    />
+                    />*/
+                    }
                     {/*<Nav className="ml-auto" navbar>
                         <NavItem className="d-md-down-none">
                             <NavLink href="#"><i className="fa fa-bell icons font-xl d-block"></i><Badge pill
@@ -90,8 +93,7 @@ class Main extends React.Component {
                     </main>
                 </div>
                 <AppFooter>
-                    <span><a href="https://coreui.io">CoreUI</a> &copy; 2019 creativeLabs</span>
-                    <span className="ml-auto">Powered by <a href="https://coreui.io/react">CoreUI for React</a></span>
+                    <span className="ml-auto">Made with <span className="cil-heart"></span> and passion by Ben Walch, powered by <a href="https://coreui.io/react">CoreUI for React</a></span>
                 </AppFooter>
             </div>
         )

@@ -471,8 +471,14 @@ class WorkflowEditor extends React.Component {
     _saveWorkflow = (type) => {
         const {graph} = this.state;
 
+        if (graph.isEmpty()) {
+            alert('Cannot save an empty graph');
+            return;
+        }
+
         if (this.state.workflow.getName().length == 0) {
             alert('Please provide a name');
+            return;
         }
 
         switch (type) {
@@ -543,10 +549,10 @@ class WorkflowEditor extends React.Component {
                 <Spinner size="lg" />
             </div>
         }
-        return <>
+        return <div className="animated fadeIn">
             <Row>
-                <Col xs="9">
-                    <div className="animated fadeIn position-relative w-100 h-100">
+                <Col>
+                    <div className="position-relative w-100 h-100">
                         <ButtonGroup className="graph-toolbar">
                             <Button light="true" onClick={this._addStart}>Start</Button>
                             <Button onClick={this._addEnd}>End</Button>
@@ -594,15 +600,15 @@ class WorkflowEditor extends React.Component {
                         </div>
                     </div>
                 </Col>
-                <Col xs="3">
+                <Col className="editor-property-view">
                     <Card>
                         <CardHeader>Properties</CardHeader>
                         <CardBody>
-                            {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction ? <AtomicFunctionProperties obj={this.state.selectedCell.value} /> : null}
-                            {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse ? <IfThenElseProperties obj={this.state.selectedCell.value} /> : null}
-                            {this.state.selectedCell?.value instanceof afcl.functions.Switch ? <SwitchProperties obj={this.state.selectedCell.value} /> : null}
-                            {this.state.selectedCell?.value instanceof afcl.functions.Parallel ? <ParallelProperties obj={this.state.selectedCell.value} /> : null}
-                            {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor ? <ParallelForProperties obj={this.state.selectedCell.value} /> : null}
+                            {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction && <AtomicFunctionProperties obj={this.state.selectedCell.value} />}
+                            {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse && <IfThenElseProperties obj={this.state.selectedCell.value} />}
+                            {this.state.selectedCell?.value instanceof afcl.functions.Switch && <SwitchProperties obj={this.state.selectedCell.value} />}
+                            {this.state.selectedCell?.value instanceof afcl.functions.Parallel && <ParallelProperties obj={this.state.selectedCell.value} />}
+                            {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor && <ParallelForProperties obj={this.state.selectedCell.value} />}
                             {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : <WorkflowProperties workflow={this.state.workflow} /> }
                         </CardBody>
                     </Card>
@@ -614,7 +620,7 @@ class WorkflowEditor extends React.Component {
                     <WorkflowUploadForm />
                 </ModalBody>
             </Modal>
-        </>
+        </div>
     }
 
 }
