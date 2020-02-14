@@ -127,7 +127,7 @@ The same applies for the CSS extension SASS, which is also integrated as a webpa
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[trim={0 6.2cm 3.4cm 0},scale=0.6]{img/frontend-setup}
+  \includegraphics[trim={0.8cm 8.2cm 3.0cm 1cm},scale=0.6]{frontend-setup}
   \caption{frontend development workflow}
 \end{figure}
 %%% TECHNOLOGIES / TOOLS %%%
@@ -138,7 +138,7 @@ The node package manager\footnote{https://www.npmjs.org} is the world's largest 
 
 \subsubsection{webpack}
 
-webpack is a module bundler, its main purpose is to bundle JavaScript code for usage in a browser.\footnote{https://webpack.js.org} In particular, multiple modules (often hundreds of) with dependencies [to each other] are processed and bundled into a few files. To be able to process other types of files than JavaScript or JSON, webpack offers the opportunity to configure a \textbf{loader}. In this application, the following loaders are configured:
+webpack is a module bundler, its main purpose is to bundle JavaScript code for the usage in a browser.\footnote{https://webpack.js.org} In particular, multiple modules (often hundreds of) with dependencies [to each other] are processed and bundled into a few files. To be able to process other types of files than JavaScript or JSON, webpack offers the opportunity to configure a \textbf{loader}. In this application, the following loaders are configured:
 \begin{itemize}
 \item babel-loader, to transform ECMAScript and React JSX to browser-compatible JavaScript
 \item sass-loader, to transform SASS to CSS
@@ -168,8 +168,27 @@ The layout of the web interface is based on coreUI\footnote{https://coreui.io}, 
 
 The dashboard is the entry point where the user lands after accessing the app. The purpose of this component is to give the user a quick overview of the application, provide short informational texts and links to the specific modules. 
 
-\subsubsection{Editor}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{dashboard}
+  \caption{the dashboard}
+\end{figure}
+
 \subsubsection{Functions}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{functions}
+  \caption{the function repository}
+\end{figure}
+
+\subsubsection{Editor}
+
+The interface of the workflow compose component is divided in two parts, on the left side the editor and on the right side the property view. The user can choose a function from the toolbar to place it in the drawing area below. Each function has a defined shape and style, for the sake of clarity. These shapes (functions) can then be connected to each other with drag and drop. The possible connection points (ports) of a shape will be displayed when hovering over it. These ports are input and output for most of the functions.\\
+When selecting a shape in the canvas, the property view changes. It displays each specific property of the selected function, with the ability to change, add or remove properties.
+
+% Validation
+
 \subsubsection{Settings}
 
 
@@ -188,7 +207,8 @@ The dashboard is the entry point where the user lands after accessing the app. T
 \subsubsection{General}
 \subsubsection{Maven}
 \subsubsection{Servlets}
-\subsubsection{Java and React}
+\subsubsection{Api}
+
 
 \subsection{Continuous Delivery}
 
