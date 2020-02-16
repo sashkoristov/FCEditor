@@ -24,12 +24,12 @@ class Sidebar extends React.Component {
     componentDidMount() {
         this._graph = this._createTemporaryGraph();
 
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.start, 0.64));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.end, 0.64));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.cond, 0.64));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.multicond, 0.64));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.merge, 0.64));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.container, 0.64));
+        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.start));
+        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.end));
+        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.cond));
+        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.multicond));
+        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.merge, 30, 30));
+        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.container, 80, 100));
     }
 
     _createTemporaryGraph() {
@@ -61,10 +61,10 @@ class Sidebar extends React.Component {
         return graph;
     }
 
-    _createItem = (cellDef) => {
+    _createItem = (cellDef, maxWidth, maxHeight) => {
 
-        let maxWidth = 30;
-        let maxHeight = 30;
+        maxWidth = maxWidth || 40;
+        maxHeight = maxHeight || 40;
         let ratio = 0;
 
         let width = cellDef.width;

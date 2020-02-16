@@ -131,11 +131,12 @@ let container = {
         join: {x: 0.5, y: 0.970, offset: {x: -join.width/2, y: -join.height}, style: join.name}
     }
 };
+container.style[mxConstants.STYLE_STROKEWIDTH] = 2;
 container.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE;
 container.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
 container.style[mxConstants.STYLE_ROUNDED] = true;
 container.style[mxConstants.STYLE_RESIZABLE] = true;
-container.style[mxConstants.STYLE_STARTSIZE] = 22;
+container.style[mxConstants.STYLE_STARTSIZE] = 12;
 container.style[mxConstants.STYLE_DASHED] = true;
 container.style[mxConstants.STYLE_FONTCOLOR] = 'black';
 container.style[mxConstants.STYLE_FONTSIZE] = 14;
