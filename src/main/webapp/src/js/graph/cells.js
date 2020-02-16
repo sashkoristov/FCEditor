@@ -48,13 +48,14 @@ let merge = {
     width: 40,
     height: 28,
     ports: {
-        in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
-        out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
+        in: {x: 0, y: 0.5, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
+        out: {x: 1, y: 0.5, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
     }
 };
-merge.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RHOMBUS;
-merge.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter;
+merge.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_TRIANGLE;
+merge.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.TrianglePerimeter;
 merge.style[mxConstants.STYLE_STROKEWIDTH] = 4;
+merge.style[mxConstants.STYLE_DIRECTION] = mxConstants.DIRECTION_SOUTH;
 
 let fn = {
     name: 'fn',
@@ -175,6 +176,7 @@ export {
     fn,
     cond,
     multicond,
+    container,
     parallel,
     parallelFor,
     fork,

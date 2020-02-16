@@ -42,7 +42,8 @@ const {
     mxEdgeHandler,
     mxRubberband,
     mxUtils,
-    mxPoint,
+    mxPerimeter,
+    mxShape,
     mxImage
 } = mxgraph;
 
@@ -60,6 +61,7 @@ import {cellStyle, edgeStyle} from '../graph/styles';
 
 import FuntionsContext, {FunctionsContextProvider} from '../context/FunctionsContext';
 
+import Sidebar from './editor/Sidebar';
 import WorkflowProperties from './editor/WorkflowProperties';
 import CellProperties from './editor/CellProperties';
 import AtomicFunctionProperties from './editor/AtomicFunctionProperties';
@@ -94,7 +96,7 @@ class WorkflowEditor extends React.Component {
         if (!mxClient.isBrowserSupported()) {
             mxUtils.error('Browser is not supported!', 200, false);
         } else {
-            const container = ReactDOM.findDOMNode(this.refs.graphContainer);
+            const container = this.refs._graphContainer;
 
             // Disables the built-in context menu
             mxEvent.disableContextMenu(container);
@@ -199,7 +201,7 @@ class WorkflowEditor extends React.Component {
         const {graph} = this.state;
 
         // Specifies the default cell style
-        graph.getStylesheet().putDefaultVertexStyle(cellStyle)
+        graph.getStylesheet().putDefaultVertexStyle(cellStyle);
 
         // Specifies the default edge style
         graph.getStylesheet().putDefaultEdgeStyle(edgeStyle);
@@ -466,7 +468,7 @@ class WorkflowEditor extends React.Component {
         const xmlModel = enc.encode(workflow);
 
         return mxUtils.getPrettyXml(xmlModel);
-    }
+    };
 
     _saveWorkflow = (type) => {
         const {graph} = this.state;
@@ -553,7 +555,8 @@ class WorkflowEditor extends React.Component {
             <Row>
                 <Col>
                     <div className="position-relative w-100 h-100">
-                        <ButtonGroup className="graph-toolbar">
+                        <Sidebar />
+                        <ButtonGroup className="graph-toolbar2">
                             <Button light="true" onClick={this._addStart}>Start</Button>
                             <Button onClick={this._addEnd}>End</Button>
                             <UncontrolledButtonDropdown>
@@ -596,7 +599,7 @@ class WorkflowEditor extends React.Component {
                             <FileUpload onSelect={(file) => this._loadWorkflow(file)} />
                         </ButtonGroup>
                         <div className="graph-wrapper">
-                            <div id="graph" className="graph" ref="graphContainer"/>
+                            <div id="graph" className="graph" ref="_graphContainer"/>
                         </div>
                     </div>
                 </Col>

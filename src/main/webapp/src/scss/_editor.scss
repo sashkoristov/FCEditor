@@ -2,6 +2,10 @@
   max-width: 360px;
 }
 .graph-toolbar {
+  display: flex;
+}
+/*
+.graph-toolbar2 {
   position: absolute;
   top: 0;
   left: 0;
@@ -16,7 +20,7 @@
   bottom: 0;
   overflow: auto;
 }
-
+ */
 #graph {
   background-color: $white;
 }
