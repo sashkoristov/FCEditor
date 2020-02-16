@@ -52,16 +52,13 @@
 \pagestyle{plain}
 
 \section*{Abstract}
-"Run code, not Server" is the most recent term of cloud computing providers.
-With the rise of the serverless technology during the last years, \emph{FaaS} became more and more popular.
-The Distributed and Parallel Systems Group from University of Innsbruck are doing research in this topic.
-One of the results of this research is the (generic) specification of the "Abstract Function Choreography Language" (AFCL). Also, a Java API, to describe serverless application workflows programmatically.
-The product which results in using that API is the workflow being described in AFCL in a generated YAML or JSON file.
-This (textual) workflow definition can then be further processed by (other) machines.
-% workflows are abstract
-% AFCL
-
-The aim of this bachelor project is to develop a visual workflow editor, which makes modeling of workflows possible at a high level of abstraction. Additionally, composed workflows can be saved, reopened and edited. The tool should also be able to optimize  given workflows for multiple \emph{FaaS} provider(s) in case of quotas and limits, and also in case of performance.
+In the FaaS world, there exist many providers who offer serverless execution of code (functions) in the cloud. Each of them has its own specifications and definitions on how functions are deployed and executed, and how workflows are created and executed.
+\par
+The Distributed and Parallel Systems group developed the "Abstract Function Choreography Language" (AFCL). It is a specification for describing serverless workflows. Also, a Java API, to describe serverless application workflows programmatically was developed.
+The product which results in using that API is the workflow being described in AFCL in a text file.
+Until now, the workflow described in the text file has to be created manually (by editing the file directly), or a programmer has to write Java code which utilizes the API to generate the file.
+\par
+The aim of this bachelor project is to develop a visual workflow editor, which makes modeling of workflows possible at a high level of abstraction. The tool should not only be able to load, display and save workflows, but also to optimize workflows for multiple \emph{FaaS} provider(s) in case of quotas and limits, and also in case of performance.
 
 \cleardoublepage
 
@@ -70,11 +67,13 @@ The aim of this bachelor project is to develop a visual workflow editor, which m
 \newpage
 
 \section{Introduction}
+"Run code, not Server" is the most recent term in the cloud computing environment.
+With the rise of the serverless technology during the last years, \emph{FaaS} became more and more popular.
+With the serverless technology, a high level of flexibility in execution of code became possible. Global Players like Amazon, Google, IBM and Microsoft jumped on the train and provide their infrastructure to Developers, able to deploy functions and execute them in the cloud. Each system has its own definitions on how to define, deploy and run a function. Many providers also offer a tool to model a workflow and execute it (Amazon Step Functions, IBM Cloud Functions, Microsoft Azure Functions, Google Cloud Functions, ...)
 
-With the rise of \emph{FaaS}, a high level of flexibility in execution of code appeared. Global Players like Amazon, Google, IBM and Microsoft jumped on the train and provide their infrastructure to Developers, able to deploy functions and execute them in the cloud. Each system has its own definitions on how to define, deploy, run and execute code. 
+The distributed and parallel systems group developed a specification 
 
 \label{sec:introduction}
-\subsection{Motivation}
 
 \section{Background}
 
@@ -99,28 +98,29 @@ The Implementation of a Graphical User Interface as well as the optimization for
 \end{itemize}
 
 \subsection{Frontend}
-
-One of the main parts of the application is the frontend. Since a web based frontend which, runs in the user's web browser, is a hard requirement, the core technologies are limited to HTML, CSS and JavaScript. Before the implementation - in a prototyping phase - different frameworks and libraries have been researched, tested and selected. For the selection, the following criteria have been taken into account:
+One of the main parts of the application is the frontend. Since a web based frontend which, runs in the user's web browser, is a hard requirement, the core technologies are limited to HTML, CSS and JavaScript.
+\par
+A prototyping phase was the kickoff for the development: Different frameworks and libraries have been researched, tested and selected. For the selection, the following criteria have been taken into account:
 \begin{itemize}
 	\item open-source
 	\item good documentation
 	\item large and active community (future-proof)
 	\item stars on github / downloads on npmtrends
 	\item performance
-	\item learning curve
+	\item pre-knowledge of the developer / learning curve
 \end{itemize}
 This criteria ensure the usage of well-documented and open-source software and makes it easier for others (dps) to extend the application later.
-The result of this phase was a working prototype as proof-of-concept.
-In the following sections, the setup and each technology and corresponding frameworks are described in detail.
+The result of this development phase was a working prototype as proof-of-concept.
+In the following sections, the setup and each chosen technology and frameworks are described in detail.
 
-% add definitions here (EcmaScript JavaScript
+% add definitions here (EcmaScript JavaScript SASS ...)
 
 % \subsubsection{Development Workflow}
 \subsubsection{Setup}
 
 The setup of the frontend application is a selection of tools and technologies for modern and complex web development.
-Under the hood, JavaScript and several JavaScript Frameworks are in action to control the application with all its UI components. To give the application its look and feel, CSS and some CSS Frameworks are in use.
-As a basis, Node.js' package manager, npm, is used to manage and resolve the dependencies. Additionally, npm's CLI is used as tool to execute development and/or build tasks. \\
+Under the hood, JavaScript and several JavaScript Frameworks are in action to control the application consisting of several UI components. To give the application its look and feel, CSS and some CSS Frameworks are in use.
+The base forms the node package manager (npm) which is used to manage and resolve the dependencies. Additionally, npm's CLI is used as tool to execute development and build tasks. \\
 Webpack does much of heavy-lifting, by bundling all sources with the assets into single files, and execute additional build steps by utilizing so-called 'loaders'.
 Babel is used as such a webpack loader, for compiling the ECMAScript and React JSX source code to browser-compatible JavaScript.
 The same applies for the CSS extension SASS, which is also integrated as a webpack loader, and is used to make the process of styling the user interface more efficient.
@@ -176,6 +176,8 @@ The dashboard is the entry point where the user lands after accessing the app. T
 
 \subsubsection{Functions}
 
+A function repository is needed to know about available functions when composing a workflow. An item in the function repository holds the following data: name, type and provider. For In the implementation of this thesis, this data is persisted to an internal file.\footnote{see \ref{Backend-Persistence} for detailed information on how data is persisted}
+
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{functions}
@@ -183,8 +185,9 @@ The dashboard is the entry point where the user lands after accessing the app. T
 \end{figure}
 
 \subsubsection{Editor}
-
-The interface of the workflow compose component is divided in two parts, on the left side the editor and on the right side the property view. The user can choose a function from the toolbar to place it in the drawing area below. Each function has a defined shape and style, for the sake of clarity. These shapes (functions) can then be connected to each other with drag and drop. The possible connection points (ports) of a shape will be displayed when hovering over it. These ports are input and output for most of the functions.\\
+\par
+The interface of the component for composing workflows is divided into two parts, on the left side is the editor, consisting of a toolbar and a drawing area. On the right side is the property view. In the editor, the user can choose a function from the toolbar to place it in the drawing area below.  For the sake of clarity, each function has a defined shape and style. In the drawing area, these shapes (functions) can then be connected to each other by drag and drop. This leads to a directed graph, which represent the execution flow. The possible connection points (ports) of a shape will be displayed when hovering over it. These ports are input and output for most of the functions. When hovering a port, the port name appears in the tooltip.
+\par
 When selecting a shape in the canvas, the property view changes. It displays each specific property of the selected function, with the ability to change, add or remove properties.
 
 % Validation
@@ -203,10 +206,16 @@ When selecting a shape in the canvas, the property view changes. It displays eac
 %% mxGraph and User Objects
 
 \subsection{Backend}
-
 \subsubsection{General}
 \subsubsection{Maven}
 \subsubsection{Servlets}
+\subsubsection{Persistence}
+\label{Backend-Persistence}
+
+Composed workflows are be saved to the user's file system by offering a download. The user can then choose the target location.
+The storing of function data, on the other hand, is abstracted from the user and persisting of the data is handled internally.
+An interface\footnote{https://docs.oracle.com/javase/specs/jls/se7/html/jls-9.html} for the repository implementation was created on the backend side to be capable of supporting any data source. The repository which implements the interface in this thesis, stores the serialized data into a file. This could be easily replaced with any other implementation, for example an implementation which stores the data in a DBMS.
+
 \subsubsection{Api}
 
 
