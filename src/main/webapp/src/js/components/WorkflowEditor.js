@@ -6,7 +6,6 @@
 
 import axios from "axios";
 import React from "react";
-import ReactDOM from "react-dom";
 
 import {
     Row,
@@ -59,9 +58,8 @@ import * as cellDefs from '../graph/cells';
 import * as mxGraphOverrides from '../graph';
 import {cellStyle, edgeStyle} from '../graph/styles';
 
-import FuntionsContext, {FunctionsContextProvider} from '../context/FunctionsContext';
-
 import Sidebar from './editor/Sidebar';
+
 import WorkflowProperties from './editor/WorkflowProperties';
 import CellProperties from './editor/CellProperties';
 import AtomicFunctionProperties from './editor/AtomicFunctionProperties';
@@ -346,105 +344,6 @@ class WorkflowEditor extends React.Component {
         }
     };
 
-    _addStart = () => {
-        const {graph} = this.state;
-        let parent = graph.getDefaultParent();
-        for (let i in parent.children) {
-            if (parent.children[i].type && parent.children[i].type === cellDefs.start.name) {
-                mxUtils.alert('Already a start cell in graph!');
-                return;
-            }
-        }
-        this._addCell('Start', cellDefs.start);
-    };
-
-    _addEnd = () => {
-        const {graph} = this.state;
-        let parent = graph.getDefaultParent();
-        for (let i in parent.children) {
-            if (parent.children[i].type && parent.children[i].type === cellDefs.end.name) {
-                mxUtils.alert('Already an end cell in graph!');
-                return;
-            }
-        }
-        this._addCell('End', cellDefs.end);
-    };
-
-    _addMerge = () => {
-        this._addCell('merge', cellDefs.merge);
-    };
-
-    _addFn = (fnObj) => {
-        this._addCell(
-            new afcl.functions.AtomicFunction(fnObj.name, fnObj.type),
-            cellDefs.fn
-        );
-    };
-
-    _addIfThenElse = () => {
-        this._addCell(
-            new afcl.functions.IfThenElse('IfThenElse'),
-            cellDefs.cond
-        );
-    };
-
-    _addSwitch = () => {
-        this._addCell(
-            new afcl.functions.Switch('Switch'),
-            cellDefs.multicond
-        );
-    };
-
-    _addParallel = () => {
-        this._addCell(
-            new afcl.functions.Parallel('Parallel'),
-            cellDefs.parallel
-        );
-    };
-
-
-    _addParallelFor = () => {
-        this._addCell(
-            new afcl.functions.ParallelFor('ParallelFor'),
-            cellDefs.parallelFor
-        );
-    };
-
-    _addCell = (userObj, cellDef) => {
-        const {graph} = this.state;
-
-        var parent = graph.getDefaultParent();
-
-        // Adds cells to the model in a single step
-        graph.getModel().beginUpdate();
-        try {
-            let v = graph.insertVertex(parent, null, userObj, 20, 20, cellDef.width ?? 80, cellDef.height ?? 40, cellDef.name);
-            v.setType(cellDef.type || cellDef.name);
-
-            // add sub cells, if any
-            if (cellDef.subCells) {
-                for (let subCell in cellDef.subCells) {
-                    let subV = graph.insertVertex(
-                        v,
-                        null,
-                        subCell,
-                        cellDef.subCells[subCell].x,
-                        cellDef.subCells[subCell].y,
-                        cellDefs[subCell].width,
-                        cellDefs[subCell].height,
-                        cellDefs[subCell].name,
-                        true
-                    );
-                    subV.getGeometry().offset = cellDef.subCells[subCell].offset;
-                    subV.setType(cellDefs[subCell].type || cellDefs[subCell].name);
-                }
-            }
-        } finally {
-            // Updates the display
-            graph.getModel().endUpdate();
-        }
-    };
-
     _removeSelected = () => {
         const {graph} = this.state;
         graph.isEnabled() && graph.removeCells(graph.getSelectionCells());
@@ -554,54 +453,45 @@ class WorkflowEditor extends React.Component {
         return <div className="animated fadeIn">
             <Row>
                 <Col>
-                    <div className="position-relative w-100 h-100">
-                        <Sidebar />
-                        <ButtonGroup className="graph-toolbar2">
-                            <Button light="true" onClick={this._addStart}>Start</Button>
-                            <Button onClick={this._addEnd}>End</Button>
-                            <UncontrolledButtonDropdown>
-                                <DropdownToggle caret>
-                                    Function
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                    <FuntionsContext.Consumer>
-                                        {fc => (
-                                            fc.functions.map(fn => <DropdownItem
-                                                onClick={() => this._addFn(fn)}>{fn.name}<Badge>{fn.type}</Badge></DropdownItem>)
-                                        )}
-                                    </FuntionsContext.Consumer>
-                                </DropdownMenu>
-                            </UncontrolledButtonDropdown>
-                            <Button onClick={this._addIfThenElse}>If-Then-Else</Button>
-                            <Button onClick={this._addSwitch}>Switch</Button>
-                            <Button onClick={this._addMerge}>Merge</Button>
-                            <UncontrolledButtonDropdown>
-                                <DropdownToggle caret>
-                                    Compound Parallel
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                    <DropdownItem onClick={this._addParallel}>Parallel</DropdownItem>
-                                    <DropdownItem onClick={this._addParallelFor}>ParallelFor</DropdownItem>
-                                </DropdownMenu>
-                            </UncontrolledButtonDropdown>
-                            <Button onClick={this._showXml}>XML</Button>
-                            <Button onClick={this._validateGraph}>Validate</Button>
-                            <UncontrolledButtonDropdown>
-                                <DropdownToggle caret>
-                                    Save
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                    <DropdownItem onClick={() => this._saveWorkflow('xml')}>XML<Badge color="secondary">GUI</Badge></DropdownItem>
-                                    <DropdownItem onClick={() => this._saveWorkflow('yaml')}>YAML</DropdownItem>
-                                    <DropdownItem onClick={() => this._saveWorkflow('json')}>JSON</DropdownItem>
-                                </DropdownMenu>
-                            </UncontrolledButtonDropdown>
-                            <FileUpload onSelect={(file) => this._loadWorkflow(file)} />
-                        </ButtonGroup>
+                    <Card className="w-100">
+                        <CardHeader>
+                            Graph
+                            <div className="graph-toolbar">
+                                <Button className="btn mr-2">
+                                    <span className="cil-layers mr-1" />
+                                    Layout
+                                </Button>
+                                <Button className="btn mr-2" onClick={this._showXml}>
+                                    <span className="cil-file mr-1" />
+                                    XML
+                                </Button>
+                                <Button className="btn mr-2" onClick={this._validateGraph}>
+                                    <span className="cil-reload mr-1" />
+                                    Validate
+                                </Button>
+                                |
+                                <Button className="btn mx-2">
+                                    <span className="cil-folder-open mr-1" />
+                                    Load
+                                </Button>
+                                <UncontrolledButtonDropdown>
+                                    <DropdownToggle caret>
+                                        <span className="cil-cloud-download mr-1" />
+                                        Save
+                                    </DropdownToggle>
+                                    <DropdownMenu>
+                                        <DropdownItem onClick={() => this._saveWorkflow('xml')}>XML<Badge color="secondary">GUI</Badge></DropdownItem>
+                                        <DropdownItem onClick={() => this._saveWorkflow('yaml')}>YAML</DropdownItem>
+                                        <DropdownItem onClick={() => this._saveWorkflow('json')}>JSON</DropdownItem>
+                                    </DropdownMenu>
+                                </UncontrolledButtonDropdown>
+                            </div>
+                        </CardHeader>
                         <div className="graph-wrapper">
+                            <Sidebar graph={this.state.graph} />
                             <div id="graph" className="graph" ref="_graphContainer"/>
                         </div>
-                    </div>
+                    </Card>
                 </Col>
                 <Col className="editor-property-view">
                     <Card>

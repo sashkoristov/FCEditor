@@ -1,7 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {
+    Badge,
+    Button,
+    UncontrolledDropdown,
+    DropdownToggle,
+    DropdownMenu,
+    DropdownItem
+} from 'reactstrap';
 
 import mxgraph from '../../mxgraph';
+
 const {
     mxCell,
     mxConstants,
@@ -12,24 +21,26 @@ const {
 
 import * as mxGraphOverrides from '../../graph';
 import * as cellDefs from '../../graph/cells';
+import * as afcl from '../../afcl';
 
+import FunctionsContext, {FunctionsContextProvider} from '../../context/FunctionsContext';
 
 class Sidebar extends React.Component {
 
     constructor(props) {
         super(props);
-
     }
 
     componentDidMount() {
-        this._graph = this._createTemporaryGraph();
+        this._tempGraph = this._createTemporaryGraph();
 
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.start));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.end));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.cond));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.multicond));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.merge, 30, 30));
-        this.refs._sidebarContainer.appendChild(this._createItem(cellDefs.container, 80, 100));
+        ReactDOM.findDOMNode(this.refs._addStartBtn).prepend(this._createThumb(cellDefs.start, 40, 40));
+        ReactDOM.findDOMNode(this.refs._addEndBtn).prepend(this._createThumb(cellDefs.end, 40, 40));
+        ReactDOM.findDOMNode(this.refs._fnDropdownToggle).prepend(this._createThumb(cellDefs.fn, 40, 32));
+        ReactDOM.findDOMNode(this.refs._addIfThenElseBtn).prepend(this._createThumb(cellDefs.cond, 44, 44));
+        ReactDOM.findDOMNode(this.refs._addSwitchBtn).prepend(this._createThumb(cellDefs.multicond, 44, 44));
+        ReactDOM.findDOMNode(this.refs._addMergeBtn).prepend(this._createThumb(cellDefs.merge, 32, 24));
+        ReactDOM.findDOMNode(this.refs._compoundDropdownToggle).prepend(this._createThumb(cellDefs.container, 60, 44));
     }
 
     _createTemporaryGraph() {
@@ -61,67 +72,164 @@ class Sidebar extends React.Component {
         return graph;
     }
 
-    _createItem = (cellDef, maxWidth, maxHeight) => {
+    _createThumb = (cellDef, width, height) => {
+        var el = window.document.createElement('div');
 
-        maxWidth = maxWidth || 40;
-        maxHeight = maxHeight || 40;
-        let ratio = 0;
-
-        let width = cellDef.width;
-        let height = cellDef.height;
-
-        if (width > maxWidth) {
-            ratio = maxWidth / width;
-            width = width * ratio;
-            height = height * ratio;
-        }
-        if (height > maxHeight) {
-            ratio = maxHeight / height;
-            width = width * ratio;
-            height = height * ratio;
-        }
-
-        var el = window.document.createElement('a');
-        el.className = 'geItem';
-        el.style.overflow = 'hidden';
-        el.style.display = 'block';
-        el.onclick = this._handleClick;
-
-        let cell = new mxCell(cellDef.name, new mxGeometry(0, 0, width, height), cellDef.name);
+        let cell = new mxCell(null, new mxGeometry(0, 0, width, height), cellDef.name);
         cell.vertex = true;
-        this._graph.view.scaleAndTranslate(1, 0, 0);
-        this._graph.addCell(cell);
+        this._tempGraph.view.scaleAndTranslate(1, 0, 0);
+        this._tempGraph.addCell(cell);
 
-        var bounds = this._graph.getGraphBounds();
+        var bounds = this._tempGraph.getGraphBounds();
         var s = Math.floor(Math.min((width - 2) / bounds.width,
             (height - 2) / bounds.height) * 100) / 100;
-        this._graph.view.scaleAndTranslate(s, Math.floor((width - bounds.width * s) / 2 / s - bounds.x),
+        this._tempGraph.view.scaleAndTranslate(s, Math.floor((width - bounds.width * s) / 2 / s - bounds.x),
             Math.floor((height - bounds.height * s) / 2 / s - bounds.y));
 
         var node = null;
 
-        node = this._graph.view.getCanvas().ownerSVGElement.cloneNode(true);
+        node = this._tempGraph.view.getCanvas().ownerSVGElement.cloneNode(true);
 
         node.style.position = 'relative';
         node.style.overflow = 'hidden';
         node.style.width = width + 'px';
-        node.style.height = height  + 'px';
+        node.style.height = height + 'px';
         node.style.visibility = '';
         node.style.minWidth = '';
         node.style.minHeight = '';
 
-        this._graph.getModel().clear();
+        this._tempGraph.getModel().clear();
 
         el.appendChild(node);
+
         return el;
     };
 
-    _handleClick = (e) => {
-        alert();
+    _addStart = () => {
+        let parent = this.props.graph.getDefaultParent();
+        for (let i in parent.children) {
+            if (parent.children[i].type && parent.children[i].type === cellDefs.start.name) {
+                mxUtils.alert('Already a start cell in graph!');
+                return;
+            }
+        }
+        this._addCell('Start', cellDefs.start);
+    };
+
+    _addEnd = () => {
+        let parent = this.props.graph.getDefaultParent();
+        for (let i in parent.children) {
+            if (parent.children[i].type && parent.children[i].type === cellDefs.end.name) {
+                mxUtils.alert('Already an end cell in graph!');
+                return;
+            }
+        }
+        this._addCell('End', cellDefs.end);
+    };
+
+    _addMerge = () => {
+        this._addCell('merge', cellDefs.merge);
+    };
+
+    _addFn = (fnObj) => {
+        this._addCell(
+            new afcl.functions.AtomicFunction(fnObj.name, fnObj.type),
+            cellDefs.fn
+        );
+    };
+
+    _addIfThenElse = () => {
+        this._addCell(
+            new afcl.functions.IfThenElse('IfThenElse'),
+            cellDefs.cond
+        );
+    };
+
+    _addSwitch = () => {
+        this._addCell(
+            new afcl.functions.Switch('Switch'),
+            cellDefs.multicond
+        );
+    };
+
+    _addParallel = () => {
+        this._addCell(
+            new afcl.functions.Parallel('Parallel'),
+            cellDefs.parallel
+        );
+    };
+
+    _addParallelFor = () => {
+        this._addCell(
+            new afcl.functions.ParallelFor('ParallelFor'),
+            cellDefs.parallelFor
+        );
+    };
+
+    _addCell = (userObj, cellDef) => {
+
+        var parent = this.props.graph.getDefaultParent();
+
+        // Adds cells to the model in a single step
+        this.props.graph.getModel().beginUpdate();
+        try {
+            let v = this.props.graph.insertVertex(parent, null, userObj, 20, 20, cellDef.width ?? 80, cellDef.height ?? 40, cellDef.name);
+            v.setType(cellDef.type || cellDef.name);
+
+            // add sub cells, if any
+            if (cellDef.subCells) {
+                for (let subCell in cellDef.subCells) {
+                    let subV = graph.insertVertex(
+                        v,
+                        null,
+                        subCell,
+                        cellDef.subCells[subCell].x,
+                        cellDef.subCells[subCell].y,
+                        cellDefs[subCell].width,
+                        cellDefs[subCell].height,
+                        cellDefs[subCell].name,
+                        true
+                    );
+                    subV.getGeometry().offset = cellDef.subCells[subCell].offset;
+                    subV.setType(cellDefs[subCell].type || cellDefs[subCell].name);
+                }
+            }
+        } finally {
+            // Updates the display
+            this.props.graph.getModel().endUpdate();
+        }
     };
 
     render() {
-        return <div className="graph-toolbar" ref="_sidebarContainer"></div>
+        return <div className="graph-sidebar">
+            <Button onClick={this._addStart} className="btn-square item" ref="_addStartBtn">Start</Button>
+            <Button onClick={this._addEnd} className="btn-square item" ref="_addEndBtn">End</Button>
+            <UncontrolledDropdown direction="right" className="item">
+                <DropdownToggle className="btn-square" ref="_fnDropdownToggle">
+                    Function
+                </DropdownToggle>
+                <DropdownMenu className="rounded-0">
+                    <FunctionsContext.Consumer>
+                        {fc => (
+                            fc.functions.map(fn => <DropdownItem
+                                onClick={() => this._addFn(fn)}>{fn.name}<Badge>{fn.type}</Badge></DropdownItem>)
+                        )}
+                    </FunctionsContext.Consumer>
+                </DropdownMenu>
+            </UncontrolledDropdown>
+            <Button onClick={this._addIfThenElse} className="btn-square item" ref="_addIfThenElseBtn">If-Then-Else</Button>
+            <Button onClick={this._addSwitch} className="btn-square item" ref="_addSwitchBtn">Switch</Button>
+            <Button onClick={this._addMerge} className="btn-square item" ref="_addMergeBtn">Merge</Button>
+            <UncontrolledDropdown direction="right" className="item">
+                <DropdownToggle className="btn-square" ref="_compoundDropdownToggle">
+                    Compound
+                </DropdownToggle>
+                <DropdownMenu className="rounded-0">
+                    <DropdownItem onClick={this._addParallel}>Parallel</DropdownItem>
+                    <DropdownItem onClick={this._addParallelFor}>ParallelFor</DropdownItem>
+                </DropdownMenu>
+            </UncontrolledDropdown>
+        </div>
     }
 
 }
