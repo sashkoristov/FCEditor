@@ -50,14 +50,14 @@ class Functions extends React.Component {
         this.setState({
             isAddFunctionModalOpen: !isAddFunctionModalOpen
         });
-    }
+    };
 
     _addFunction = () => {
         if (this.state.newFn.name.length > 0 && this.state.newFn.type.length > 0) {
             this.context.add(this.state.newFn);
             this.setState(INITIAL_STATE);
         }
-    }
+    };
 
     render() {
         return (

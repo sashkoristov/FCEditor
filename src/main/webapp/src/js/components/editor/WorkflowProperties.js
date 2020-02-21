@@ -24,7 +24,7 @@ class WorkflowProperties extends React.Component {
         const {workflow} = this.state;
         workflow[prop] = newVal;
         this.setState({workflow: workflow});
-    }
+    };
 
     _handleDataItemChange = (type, index, prop, newVal) => {
         const {workflow} = this.state;
@@ -43,7 +43,7 @@ class WorkflowProperties extends React.Component {
         const {workflow} = this.state;
         workflow[type].splice(index,1);
         this.setState({workflow: workflow});
-    }
+    };
 
     render() {
         return <>

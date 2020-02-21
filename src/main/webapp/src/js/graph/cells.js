@@ -13,8 +13,8 @@ const { mxUtils, mxConstants, mxPerimeter } = mxgraph;
 let start = {
     name: 'start',
     style: mxUtils.clone(cellStyle),
-    width: 46,
-    height: 46,
+    width: 40,
+    height: 40,
     ports: {
         out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH}
     }
@@ -29,8 +29,8 @@ start.style[mxConstants.STYLE_STROKECOLOR] = '#051923';
 let end = {
     name: 'end',
     style: mxUtils.clone(cellStyle),
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     ports: {
         in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH}
     }
@@ -40,13 +40,12 @@ end.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
 end.style[mxConstants.STYLE_FILLCOLOR] = '#ddd';
 end.style[mxConstants.STYLE_FONTCOLOR] = '#000';
 end.style[mxConstants.STYLE_STROKECOLOR] = '#ccc';
-end.style[mxConstants.STYLE_STROKEWIDTH] = 4;
 
 let merge = {
     name: 'merge',
     style: mxUtils.clone(cellStyle),
-    width: 40,
-    height: 28,
+    width: 28,
+    height: 20,
     ports: {
         in: {x: 0, y: 0.5, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
         out: {x: 1, y: 0.5, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
@@ -54,15 +53,14 @@ let merge = {
 };
 merge.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_TRIANGLE;
 merge.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.TrianglePerimeter;
-merge.style[mxConstants.STYLE_STROKEWIDTH] = 4;
 merge.style[mxConstants.STYLE_DIRECTION] = mxConstants.DIRECTION_SOUTH;
 
 let fn = {
     name: 'fn',
     type: mxUtils.getFunctionName(afcl.functions.AtomicFunction),
     style: mxUtils.clone(cellStyle),
-    width: 100,
-    height: 44,
+    width: 88,
+    height: 32,
     ports: {
         in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
         out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
@@ -77,8 +75,8 @@ let cond = {
     name: 'cond',
     type: mxUtils.getFunctionName(afcl.functions.IfThenElse),
     style: mxUtils.clone(cellStyle),
-    width: 70,
-    height: 60,
+    width: 44,
+    height: 44,
     ports: {
         in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
         then: {x: 0.75, y: 0.75, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
@@ -88,14 +86,14 @@ let cond = {
 cond.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RHOMBUS;
 cond.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter;
 cond.style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP;
-cond.style[mxConstants.STYLE_SPACING_TOP] = 20;
+cond.style[mxConstants.STYLE_SPACING_TOP] = 14;
 
 let multicond = {
     name: 'multicond',
     type: mxUtils.getFunctionName(afcl.functions.Switch),
     style: mxUtils.clone(cond.style),
-    width: 70,
-    height: 60,
+    width: 44,
+    height: 44,
     ports: {
         in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
         out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},

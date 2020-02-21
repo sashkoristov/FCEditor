@@ -69,10 +69,16 @@ class Graph extends mxGraph {
      * @param mxCell cell
      */
     getLabel(cell) {
-        if (cell.type == cellDefs.fork.name || cell.type == cellDefs.join.name) {
-            return '';
+        if (
+            cell.edge ||
+            cell.value instanceof afcl.functions.AtomicFunction ||
+            cell.value instanceof afcl.functions.Compound ||
+            cell.type == cellDefs.start.name ||
+            cell.type == cellDefs.end.name
+        ) {
+            return super.getLabel(cell);
         }
-        return super.getLabel(cell);
+        return null;
     }
 
     /**
@@ -391,21 +397,21 @@ class Graph extends mxGraph {
         if (cellDefs[state.cell.style]) {
             let ports = cellDefs[state.cell.style].ports
 
-            // create a 12x12 rectangle where the mouse pointer is,
+            // create a 6x6 rectangle where the mouse pointer is,
             // relative to the hovered cell
             let relPoint = mxUtils.convertPoint(state.shape.node, x, y);
-            let relRect = new mxRectangle(relPoint.x - 6, relPoint.y -6, 12, 12);
+            let relRect = new mxRectangle(relPoint.x - 3, relPoint.y - 3, 6, 6);
             relRect.x = relRect.x > 0 ? relRect.x : 0;
             relRect.y = relRect.y > 0 ? relRect.y : 0;
 
             for (let portId in ports) {
                 let port = ports[portId];
-                // create the 12x12 rectangle for the port
+                // create the 6x6 rectangle for the port
                 let portRect = new mxRectangle(
-                    (state.cell.geometry.width * port.x) - 6,
-                    (state.cell.geometry.height * port.y) - 6,
-                    12,
-                    12
+                    (state.cell.geometry.width * port.x) - 3,
+                    (state.cell.geometry.height * port.y) - 3,
+                    6,
+                    6
                 );
                 portRect.x = portRect.x > 0 ? portRect.x : 0;
                 portRect.y = portRect.y > 0 ? portRect.y : 0;

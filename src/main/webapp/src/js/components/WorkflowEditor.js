@@ -4,8 +4,9 @@
  * @author Ben Walch, 2019-2020
  */
 
-import axios from "axios";
-import React from "react";
+import axios from 'axios';
+import React from 'react';
+import { Prompt } from 'react-router';
 
 import {
     Row,
@@ -77,10 +78,12 @@ class WorkflowEditor extends React.Component {
         super(props);
 
         this.state = {
+            workflow: new afcl.Workflow('Untitled'),
             graph: {},
             selectedCell: null,
-            workflow: new afcl.Workflow('Untitled'),
-            isLoading: false
+            isLoading: false,
+            isEditing: false,
+            isShowXmlModalOpen: false
         };
     }
 
@@ -130,10 +133,10 @@ class WorkflowEditor extends React.Component {
         graph.setPortsEnabled(false);
 
         // key handler
-        const keyHandler = new mxKeyHandler(graph);
+        this._keyHandler = new mxKeyHandler(graph);
 
-        keyHandler.bindKey(46, this._removeSelected);
-        keyHandler.bindKey(8, this._removeSelected);
+        this._keyHandler.bindKey(46, this._removeSelected);
+        this._keyHandler.bindKey(8, this._removeSelected);
 
         // Enables rubberband selection
         new mxRubberband(graph);
@@ -152,6 +155,16 @@ class WorkflowEditor extends React.Component {
         graph.view.getTerminalPort = (state, terminal, source) => {
             return terminal;
         };
+
+        // add/remove cells callback
+        graph.addListener(mxEvent.CELLS_ADDED, (sender, evt) => {
+            let addedCells = evt.getProperty('cells');
+            this._onCellsAdded(addedCells);
+        });
+        graph.addListener(mxEvent.CELLS_REMOVED, (sender, evt) => {
+            let removedCells = evt.getProperty('cells');
+            this._onCellsRemoved(removedCells);
+        });
 
         // on select callback
         graph.selectionCellsHandler.addListener(mxEvent.ADD, (sender, evt) => {
@@ -307,6 +320,14 @@ class WorkflowEditor extends React.Component {
         );
     };
 
+    _onCellsAdded = (addedCells) => {
+        this._updateEditingState();
+    };
+
+    _onCellsRemoved = (removedCells) => {
+        this._updateEditingState();
+    };
+
     _onCellSelectionChange = () => {
         const { graph } = this.state;
         let selectedCells = graph.getSelectionCells();
@@ -323,7 +344,7 @@ class WorkflowEditor extends React.Component {
         this.setState({
             selectedCell: cell
         });
-    }
+    };
 
     _onCellConnected = (edge, source, target) => {
         const {graph} = this.state;
@@ -344,13 +365,23 @@ class WorkflowEditor extends React.Component {
         }
     };
 
+    _updateEditingState = () => {
+        this.setState({
+            'isEditing':
+                !this.state.graph.isEmpty() ||
+                this.state.workflow.getName() != 'Untitled'
+        });
+    };
+
     _removeSelected = () => {
         const {graph} = this.state;
         graph.isEnabled() && graph.removeCells(graph.getSelectionCells());
     };
 
     _showXml = () => {
-        mxUtils.popup(this._getWorkflowXml(), true);
+        this.setState({
+            isShowXmlModalOpen: true
+        });
     };
 
     _validateGraph = () => {
@@ -507,12 +538,15 @@ class WorkflowEditor extends React.Component {
                     </Card>
                 </Col>
             </Row>
-            <Modal isOpen={this.state.isLoadWorkflowModalOpen}>
-                <ModalHeader toggle={this._toggleLoadWorkflowModal}>Modal Header</ModalHeader>
+            <Modal isOpen={this.state.isShowXmlModalOpen} size="lg">
+                <ModalHeader toggle={() => this.setState({'isShowXmlModalOpen': !this.state.isShowXmlModalOpen})}>View Workflow XML</ModalHeader>
                 <ModalBody>
-                    <WorkflowUploadForm />
+                    <pre>
+                        {this.state.isShowXmlModalOpen ? this._getWorkflowXml() : ''}
+                    </pre>
                 </ModalBody>
             </Modal>
+            <Prompt when={this.state.isEditing} message={location => location.pathname.startsWith('/editor') ? true : 'Are you sure you want to go to ' + location.pathname + "?\n" + 'All unsaved changes will be lost.'} />
         </div>
     }
 

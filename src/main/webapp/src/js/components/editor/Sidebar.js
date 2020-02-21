@@ -36,10 +36,10 @@ class Sidebar extends React.Component {
 
         ReactDOM.findDOMNode(this.refs._addStartBtn).prepend(this._createThumb(cellDefs.start, 40, 40));
         ReactDOM.findDOMNode(this.refs._addEndBtn).prepend(this._createThumb(cellDefs.end, 40, 40));
-        ReactDOM.findDOMNode(this.refs._fnDropdownToggle).prepend(this._createThumb(cellDefs.fn, 40, 32));
+        ReactDOM.findDOMNode(this.refs._fnDropdownToggle).prepend(this._createThumb(cellDefs.fn, 48, 28));
         ReactDOM.findDOMNode(this.refs._addIfThenElseBtn).prepend(this._createThumb(cellDefs.cond, 44, 44));
         ReactDOM.findDOMNode(this.refs._addSwitchBtn).prepend(this._createThumb(cellDefs.multicond, 44, 44));
-        ReactDOM.findDOMNode(this.refs._addMergeBtn).prepend(this._createThumb(cellDefs.merge, 32, 24));
+        ReactDOM.findDOMNode(this.refs._addMergeBtn).prepend(this._createThumb(cellDefs.merge, 28, 20));
         ReactDOM.findDOMNode(this.refs._compoundDropdownToggle).prepend(this._createThumb(cellDefs.container, 60, 44));
     }
 
@@ -179,7 +179,7 @@ class Sidebar extends React.Component {
             // add sub cells, if any
             if (cellDef.subCells) {
                 for (let subCell in cellDef.subCells) {
-                    let subV = graph.insertVertex(
+                    let subV = this.props.graph.insertVertex(
                         v,
                         null,
                         subCell,
@@ -225,8 +225,8 @@ class Sidebar extends React.Component {
                     Compound
                 </DropdownToggle>
                 <DropdownMenu className="rounded-0">
-                    <DropdownItem onClick={this._addParallel}>Parallel</DropdownItem>
-                    <DropdownItem onClick={this._addParallelFor}>ParallelFor</DropdownItem>
+                    <DropdownItem onClick={() => this._addParallel()}>Parallel</DropdownItem>
+                    <DropdownItem onClick={() => this._addParallelFor()}>ParallelFor</DropdownItem>
                 </DropdownMenu>
             </UncontrolledDropdown>
         </div>
