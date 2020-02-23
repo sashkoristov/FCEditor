@@ -6,8 +6,12 @@
 import mxgraph from '../../mxgraph';
 
 import * as afcl from '../../afcl';
+import Cell from '../model/Cell';
 
 const { mxCodec, mxCodecRegistry, mxConstants } = mxgraph;
+const _OBJS = {
+    'Cell': Cell
+};
 
 class Codec extends mxCodec {
 
@@ -21,7 +25,7 @@ class Codec extends mxCodec {
 
             try
             {
-                ctor = afcl.functions[node.nodeName] ?? afcl.objects[node.nodeName] ?? afcl[node.nodeName];
+                ctor = afcl.functions[node.nodeName] ?? afcl.objects[node.nodeName] ?? afcl[node.nodeName] ?? _OBJS[node.nodeName];
             }
             catch (err)
             {
@@ -31,7 +35,7 @@ class Codec extends mxCodec {
 
             if (ctor != null) {
 
-                var dec = mxCodecRegistry.getCodec(ctor);
+                var dec = mxCodecRegistry.getCodec(ctor) ?? mxCodecRegistry.getCodec(node.nodeName);
 
                 if (dec != null) {
                     obj = dec.decode(this, node, into);

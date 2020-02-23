@@ -37,7 +37,7 @@ public class WorkflowConversionService {
                 setCommonProperties(workflowEl, w);
             }
 
-            Node startNode = getNode(doc, "/Workflow/Object[@as='body']/Cell[@type='start']");
+            Node startNode = getNode(doc, "/Workflow/Array[@as='body']/Cell[@type='start']");
             List<Function> functions = generateFunctions(startNode, doc, null);
 
             w.setWorkflowBody(functions);
@@ -61,8 +61,8 @@ public class WorkflowConversionService {
             Element el = (Element) n;
             if (el.hasAttribute("vertex")) {
                 System.out.println(el.getAttribute("type"));
-                Node edge = getNode(doc, "/Workflow/Object[@as='body']/Cell[@source='" + el.getAttribute("id") + "']");
-                NodeList edges = getNodes(doc, "/Workflow/Object[@as='body']/Cell[@source='" + el.getAttribute("id") + "']");
+                Node edge = getNode(doc, "/Workflow/Array[@as='body']/Cell[@source='" + el.getAttribute("id") + "']");
+                NodeList edges = getNodes(doc, "/Workflow/Array[@as='body']/Cell[@source='" + el.getAttribute("id") + "']");
                 switch (el.getAttribute("type")) {
                     case "start":
                         generateFunctions(edge, doc, functionsList);
@@ -76,9 +76,9 @@ public class WorkflowConversionService {
                     case "IfThenElse":
                         Element iteEl = getDirectChild(el, "IfThenElse");
                         IfThenElse ite = generateIfThenElse(iteEl);
-                        Node thenNode = getNode(doc, "/Workflow/Object[@as='body']/Cell[@source='" + el.getAttribute("id") + "'][@value='then']");
+                        Node thenNode = getNode(doc, "/Workflow/Array[@as='body']/Cell[@source='" + el.getAttribute("id") + "'][@value='then']");
                         ite.setThen(generateFunctions(thenNode, doc, null));
-                        Node elseNode = getNode(doc, "/Workflow/Object[@as='body']/Cell[@source='" + el.getAttribute("id") + "'][@value='else']");
+                        Node elseNode = getNode(doc, "/Workflow/Array[@as='body']/Cell[@source='" + el.getAttribute("id") + "'][@value='else']");
                         ite.setElse(generateFunctions(elseNode, doc, null));
                         functionsList.add(ite);
                         break;
@@ -96,8 +96,8 @@ public class WorkflowConversionService {
                         Parallel par = generateParallel(parEl);
                         List<Section> parallelSection = new ArrayList<>();
 
-                        Element pForkEl = (Element) getNode(doc, "/Workflow/Object[@as='body']/Cell[@parent='" + el.getAttribute("id") + "'][@type='fork']");
-                        NodeList pForkEdges = getNodes(doc, "/Workflow/Object[@as='body']/Cell[@source='" + pForkEl.getAttribute("id") + "']");
+                        Element pForkEl = (Element) getNode(doc, "/Workflow/Array[@as='body']/Cell[@parent='" + el.getAttribute("id") + "'][@type='fork']");
+                        NodeList pForkEdges = getNodes(doc, "/Workflow/Array[@as='body']/Cell[@source='" + pForkEl.getAttribute("id") + "']");
                         for (int i = 0; i < pForkEdges.getLength(); i++) {
                             parallelSection.add(new Section(generateFunctions(pForkEdges.item(i), doc, null)));
                         }
@@ -108,7 +108,7 @@ public class WorkflowConversionService {
                         Element parForEl = getDirectChild(el, "ParallelFor");
                         ParallelFor parFor = generateParallelFor(parForEl);
 
-                        Node forkNode = getNode(doc, "/Workflow/Object[@as='body']/Cell[@parent='" + el.getAttribute("id") + "'][@type='fork']");
+                        Node forkNode = getNode(doc, "/Workflow/Array[@as='body']/Cell[@parent='" + el.getAttribute("id") + "'][@type='fork']");
                         parFor.setLoopBody(generateFunctions(forkNode, doc, null));
                         functionsList.add(parFor);
                         break;
@@ -126,7 +126,7 @@ public class WorkflowConversionService {
             }
             if (el.hasAttribute("edge")) {
                 System.out.println("Following edge to target " + el.getAttribute("target"));
-                Node t = getNode(doc, "/Workflow/Object[@as='body']/Cell[@id='" + el.getAttribute("target") + "']");
+                Node t = getNode(doc, "/Workflow/Array[@as='body']/Cell[@id='" + el.getAttribute("target") + "']");
                 generateFunctions(t, doc, functionsList);
             }
         } else {

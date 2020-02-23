@@ -11,9 +11,9 @@ const mxgraph = mx({
 // decode bug https://github.com/jgraph/mxgraph/issues/49
 window.mxGraph = mxgraph.mxGraph;
 window.mxGraphModel = mxgraph.mxGraphModel;
-window.mxEditor = mxgraph.mxEditor;
-window.mxGeometry = mxgraph.mxGeometry;
 window.mxCell = mxgraph.mxCell;
+window.mxGeometry = mxgraph.mxGeometry;
+window.mxPoint = mxgraph.mxPoint;
 window.mxDefaultKeyHandler = mxgraph.mxDefaultKeyHandler;
 window.mxDefaultPopupMenu = mxgraph.mxDefaultPopupMenu;
 window.mxStylesheet = mxgraph.mxStylesheet;

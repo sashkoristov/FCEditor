@@ -3,7 +3,7 @@ class Workflow {
         this.name = name;
         this.dataIns = [];
         this.dataOuts = [];
-        this.body = null;
+        this.body = [];
     }
 
     getName() {

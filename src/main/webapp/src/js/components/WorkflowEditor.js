@@ -26,6 +26,7 @@ import {
 } from 'reactstrap';
 
 import FileSaver from 'file-saver';
+import FileDialog from 'file-dialog'
 
 import mxgraph from '../mxgraph';
 const {
@@ -50,9 +51,6 @@ const {
 import pointImg from '../../assets/images/point.svg';
 import checkImg from '../../assets/images/check.svg';
 import cancelImg from '../../assets/images/cancel.svg';
-
-import WorkflowUploadForm from './WorkflowUploadForm';
-import FileUpload from './FileUpload';
 
 import * as afcl from '../afcl/';
 import * as cellDefs from '../graph/cells';
@@ -131,6 +129,8 @@ class WorkflowEditor extends React.Component {
         graph.setMultigraph(false);
         graph.setDisconnectOnMove(false);
         graph.setPortsEnabled(false);
+        //graph.resetEdgesOnConnect = false;
+        //graph.maintainEdgeParent = false;
 
         // key handler
         this._keyHandler = new mxKeyHandler(graph);
@@ -389,10 +389,29 @@ class WorkflowEditor extends React.Component {
         graph.validateGraph();
     };
 
+    _getCells = (parent) => {
+        let cells = [];
+
+        if (parent == null) {
+            return [];
+        }
+
+        cells.push(parent);
+        var childCount = parent.getChildCount();
+
+        for (var i = 0; i < childCount; i++)
+        {
+            cells = cells.concat(this._getCells(parent.getChildAt(i)));
+        }
+
+        return cells;
+    };
+
     _getWorkflowXml = () => {
         const {workflow} = this.state;
         const {graph} = this.state;
-        workflow.setBody(graph.getModel().cells);
+
+        workflow.setBody(this._getCells(graph.getDefaultParent()));
 
         const enc = new mxCodec(mxUtils.createXmlDocument());
         const xmlModel = enc.encode(workflow);
@@ -451,8 +470,36 @@ class WorkflowEditor extends React.Component {
     };
 
     // Parses the mxGraph XML file format
-    _loadWorkflow = (file) => {
+    _loadWorkflow = () => {
 
+        FileDialog(
+            {
+                multiple: false,
+                accept: ['text/xml', 'application/json', 'application/x-yaml']
+            },
+            files => {
+                let file = files[0];
+
+                if (!file) {
+                    return;
+                }
+
+                var reader = new FileReader();
+                reader.onload = (e) => {
+                    var contents = e.target.result;
+                    switch (file.type) {
+                        case 'text/xml':
+                            this._loadXml(contents);
+                            break;
+                        case 'application/json':
+                        case 'application/x-yaml':
+                    }
+                };
+                reader.readAsText(file);
+            }
+        );
+
+        /*
         const formData = new FormData();
         formData.append('file', file);
         const config = {
@@ -460,19 +507,49 @@ class WorkflowEditor extends React.Component {
                 'content-type': 'multipart/form-data'
             }
         };
-
-        axios.post('api/workflow/load');
-
-        const {graph} = this.state;
-
-        console.log(file);
-
+        */
     };
 
-    _showWorkflowFileDialog = () => {
-        this.setState({
-            isLoading: true
-        });
+    _loadXml = (xmlString) => {
+        const {graph} = this.state;
+
+        let xmlDoc = mxUtils.parseXml(xmlString);
+        let decoder = new mxGraphOverrides.Codec(xmlDoc);
+        let workflow = decoder.decode(xmlDoc.documentElement);
+
+        let vertices = workflow.getBody().filter(cell => cell.isVertex());
+        let edges = workflow.getBody().filter(cell => cell.isEdge());
+
+        // clear graph
+        // ToDo: confirm
+        graph.getModel().clear();
+
+        graph.getModel().beginUpdate();
+
+        try {
+            vertices.map(v => {
+                if (v.getType() != null) {
+                    let parent = v.getParent().getId() != 1 ? graph.getModel().getCell(v.getParent().getId()) : graph.getDefaultParent();
+                    graph.addCell(
+                        v,
+                        parent,
+                        v.getId()
+                    );
+                }
+            });
+            edges.map(e => {
+                let parent = e.getParent().getId() != 1 ? graph.getModel().getCell(e.getParent().getId()) : graph.getDefaultParent();
+                graph.addCell(
+                    e,
+                    parent,
+                    e.getId()
+                );
+            });
+        } finally {
+            graph.getModel().endUpdate();
+        }
+
+        this.setState({ workflow: workflow });
     };
 
     render() {
@@ -501,7 +578,7 @@ class WorkflowEditor extends React.Component {
                                     Validate
                                 </Button>
                                 |
-                                <Button className="btn mx-2">
+                                <Button className="btn mx-2" onClick={this._loadWorkflow}>
                                     <span className="cil-folder-open mr-1" />
                                     Load
                                 </Button>

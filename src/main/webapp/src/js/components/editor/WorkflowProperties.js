@@ -20,6 +20,12 @@ class WorkflowProperties extends React.Component {
         this.state = {workflow: props.workflow};
     }
 
+    componentWillReceiveProps(nextProps, nextContext) {
+        if(nextProps.workflow !== this.props.workflow) {
+            this.setState({ workflow: nextProps.workflow });
+        }
+    }
+
     _handlePropChange = (prop, newVal) => {
         const {workflow} = this.state;
         workflow[prop] = newVal;

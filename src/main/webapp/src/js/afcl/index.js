@@ -23,13 +23,15 @@ import DataOuts from './objects/DataOuts';
 import DataEval from './objects/DataEval';
 import CompositeCondition from './objects/CompositeCondition';
 import Condition from './objects/Condition';
+import LoopCounter from './objects/LoopCounter';
 
 let objects = {
     DataIns,
     DataOuts,
     DataEval,
     CompositeCondition,
-    Condition
+    Condition,
+    LoopCounter
 };
 
 let types = {

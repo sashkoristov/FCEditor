@@ -49,7 +49,7 @@ class FunctionProperties extends React.Component {
     _removeDataItem = (type, index) => {
         this.props.obj[type].splice(index,1);
         this.setState(this.props.obj);
-    }
+    };
 
     render() {
         return <>

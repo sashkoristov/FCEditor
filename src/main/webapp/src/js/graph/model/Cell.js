@@ -28,7 +28,7 @@ class Cell extends mxCell {
      * @returns {string|null}
      */
     getType(type) {
-        return this.type || null;
+        return this.type;
     }
 
 }
