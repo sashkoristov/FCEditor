@@ -1,4 +1,4 @@
-\documentclass[a4paper,11pt,pdftex,halfparskip,cleardoubleempty]{scrbook}
+\documentclass[a4paper,11pt,pdftex,halfparskip,cleardoubleempty,bibtotoc,liststotoc]{scrbook}
 
 \raggedbottom
 
@@ -12,6 +12,7 @@
 \usepackage{tabularx}
 \usepackage{float}
 \usepackage{listings}
+\usepackage[toc,page]{appendix}
 
 \setlength{\tabcolsep}{20pt}
 \renewcommand{\arraystretch}{4}
@@ -51,14 +52,14 @@
 \pagenumbering{arabic}
 \pagestyle{plain}
 
-\section*{Abstract}
+\chapter*{Abstract}
 In the FaaS world, there exist many providers who offer serverless execution of code (functions) in the cloud. Each of them has its own specifications and definitions on how functions are deployed and executed, and how workflows are created and executed.
 \par
-The Distributed and Parallel Systems group developed the "Abstract Function Choreography Language" (AFCL). It is a specification for describing serverless workflows. Also, a Java API, to describe serverless application workflows programmatically was developed.
-The product which results in using that API is the workflow being described in AFCL in a text file.
+The Distributed and Parallel Systems group developed the "Abstract Function Choreography Language" (AFCL). It is a specification for describing serverless workflows. Also, a Java API, to describe serverless application workflows programmatically, was developed.
+The product which results in using that API is a workflow being described in AFCL in a text file.
 Until now, the workflow described in the text file has to be created manually (by editing the file directly), or a programmer has to write Java code which utilizes the API to generate the file.
 \par
-The aim of this bachelor project is to develop a visual workflow editor, which makes modeling of workflows possible at a high level of abstraction. The tool should not only be able to load, display and save workflows, but also to optimize workflows for multiple \emph{FaaS} provider(s) in case of quotas and limits, and also in case of performance.
+The aim of this bachelor project is to develop a visual workflow editor, which makes modeling of workflows possible at a high level of abstraction. The tool should not only be able to load, display and save workflows, but also optimize workflows for multiple FaaS provider(s) in case of quotas and limits, and also in case of performance.
 
 \cleardoublepage
 
@@ -66,7 +67,7 @@ The aim of this bachelor project is to develop a visual workflow editor, which m
 
 \newpage
 
-\section{Introduction}
+\chapter{Introduction}
 "Run code, not Server" is the most recent term in the cloud computing environment.
 With the rise of the serverless technology during the last years, \emph{FaaS} became more and more popular.
 With the serverless technology, a high level of flexibility in execution of code became possible. Global Players like Amazon, Google, IBM and Microsoft jumped on the train and provide their infrastructure to Developers, able to deploy functions and execute them in the cloud. Each system has its own definitions on how to define, deploy and run a function. Many providers also offer a tool to model a workflow and execute it (Amazon Step Functions, IBM Cloud Functions, Microsoft Azure Functions, Google Cloud Functions, ...)
@@ -75,17 +76,17 @@ The distributed and parallel systems group developed a specification
 
 \label{sec:introduction}
 
-\section{Background}
+\chapter{Background}
 
-\subsection{FaaS}
-\subsection{AFCL}
+\section{FaaS}
+\section{AFCL}
 
-\section{Overview}
+%\chapter{Overview}
 
-\section{Implementation}
-The Implementation of a Graphical User Interface as well as the optimization for Workflows were the main goals of this bachelor thesis. 
+\chapter{Implementation}
+The Implementation of a Graphical User Interface as well as the optimization of workflows were the main goals of this bachelor thesis. 
 
-\subsection{Requirements}
+\section{Requirements}
 
 \begin{itemize}
 	\item design for the overall application [coreUI]
@@ -97,8 +98,19 @@ The Implementation of a Graphical User Interface as well as the optimization for
 	\item performance [?]
 \end{itemize}
 
-\subsection{Frontend}
-One of the main parts of the application is the frontend. Since a web based frontend which, runs in the user's web browser, is a hard requirement, the core technologies are limited to HTML, CSS and JavaScript.
+\section{Architecture}
+
+Operating mostly decoupled from one another, the application architecture consists of two main components - Backend and Frontend - which transfer data between each other by an API. The backend is responsible for converting and optimizing workflows at low-level. This is done by utilizing the AFCL API. The frontend is responsible for visualizing the data and controls the application's user interface.
+
+\begin{figure}[h]
+  \centering
+  \vspace{0.8cm}
+  \includegraphics[scale=0.8]{architecture}
+  \caption{application architecture}
+\end{figure}
+
+\section{Frontend}
+Since a web based frontend which, runs in the user's web browser, is a hard requirement, the core technologies are limited to HTML, CSS and JavaScript.
 \par
 A prototyping phase was the kickoff for the development: Different frameworks and libraries have been researched, tested and selected. For the selection, the following criteria have been taken into account:
 \begin{itemize}
@@ -115,8 +127,8 @@ In the following sections, the setup and each chosen technology and frameworks a
 
 % add definitions here (EcmaScript JavaScript SASS ...)
 
-% \subsubsection{Development Workflow}
-\subsubsection{Setup}
+% \subsection{Development Workflow}
+\subsection{Setup}
 
 The setup of the frontend application is a selection of tools and technologies for modern and complex web development.
 Under the hood, JavaScript and several JavaScript Frameworks are in action to control the application consisting of several UI components. To give the application its look and feel, CSS and some CSS Frameworks are in use.
@@ -125,10 +137,12 @@ Webpack does much of heavy-lifting, by bundling all sources with the assets into
 Babel is used as such a webpack loader, for compiling the ECMAScript and React JSX source code to browser-compatible JavaScript.
 The same applies for the CSS extension SASS, which is also integrated as a webpack loader, and is used to make the process of styling the user interface more efficient.
 
+
 \begin{figure}[htbp]
   \centering
-  \includegraphics[trim={0.8cm 8.2cm 3.0cm 1cm},scale=0.6]{frontend-setup}
-  \caption{frontend development workflow}
+  \vspace{0.8cm}
+  \includegraphics[width=\textwidth]{frontend-setup}
+  \caption{frontend development toolchain}
 \end{figure}
 %%% TECHNOLOGIES / TOOLS %%%
 
@@ -150,27 +164,59 @@ webpack is a module bundler, its main purpose is to bundle JavaScript code for t
 
 The scripting language specification ECMAScript (ES) was created to standardize JavaScript. With the release of ES6 (also known as ECMAScript 2015), features like class declarations, module imports and arrow function expressions became possible. After ES6, every year a new edition of the ECMAScript standard was finalized and released, offering new features. Worth mentioning here is the rest/spread operator released with ES9, which occurs a lot in the source code of this thesis.\\
 % spread operator is a lot in use in source code
-Since current browsers only have partial support of ECMAScript, a compile 'transcompiler' (or transpiler) is needed to transform the ECMAScript source code to JavaScript common browsers are capable of interpreting.
-This process of compiling is done with Babel\footnote{https://babeljs.io}, which is configured to not only compile ECMAScript, but also JSX to JavaScript.
+Since current browsers only have partial support of ECMAScript, a 'transcompiler' (or transpiler) is needed to transform the ECMAScript source code to JavaScript, which common browsers are capable of interpreting.
+This compiling process is done with Babel\footnote{https://babeljs.io}, which is configured to not only compile ECMAScript, but also JSX to JavaScript.
 
 \subsubsection{SASS}
 
-CSS, in its pure form, reaches its limits when one thinks about using variables, functions or nested rules. SASS\footnote{https://sass-lang.com} is a stylesheet language, which is compiled to CSS and offers the mentioned and even more features.
-A lot of CSS Frameworks also offer its source code in SASS with a large variable set which makes it easy to customize.
+CSS, in its pure form, reaches its limits when one thinks about using variables, functions or nested rules. SASS\footnote{https://sass-lang.com} is a stylesheet language, which is - similiar to ES - compiled to CSS and offers the mentioned and even more features.
+A lot of CSS Frameworks also provide their source code in SASS, often served with a large variable set which makes it easy to customize it. The transpiler used in this thesis to transform SASS to CSS is node-sass\footnote{https://github.com/sass/node-sass}.
 
-%%% FRAMEWORKS %%%
+\subsection{Data model}
+
+All AFCL Java model classes have been ported to ECMAScript, to have all classes and properties available in the frontend, similiar like they are in the backend. Although plain JavaScript objects would also do the job, this adds a kind of type-safety and improves readability of the code. Also, the data exchange with the backend and the encoding of the graph benefit from this approach, since the XML node names map to constructor names.
+
+\subsection{Graph}
+
+A workflow can be visualized as a directed graph.
+The graph library used in this thesis to visualize a workflow is the JavaScript portion of mxGraph\footnote{https://jgraph.github.io/mxgraph/}. It is actively maintained and developed (during the development of the frontend, three bugfix releases and one minor release have been made public) and has an outstanding documentation. Additionally, it has a lot of demos and example code which show a lot of use cases and extensive features. Furthermore it integrates easily with React.
+
+Basically, vertices and edges are represented by an \texttt{mxCell} model, which stores information about the cell's position, dimension, geometry and style.
+Additionally, a user object can be attached to a \texttt{mxCell}. User objects give the graph its context, they store the business logic associated with the visual part. In this application, the cell's user objects are instances of AFCL objects.
+
+Thus, the graph visualizes the execution sequence of the workflow.
+
+% table vertices and user objects
+
+\subsubsection{Validation}
+
+\subsubsection{Encoding}
+
+\subsubsection{Alternatives}
+
+One of the more difficult tasks was to choose a proper library for graph drawing. Since the graph drawing and visualization is one of the most important features of the frontend, a careful choice has to be made. Of course there exist multiple excellent JavaScript graph drawing libraries. 
+
+When searching a JavaScript library, a good starting point is 
+
+Below is a list of tested and researched JavaScript graph libraries with additional information why they were insufficient for the project.
+\begin{itemize}
+	\item \textbf{jsPlumb} is a library of great quality and looks like it would fit all the requirements for graph drawing and user interaction out of the box. It has a very good documentation, and a lot of examples. Furthermore its animations and drag and drop handling are outstandingly good. Unfortunately this software is not open source and a license costs a few thousand dollars.
+	\item The same goes for \textbf{Rappid} (formerly known as JointJS) and \textbf{GoJS}, which is even more expensive.
+	\item \textbf{diagram-js} is one of the newer diagram libraries. It seems to be a good candidate to draw BPMN\footnote{http://www.bpmn.org} graphs. The lack of an appropriate documentation - even after 4 years of existence (there exists an open issue on github\footnote{https://github.com/bpmn-io/diagram-js/issues/78} for this) - is an issue.
+	\item \textbf{Cytoscape.js} is older than mxGraph but the development and the community is not less active. This library has a very good documentation and a lot of demos are provided. But it offers fewer examples and "out-of-the-box" features for modeling flowcharts than mxGraph.
+	\item \textbf{vis.js} is the star on npmtrends. It has a very smooth animations when manipulating the graph. There exists only one example of graph manipulation on its documentation. 
+	\item \textbf{Sigma JS} is a tiny library with a small documentation. It clearly focuses on displaying and visualizing graphs, not on modeling them. This part would have to be developed manually. Furthermore, the last activity on this project on github was 2 years ago.
+\end{itemize}
 
 \subsection{Web Interface}
 
-The layout of the web interface is based on coreUI\footnote{https://coreui.io}, a admin panel template, built on top of the web toolkit Bootstrap\footnote{https://getbootstrap.com}. A clean and nested structure of components, which is typical for a React app, guarantees modularity and forms the whole application. The main component has four sub-components - where each of them consists again of multiple sub-components represent the core features of the app.
-
-
+The layout of the web interface is based on coreUI\footnote{https://coreui.io}, an admin panel template, built on top of the web toolkit Bootstrap\footnote{https://getbootstrap.com}. A clean and nested structure of components, which is typical for a React app, guarantees modularity and forms the whole frontend application. One of the benefits when using React is that the data model displayed to the user maps most of the time nicely to UI components. Basically, the components of the application respect the single responsibility principle\footnote{https://en.wikipedia.org/wiki/Single\_responsibility\_principle}. The main component has four sub-components - where each of them consists again of multiple sub-components - representing the core features of the app.
 
 \subsubsection{Dashboard}
 
 The dashboard is the entry point where the user lands after accessing the app. The purpose of this component is to give the user a quick overview of the application, provide short informational texts and links to the specific modules. 
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{dashboard}
   \caption{the dashboard}
@@ -180,7 +226,7 @@ The dashboard is the entry point where the user lands after accessing the app. T
 
 A function repository is needed to know about available functions when composing a workflow. An item in the function repository holds the following data: name, type and provider. For In the implementation of this thesis, this data is persisted to an internal file.\footnote{see \ref{Backend-Persistence} for detailed information on how data is persisted}
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{functions}
   \caption{the function repository}
@@ -188,48 +234,37 @@ A function repository is needed to know about available functions when composing
 
 \subsubsection{Editor}
 \par
-The interface of the component for composing workflows is divided into two parts, on the left side is the editor, consisting of a toolbar and a drawing area. On the right side is the property view. In the editor, the user can choose a function from the toolbar to place it in the drawing area below.  For the sake of clarity, each function has a defined shape and style. In the drawing area, these shapes (functions) can then be connected to each other by drag and drop. This leads to a directed graph, which represent the execution flow. The possible connection points (ports) of a shape will be displayed when hovering over it. These ports are input and output for most of the functions. When hovering a port, the port name appears in the tooltip.
+The interface of the component responsible for composing workflows is divided into two parts. On the left side is the editor, consisting of a toolbar and a drawing area, on the right side is the property view. In the editor, the user can choose a function from the toolbar to place it in the drawing area below.  For the sake of clarity, each function has a defined shape and style. In the drawing area, these shapes (functions) can then be connected to each other by drag and drop. This leads to a directed graph, which represent the execution flow. The possible connection points (ports) of a shape will be displayed when hovering over it. These ports are input and output for most of the functions. When hovering a port, the port name appears in the tooltip.
 \par
 When selecting a shape in the canvas, the property view changes. It displays each specific property of the selected function, with the ability to change, add or remove properties.
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{editor}
   \caption{the editor}
 \end{figure}
 
-\subsubsection{Graph}
-
-% User Objects in Graph
-% Validation
-% Encoding
-
 \subsubsection{Settings}
 
-%% UI
-%% Routing
-%% React and Components
-%% mxGraph and User Objects
-
-\subsection{Backend}
-\subsubsection{General}
-\subsubsection{Maven}
-\subsubsection{Servlets}
-\subsubsection{Persistence}
+\section{Backend}
+\subsection{General}
+\subsection{Maven}
+\subsection{Servlets}
+\subsection{Persistence}
 \label{Backend-Persistence}
 
 Composed workflows are be saved to the user's file system by offering a download. The user can then choose the target location.
 The storing of function data, on the other hand, is abstracted from the user and persisting of the data is handled internally.
 An interface\footnote{https://docs.oracle.com/javase/specs/jls/se7/html/jls-9.html} for the repository implementation was created on the backend side to be capable of supporting any data source. The repository which implements the interface in this thesis, stores the serialized data into a file. This could be easily replaced with any other implementation, for example an implementation which stores the data in a DBMS.
 
-\subsubsection{Api}
+\subsection{Api}
 
 
-\subsection{Continuous Delivery}
+\section{Continuous Delivery}
 
-\section{Improvements}
+\chapter{Improvements}
 
-\section{Conclusion}
+\chapter{Conclusion}
 
 
 % causes to print all bibliography
