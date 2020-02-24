@@ -47,7 +47,8 @@ Additionally, one (or both) of the following features will be implemented:
 * Node v12
 
 **Install dependencies**  
-`mvn install`  
+1. Add AFCL API to local maven repo: `mvn install:install-file -Dfile=./src/main/resources/afclAPI.jar -DgroupId=com.dps.afcl -DartifactId=afcl-api -Dversion=1.0 -Dpackaging=JAR`
+2. Install dependencies: `mvn install`  
 
 If using an IDE, reimport - e.g if using IntelliJ:  
 right click on Project -> Maven -> Reimport
