@@ -50,8 +50,13 @@ public abstract class FileBasedRepository<T extends DomainObject> implements Rep
     }
 
     @Override
-    public void add(T newObj) {
-        db.put(newObj.id, newObj);
+    public T findOne(String id) {
+        return db.get(id);
+    }
+
+    @Override
+    public void add(T obj) {
+        db.put(obj.id, obj);
         save();
     }
 
@@ -67,8 +72,9 @@ public abstract class FileBasedRepository<T extends DomainObject> implements Rep
         save();
     }
 
-    @Override
-    public boolean has(String id) {
-        return db.containsKey(id);
+    public void update(T obj) {
+        if (db.containsKey(obj.id)) {
+            db.put(obj.id, obj);
+        }
     }
 }
