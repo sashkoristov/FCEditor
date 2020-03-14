@@ -77,7 +77,7 @@ class DataOutsProperties extends React.Component {
             </Row>
             <Row className="mb-1 no-gutters">
                 <Col className="pr-1">
-                    <Input size="sm" placeholder="name" value={this.props.obj.getName()} onChange={e => this.props.changeHandler('dataOuts', this.props.index, 'name', e.target.value)} />
+                    <Input bsSize="sm" placeholder="name" value={this.props.obj.getName()} onChange={e => this.props.changeHandler('dataOuts', this.props.index, 'name', e.target.value)} />
                 </Col>
                 <Col>
                     <Input size="sm" type="select" placeholder="type" value={this.props.obj.getType()} onChange={e => this.props.changeHandler('dataOuts', this.props.index, 'type', e.target.value)}>

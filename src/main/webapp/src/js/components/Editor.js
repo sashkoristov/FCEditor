@@ -70,7 +70,7 @@ import ParallelForProperties from './editor/ParallelForProperties';
 /**
  * Workflow Editor Component
  */
-class WorkflowEditor extends React.Component {
+class Editor extends React.Component {
 
     constructor(props) {
         super(props);
@@ -558,9 +558,9 @@ class WorkflowEditor extends React.Component {
                 <Spinner size="lg" />
             </div>
         }
-        return <div className="animated fadeIn">
-            <Row>
-                <Col>
+        return <div className="animated fadeIn editor-component">
+            <Row className="no-gutters">
+                <Col className="editor-graph-view">
                     <Card className="w-100">
                         <CardHeader>
                             Graph
@@ -629,4 +629,4 @@ class WorkflowEditor extends React.Component {
 
 }
 
-export default WorkflowEditor;
+export default Editor;

@@ -73,23 +73,20 @@ class Main extends React.Component {
                         <AppSidebarMinimizer/>
                     </AppSidebar>
                     <main className="main">
-                        <AppBreadcrumb appRoutes={routes} router={router}/>
-                        <Container fluid>
-                            <FunctionsContextProvider>
-                                <Switch>
-                                    {routes.map((route, idx) => {
-                                            return route.component ? (
-                                                <Route key={idx} path={route.path} exact={route.exact} name={route.name}
-                                                       render={props => (
-                                                           <route.component {...props} />
-                                                       )}/>
-                                            ) : (null);
-                                        },
-                                    )}
-                                    <Redirect from="/" to="/dashboard"/>
-                                </Switch>
-                            </FunctionsContextProvider>
-                        </Container>
+                        <FunctionsContextProvider>
+                            <Switch>
+                                {routes.map((route, idx) => {
+                                        return route.component ? (
+                                            <Route key={idx} path={route.path} exact={route.exact} name={route.name}
+                                                   render={props => (
+                                                       <route.component {...props} />
+                                                   )}/>
+                                        ) : (null);
+                                    },
+                                )}
+                                <Redirect from="/" to="/dashboard"/>
+                            </Switch>
+                        </FunctionsContextProvider>
                     </main>
                 </div>
                 <AppFooter>

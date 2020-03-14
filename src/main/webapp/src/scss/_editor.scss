@@ -1,34 +1,59 @@
-.editor-property-view {
-  max-width: 360px;
-}
-.graph-sidebar {
-  display: flex;
-  flex-direction: column;
-  width: 72px;
-  background: theme-color('secondary');
-  button:not(.dropdown-item), .dropdown {
+.editor-component {
+
+  .card-header {
+    border-radius: 0;
+    background: white;
+    color: $breadcrumb-active-color;
+    height: 46px;
+  }
+
+  .card {
+    border: 0;
+    border-radius: 0;
+  }
+
+  .editor-graph-view {
+    border-right: 1px solid $gray-300;
+  }
+
+  .editor-property-view {
+    max-width: 360px;
+  }
+
+  .graph-sidebar {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    white-space: nowrap;
+    width: 72px;
+    background: theme-color('secondary');
+
+    button:not(.dropdown-item), .dropdown {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      white-space: nowrap;
+      width: 100%;
+      font-size: .68rem;
+    }
+  }
+
+  .graph-toolbar {
+    display: inline-block;
+    float: right;
+    text-align: right;
+
+    .btn {
+      padding: 0 0.25rem;
+    }
+  }
+
+  .graph-wrapper {
     width: 100%;
-    font-size: .68rem;
+    display: flex;
   }
-}
-.graph-toolbar {
-  display: inline-block;
-  float: right;
-  text-align: right;
-  .btn {
-    padding: 0 0.25rem;
+
+  #graph {
+    width: 100%;
+    background-color: $white;
   }
-}
-.graph-wrapper {
-  width: 100%;
-  display: flex;
-}
-#graph {
-  width: 100%;
-  background-color: $white;
 }
