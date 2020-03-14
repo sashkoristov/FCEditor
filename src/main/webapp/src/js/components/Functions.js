@@ -114,14 +114,14 @@ class Functions extends React.Component {
                             </div>
                             <Card>
                                 {fc.isLoading ? "Loading" : null}
-                                <Table hover striped>
+                                <Table hover striped borderless>
                                     <thead>
                                     <tr>
                                         <th>Identifier</th>
                                         <th>Name</th>
                                         <th>Type</th>
                                         <th>Provider</th>
-                                        <th>URL</th>
+                                        {/* <th>URL</th> */}
                                         <th>Actions</th>
                                     </tr>
                                     </thead>
@@ -135,7 +135,7 @@ class Functions extends React.Component {
                                                     <span className={PROVIDERS[fn.provider]?.icon + " font-2xl"}></span>
                                                 </a>
                                             </td>
-                                            <td>{fn.url}</td>
+                                            {/*<td>{fn.url}</td>*/}
                                             <td><Button color="dark"
                                                         onClick={() => confirm('Really delete ?') ? fc.remove(fn.id) : null}>
                                                 <FontAwesomeIcon icon={faTrash} />
