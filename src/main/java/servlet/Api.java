@@ -130,7 +130,7 @@ public class Api extends HttpServlet {
 
             String id = pathSegments[pathSegments.length-1];
 
-            if (!functionRepository.has(id)) {
+            if (functionRepository.findOne(id) == null) {
                 sendResponseJson(resp, "Not Found", HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
