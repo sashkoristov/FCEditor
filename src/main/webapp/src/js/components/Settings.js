@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container } from 'reactstrap';
+import { Container, Row, Col, Form, FormGroup, Label, Input, Button } from 'reactstrap';
 import {AppBreadcrumb} from "@coreui/react";
 import routes from "../routes";
 import * as router from "react-router-dom";
@@ -15,7 +15,29 @@ class Settings extends React.Component {
             <>
                 <AppBreadcrumb appRoutes={routes} router={router} />
                 <Container fluid>
-                    Settings
+                    <div className="animated fadeIn">
+                        <Form horizontal>
+                            <FormGroup row>
+                                <Label sm="2">
+                                    Test<br />
+                                    <span class="text-muted small">help text ...</span>
+                                </Label>
+                                <Col sm="6">
+                                    <Input placeholder="A constant 1 ..." />
+                                </Col>
+                            </FormGroup>
+                            <FormGroup row>
+                                <Label sm="2">Test 2</Label>
+                                <Col sm="6">
+                                    <Input type="select">
+                                        <option>1</option>
+                                        <option>2</option>
+                                        <option>3</option>
+                                    </Input>
+                                </Col>
+                            </FormGroup>
+                        </Form>
+                    </div>
                 </Container>
             </>
         )
