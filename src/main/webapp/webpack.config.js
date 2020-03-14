@@ -1,3 +1,4 @@
+const TerserPlugin = require('terser-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = (env, argv) => {
@@ -60,6 +61,18 @@ module.exports = (env, argv) => {
                         }
                     ]
                 }
+            ]
+        },
+        optimization: {
+            minimizer  : [
+                new TerserPlugin({
+                    cache: true,
+                    parallel: true,
+                    sourceMap: argv.mode === 'production',
+                    terserOptions: {
+                        keep_fnames: true,
+                    }
+                })
             ]
         },
         watch: argv.mode === 'development',
