@@ -1,8 +1,6 @@
 import React from 'react';
 
 import { Container, Row, Col, Card, Form, FormGroup, Label, Input, Button, Table, Badge, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap';
-import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import FunctionsContext from '../context/FunctionsContext';
 import {AppBreadcrumb} from "@coreui/react";
@@ -138,7 +136,7 @@ class Functions extends React.Component {
                                             {/*<td>{fn.url}</td>*/}
                                             <td><Button color="dark"
                                                         onClick={() => confirm('Really delete ?') ? fc.remove(fn.id) : null}>
-                                                <FontAwesomeIcon icon={faTrash} />
+                                                <span class="cil-trash"></span>
                                             </Button>
                                             </td>
                                         </tr>

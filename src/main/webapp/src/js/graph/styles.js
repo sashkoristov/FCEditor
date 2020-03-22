@@ -24,6 +24,7 @@ cellStyle[mxConstants.STYLE_STROKEWIDTH] = 3;
 cellStyle[mxConstants.STYLE_PERIMETER_SPACING] = 4;
 
 edgeStyle[mxConstants.STYLE_ROUNDED] = true;
+edgeStyle[mxConstants.STYLE_CURVED] = false;
 edgeStyle[mxConstants.STYLE_STROKECOLOR] = '#006494';
 edgeStyle[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = '#fff';
 edgeStyle[mxConstants.STYLE_LABEL_PADDING] = '4px';

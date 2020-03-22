@@ -11,7 +11,7 @@ function jsonStringifyWithoutCircular(obj, depth = 4) {
                         const attribute = value.attributes[attrKey];
                         results[attribute.nodeName] = attribute.nodeValue;
                     }
-                )
+                );
                 return results;
             }
             return value;
@@ -20,4 +20,9 @@ function jsonStringifyWithoutCircular(obj, depth = 4) {
     );
 }
 
-export { jsonStringifyWithoutCircular }
+const capitalize = (s) => {
+    if (typeof s !== 'string') return '';
+    return s.charAt(0).toUpperCase() + s.slice(1)
+};
+
+export { capitalize, jsonStringifyWithoutCircular }

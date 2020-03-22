@@ -13,10 +13,7 @@ import mxgraph from '../../mxgraph';
 
 const {
     mxCell,
-    mxConstants,
-    mxGeometry,
-    mxPerimeter,
-    mxUtils
+    mxGeometry
 } = mxgraph;
 
 import * as mxGraphOverrides from '../../graph';
@@ -105,105 +102,10 @@ class Sidebar extends React.Component {
         return el;
     };
 
-    _addStart = () => {
-        let parent = this.props.graph.getDefaultParent();
-        for (let i in parent.children) {
-            if (parent.children[i].type && parent.children[i].type === cellDefs.start.name) {
-                mxUtils.alert('Already a start cell in graph!');
-                return;
-            }
-        }
-        this._addCell('Start', cellDefs.start);
-    };
-
-    _addEnd = () => {
-        let parent = this.props.graph.getDefaultParent();
-        for (let i in parent.children) {
-            if (parent.children[i].type && parent.children[i].type === cellDefs.end.name) {
-                mxUtils.alert('Already an end cell in graph!');
-                return;
-            }
-        }
-        this._addCell('End', cellDefs.end);
-    };
-
-    _addMerge = () => {
-        this._addCell('merge', cellDefs.merge);
-    };
-
-    _addFn = (fnObj) => {
-        this._addCell(
-            new afcl.functions.AtomicFunction(fnObj.name, fnObj.type),
-            cellDefs.fn
-        );
-    };
-
-    _addIfThenElse = () => {
-        this._addCell(
-            new afcl.functions.IfThenElse('IfThenElse'),
-            cellDefs.cond
-        );
-    };
-
-    _addSwitch = () => {
-        this._addCell(
-            new afcl.functions.Switch('Switch'),
-            cellDefs.multicond
-        );
-    };
-
-    _addParallel = () => {
-        this._addCell(
-            new afcl.functions.Parallel('Parallel'),
-            cellDefs.parallel
-        );
-    };
-
-    _addParallelFor = () => {
-        this._addCell(
-            new afcl.functions.ParallelFor('ParallelFor'),
-            cellDefs.parallelFor
-        );
-    };
-
-    _addCell = (userObj, cellDef) => {
-
-        var parent = this.props.graph.getDefaultParent();
-
-        // Adds cells to the model in a single step
-        this.props.graph.getModel().beginUpdate();
-        try {
-            let v = this.props.graph.insertVertex(parent, null, userObj, 20, 20, cellDef.width ?? 80, cellDef.height ?? 40, cellDef.name);
-            v.setType(cellDef.type || cellDef.name);
-
-            // add sub cells, if any
-            if (cellDef.subCells) {
-                for (let subCell in cellDef.subCells) {
-                    let subV = this.props.graph.insertVertex(
-                        v,
-                        null,
-                        subCell,
-                        cellDef.subCells[subCell].x,
-                        cellDef.subCells[subCell].y,
-                        cellDefs[subCell].width,
-                        cellDefs[subCell].height,
-                        cellDefs[subCell].name,
-                        true
-                    );
-                    subV.getGeometry().offset = cellDef.subCells[subCell].offset;
-                    subV.setType(cellDefs[subCell].type || cellDefs[subCell].name);
-                }
-            }
-        } finally {
-            // Updates the display
-            this.props.graph.getModel().endUpdate();
-        }
-    };
-
     render() {
         return <div className="graph-sidebar">
-            <Button onClick={this._addStart} className="btn-square item" ref="_addStartBtn">Start</Button>
-            <Button onClick={this._addEnd} className="btn-square item" ref="_addEndBtn">End</Button>
+            <Button onClick={this.props.editor._addStart} className="btn-square item" ref="_addStartBtn">Start</Button>
+            <Button onClick={this.props.editor._addEnd} className="btn-square item" ref="_addEndBtn">End</Button>
             <UncontrolledDropdown direction="right" className="item">
                 <DropdownToggle className="btn-square" ref="_fnDropdownToggle">
                     Function
@@ -212,21 +114,21 @@ class Sidebar extends React.Component {
                     <FunctionsContext.Consumer>
                         {fc => (
                             fc.functions.map(fn => <DropdownItem
-                                onClick={() => this._addFn(fn)}>{fn.name}<Badge>{fn.type}</Badge></DropdownItem>)
+                                onClick={() => this.props.editor._addFn(fn)}>{fn.name}<Badge>{fn.type}</Badge></DropdownItem>)
                         )}
                     </FunctionsContext.Consumer>
                 </DropdownMenu>
             </UncontrolledDropdown>
-            <Button onClick={this._addIfThenElse} className="btn-square item" ref="_addIfThenElseBtn">If-Then-Else</Button>
-            <Button onClick={this._addSwitch} className="btn-square item" ref="_addSwitchBtn">Switch</Button>
-            <Button onClick={this._addMerge} className="btn-square item" ref="_addMergeBtn">Merge</Button>
+            <Button onClick={this.props.editor._addIfThenElse} className="btn-square item" ref="_addIfThenElseBtn">If-Then-Else</Button>
+            <Button onClick={this.props.editor._addSwitch} className="btn-square item" ref="_addSwitchBtn">Switch</Button>
+            <Button onClick={this.props.editor._addMerge} className="btn-square item" ref="_addMergeBtn">Merge</Button>
             <UncontrolledDropdown direction="right" className="item">
                 <DropdownToggle className="btn-square" ref="_compoundDropdownToggle">
                     Compound
                 </DropdownToggle>
                 <DropdownMenu className="rounded-0">
-                    <DropdownItem onClick={() => this._addParallel()}>Parallel</DropdownItem>
-                    <DropdownItem onClick={() => this._addParallelFor()}>ParallelFor</DropdownItem>
+                    <DropdownItem onClick={() => this.props.editor._addParallel()}>Parallel</DropdownItem>
+                    <DropdownItem onClick={() => this.props.editor._addParallelFor()}>ParallelFor</DropdownItem>
                 </DropdownMenu>
             </UncontrolledDropdown>
         </div>

@@ -4,6 +4,17 @@
  * @author Ben Walch, 2019-2020
  */
 
+const XML_MIME_TYPES = ['text/xml', 'application/xml'];
+
+const JSON_MIME_TYPES = ['application/json'];
+
+const YAML_MIME_TYPES = [
+    'text/vnd.yaml',
+    'application/vnd.yaml',
+    'text/x-yaml',
+    'application/x-yaml'
+];
+
 import axios from 'axios';
 import React from 'react';
 import { Prompt } from 'react-router';
@@ -53,8 +64,10 @@ import checkImg from '../../assets/images/check.svg';
 import cancelImg from '../../assets/images/cancel.svg';
 
 import * as afcl from '../afcl/';
+import * as CellGenerator from '../graph/util/CellGenerator';
 import * as cellDefs from '../graph/cells';
 import * as mxGraphOverrides from '../graph';
+import EditorUtility from '../utils/EditorUtility';
 import {cellStyle, edgeStyle} from '../graph/styles';
 
 import Sidebar from './editor/Sidebar';
@@ -338,7 +351,7 @@ class Editor extends React.Component {
         } else {
             this._onCellSelected(null);
         }
-    }
+    };
 
     _onCellSelected = (cell) => {
         this.setState({
@@ -376,6 +389,18 @@ class Editor extends React.Component {
     _removeSelected = () => {
         const {graph} = this.state;
         graph.isEnabled() && graph.removeCells(graph.getSelectionCells());
+    };
+
+    _doLayout = () => {
+        const {graph} = this.state;
+
+        var layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
+
+        layout.forceConstant = 20;
+        layout.edgeStyle = 1;
+        if (root) {
+            layout.execute(graph.getDefaultParent());
+        }
     };
 
     _showXml = () => {
@@ -475,7 +500,7 @@ class Editor extends React.Component {
         FileDialog(
             {
                 multiple: false,
-                accept: ['text/xml', 'application/json', 'application/x-yaml']
+                accept: JSON_MIME_TYPES.concat(XML_MIME_TYPES).concat(YAML_MIME_TYPES)
             },
             files => {
                 let file = files[0];
@@ -487,27 +512,19 @@ class Editor extends React.Component {
                 var reader = new FileReader();
                 reader.onload = (e) => {
                     var contents = e.target.result;
-                    switch (file.type) {
-                        case 'text/xml':
+                    switch (true) {
+                        case XML_MIME_TYPES.includes(file.type):
                             this._loadXml(contents);
                             break;
-                        case 'application/json':
-                        case 'application/x-yaml':
+                        case JSON_MIME_TYPES.includes(file.type):
+                            break;
+                        default:
+                            this._loadYaml(contents);
                     }
                 };
                 reader.readAsText(file);
             }
         );
-
-        /*
-        const formData = new FormData();
-        formData.append('file', file);
-        const config = {
-            headers: {
-                'content-type': 'multipart/form-data'
-            }
-        };
-        */
     };
 
     _loadXml = (xmlString) => {
@@ -516,6 +533,22 @@ class Editor extends React.Component {
         let xmlDoc = mxUtils.parseXml(xmlString);
         let decoder = new mxGraphOverrides.Codec(xmlDoc);
         let workflow = decoder.decode(xmlDoc.documentElement);
+
+        this._drawWorkflow(workflow);
+    };
+
+    _loadYaml = (yamlString) => {
+        const {graph} = this.state;
+
+        let util = new EditorUtility(this, graph);
+
+        let workflow = util.getGraphWorkflow(yamlString);
+
+        this._drawWorkflow(workflow);
+    };
+
+    _drawWorkflow = (workflow) => {
+        const {graph} = this.state;
 
         let vertices = workflow.getBody().filter(cell => cell.isVertex());
         let edges = workflow.getBody().filter(cell => cell.isEdge());
@@ -529,7 +562,7 @@ class Editor extends React.Component {
         try {
             vertices.map(v => {
                 if (v.getType() != null) {
-                    let parent = v.getParent().getId() != 1 ? graph.getModel().getCell(v.getParent().getId()) : graph.getDefaultParent();
+                    let parent = v.getParent().getId() !== graph.getDefaultParent().getId() ? graph.getModel().getCell(v.getParent().getId()) : graph.getDefaultParent();
                     graph.addCell(
                         v,
                         parent,
@@ -538,7 +571,7 @@ class Editor extends React.Component {
                 }
             });
             edges.map(e => {
-                let parent = e.getParent().getId() != 1 ? graph.getModel().getCell(e.getParent().getId()) : graph.getDefaultParent();
+                let parent = e.getParent().getId() !== graph.getDefaultParent().getId() ? graph.getModel().getCell(e.getParent().getId()) : graph.getDefaultParent();
                 graph.addCell(
                     e,
                     parent,
@@ -550,6 +583,91 @@ class Editor extends React.Component {
         }
 
         this.setState({ workflow: workflow });
+    };
+
+    _addStart = () => {
+        const {graph} = this.state;
+
+        let parent = graph.getDefaultParent();
+        for (let i in parent.children) {
+            if (parent.children[i].type && parent.children[i].type === cellDefs.start.name) {
+                mxUtils.alert('Already a start cell in graph!');
+                return;
+            }
+        }
+        return this._addCell('Start', cellDefs.start);
+    };
+
+    _addEnd = () => {
+        const {graph} = this.state;
+
+        let parent = graph.getDefaultParent();
+        for (let i in parent.children) {
+            if (parent.children[i].type && parent.children[i].type === cellDefs.end.name) {
+                mxUtils.alert('Already an end cell in graph!');
+                return;
+            }
+        }
+        return this._addCell('End', cellDefs.end);
+    };
+
+    _addMerge = () => {
+        return this._addCell('merge', cellDefs.merge);
+    };
+
+    _addFn = (fnObj) => {
+        return this._addCell(
+            new afcl.functions.AtomicFunction(fnObj.name, fnObj.type),
+            cellDefs.fn
+        );
+    };
+
+    _addIfThenElse = () => {
+        return this._addCell(
+            new afcl.functions.IfThenElse('IfThenElse'),
+            cellDefs.cond
+        );
+    };
+
+    _addSwitch = () => {
+        return this._addCell(
+            new afcl.functions.Switch('Switch'),
+            cellDefs.multicond
+        );
+    };
+
+    _addParallel = () => {
+        return this._addCell(
+            new afcl.functions.Parallel('Parallel'),
+            cellDefs.parallel
+        );
+    };
+
+    _addParallelFor = () => {
+        return this._addCell(
+            new afcl.functions.ParallelFor('ParallelFor'),
+            cellDefs.parallelFor
+        );
+    };
+
+    _addCell = (userObj, cellDef) => {
+        const {graph} = this.state;
+
+        let parent = graph.getDefaultParent();
+
+        let cell = CellGenerator.generateVertexCell(cellDef, userObj);
+
+        // Adds cells to the model in a single step
+        graph.getModel().beginUpdate();
+        try {
+
+            graph.addCell(cell, parent);
+
+        } finally {
+            // Updates the display
+            graph.getModel().endUpdate();
+        }
+
     };
 
     render() {
@@ -565,7 +683,7 @@ class Editor extends React.Component {
                         <CardHeader>
                             Graph
                             <div className="graph-toolbar">
-                                <Button className="btn mr-2">
+                                <Button className="btn mr-2" onClick={this._doLayout}>
                                     <span className="cil-layers mr-1" />
                                     Layout
                                 </Button>
@@ -596,7 +714,7 @@ class Editor extends React.Component {
                             </div>
                         </CardHeader>
                         <div className="graph-wrapper">
-                            <Sidebar graph={this.state.graph} />
+                            <Sidebar editor={this} />
                             <div id="graph" className="graph" ref="_graphContainer"/>
                         </div>
                     </Card>
