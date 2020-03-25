@@ -1,7 +1,7 @@
-import BaseFunction from './BaseFunction';
+import Compound from './Compound';
 import CompositeCondition from '../objects/CompositeCondition';
 
-class IfThenElse extends BaseFunction {
+class IfThenElse extends Compound {
 
     constructor(name) {
         super(name);

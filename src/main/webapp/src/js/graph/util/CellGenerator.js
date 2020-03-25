@@ -11,6 +11,7 @@ function generateVertexCell(cellDef, userObj = null) {
     let geometry = new mxGeometry(cellDef.x || 0, cellDef.y || 0, cellDef.width || 80, cellDef.height || 40);
 
     cell.setVertex(true);
+    cell.setEdge(false);
     cell.setStyle(cellDef.name);
     cell.setType(cellDef.type || cellDef.name);
 
@@ -44,8 +45,9 @@ function generateEdgeCell(source, target) {
     geometry.relative = true;
     edge.setGeometry(geometry);
     edge.setEdge(true);
-    edge.source = source;
-    edge.target = target;
+    edge.setVertex(false);
+    edge.setTerminal(source, true);
+    edge.setTerminal(target, false);
     return edge;
 }
 

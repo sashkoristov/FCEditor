@@ -368,7 +368,7 @@ class Graph extends mxGraph {
      */
     getConnectionPoint(vertex, constraint) {
         if (constraint.id != null && vertex != null && vertex.cell != null) {
-            var port = cellDefs[vertex.cell.style].ports[constraint.id];
+            var port = cellDefs[vertex.cell.style]?.ports[constraint.id];
 
             if (port != null) {
                 constraint = new mxConnectionConstraint(new mxPoint(port.x, port.y), port.perimeter);

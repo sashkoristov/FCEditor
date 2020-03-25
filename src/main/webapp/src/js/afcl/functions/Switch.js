@@ -1,7 +1,7 @@
-import BaseFunction from "./BaseFunction";
+import Compound from "./Compound";
 import DataEval from "../objects/DataEval";
 
-class Switch extends BaseFunction {
+class Switch extends Compound {
 
     constructor(name) {
         super(name);
