@@ -71,8 +71,7 @@ class Graph extends mxGraph {
     getLabel(cell) {
         if (
             cell.edge ||
-            cell.value instanceof afcl.functions.AtomicFunction ||
-            cell.value instanceof afcl.functions.Compound ||
+            cell.value instanceof afcl.functions.BaseFunction ||
             cell.type == cellDefs.start.name ||
             cell.type == cellDefs.end.name
         ) {
@@ -189,7 +188,7 @@ class Graph extends mxGraph {
             return error.length > 0 ? error : null;
         }
         // cells in swimlanes
-        else if (cell.parent.value instanceof afcl.functions.CompoundParallel) {
+        else if (cell.parent.value instanceof afcl.functions.Parallel || cell.parent.value instanceof afcl.functions.ParallelFor) {
             let error = '';
             if (!this._hasPathToCell(cell, cellDefs.fork.name, 'up')) {
                 error += 'no path to fork found' + "\n";

@@ -50,6 +50,8 @@ const {
     mxConstants,
     mxEvent,
     mxHierarchicalLayout,
+    mxSwimlaneLayout,
+    mxCompactTreeLayout,
     mxKeyHandler,
     mxEdgeHandler,
     mxRubberband,
@@ -396,11 +398,10 @@ class Editor extends React.Component {
 
         var layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
 
-        layout.forceConstant = 20;
-        layout.edgeStyle = 1;
-        if (root) {
-            layout.execute(graph.getDefaultParent());
-        }
+        //layout.forceConstant = 20;
+        //layout.edgeStyle = 1;
+
+        layout.execute(graph.getDefaultParent());
     };
 
     _showXml = () => {
