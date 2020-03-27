@@ -23,12 +23,12 @@ import java.util.List;
 
 public class WorkflowConversionService {
 
-    public static Workflow fromXml(String xml) {
+    public static Workflow fromGraphXml(String xml) {
 
         Workflow w = new Workflow();
 
         try {
-            Document doc = getDocument(xml);
+            Document doc = getDocumentFromXmlString(xml);
 
             Node workflowNode = getNode(doc, "/Workflow");
             if (workflowNode instanceof Element) {
@@ -49,15 +49,11 @@ public class WorkflowConversionService {
         return w;
     }
 
-    public static String toXml(Workflow w) {
-        return "Not implemented.";
-    }
-
     protected static List<Function> generateFunctions(Node n, Document doc, List<Function> functionsList) throws Exception {
         if (functionsList == null) {
             functionsList = new ArrayList<>();
         }
-        if (n.getNodeType() == Node.ELEMENT_NODE) {
+        if (n != null && n.getNodeType() == Node.ELEMENT_NODE) {
             Element el = (Element) n;
             if (el.hasAttribute("vertex")) {
                 System.out.println(el.getAttribute("type"));
@@ -67,13 +63,14 @@ public class WorkflowConversionService {
                     case "start":
                         generateFunctions(edge, doc, functionsList);
                         break;
-                    case "AtomicFunction":
+                    case "AtomicFunction": {
                         Element fnEl = getDirectChild(el, "AtomicFunction");
                         AtomicFunction fn = generateAtomicFunction(fnEl);
                         functionsList.add(fn);
                         generateFunctions(edge, doc, functionsList);
                         break;
-                    case "IfThenElse":
+                    }
+                    case "IfThenElse": {
                         Element iteEl = getDirectChild(el, "IfThenElse");
                         IfThenElse ite = generateIfThenElse(iteEl);
                         Node thenNode = getNode(doc, "/Workflow/Array[@as='body']/Cell[@source='" + el.getAttribute("id") + "'][@value='then']");
@@ -81,17 +78,36 @@ public class WorkflowConversionService {
                         Node elseNode = getNode(doc, "/Workflow/Array[@as='body']/Cell[@source='" + el.getAttribute("id") + "'][@value='else']");
                         ite.setElse(generateFunctions(elseNode, doc, null));
                         functionsList.add(ite);
+                        // get next merge node and continue there
+                        Node mergeNode = getNextNodeWithAttributeByFollowingEdges(el, "type", "merge");
+                        if (mergeNode != null && mergeNode.getNodeType() == Node.ELEMENT_NODE) {
+                            Element mergeEl = (Element) mergeNode;
+                            Node outgoingEdgeOfMerge = getNode(doc, "/Workflow/Array[@as='body']/Cell[@source='" + mergeEl.getAttribute("id") + "']");
+                            generateFunctions(outgoingEdgeOfMerge, doc, functionsList);
+                        }
                         break;
-                    case "Switch":
+                    }
+                    case "Switch": {
                         Element switchEl = getDirectChild(el, "Switch");
                         Switch sw = generateSwitch(switchEl);
                         // follow the edges
+                        List<Case> cases = new ArrayList();
                         for (int i = 0; i < edges.getLength(); i++) {
-                            generateFunctions(edges.item(i), doc, functionsList);
+                            Element caseEl = (Element) edges.item(i);
+                            cases.add(new Case(caseEl.getAttribute("value"), generateFunctions(edges.item(i), doc, null)));
                         }
+                        sw.setCases(cases);
                         functionsList.add(sw);
+                        // get next merge node and continue there
+                        Node mergeNode = getNextNodeWithAttributeByFollowingEdges(el, "type", "merge");
+                        if (mergeNode != null && mergeNode.getNodeType() == Node.ELEMENT_NODE) {
+                            Element mergeEl = (Element) mergeNode;
+                            Node outgoingEdgeOfMerge = getNode(doc, "/Workflow/Array[@as='body']/Cell[@source='" + mergeEl.getAttribute("id") + "']");
+                            generateFunctions(outgoingEdgeOfMerge, doc, functionsList);
+                        }
                         break;
-                    case "Parallel":
+                    }
+                    case "Parallel": {
                         Element parEl = getDirectChild(el, "Parallel");
                         Parallel par = generateParallel(parEl);
                         List<Section> parallelSection = new ArrayList<>();
@@ -103,20 +119,37 @@ public class WorkflowConversionService {
                         }
                         par.setParallelBody(parallelSection);
                         functionsList.add(par);
+                        generateFunctions(edge, doc, functionsList);
                         break;
-                    case "ParallelFor":
+                    }
+                    case "ParallelFor": {
                         Element parForEl = getDirectChild(el, "ParallelFor");
                         ParallelFor parFor = generateParallelFor(parForEl);
 
-                        Node forkNode = getNode(doc, "/Workflow/Array[@as='body']/Cell[@parent='" + el.getAttribute("id") + "'][@type='fork']");
-                        parFor.setLoopBody(generateFunctions(forkNode, doc, null));
+                        // get the start node of parallel loop body: the first node with no incoming edges
+                        Element parForStartNode = null;
+                        NodeList parForSubNodes = getNodes(doc, "/Workflow/Array[@as='body']/Cell[@parent='" + el.getAttribute("id") + "']");
+                        for (int i = 0; i < parForSubNodes.getLength(); i++) {
+                            Element curEl = (Element) parForSubNodes.item(i);
+                            NodeList incomingEdges = getNodes(doc, "/Workflow/Array[@as='body']/Cell[@target='" + curEl.getAttribute("id") + "']");
+                            if (incomingEdges.getLength() == 0) {
+                                parForStartNode = curEl;
+                                break;
+                            }
+                        }
+                        if (parForStartNode != null) {
+                            parFor.setLoopBody(generateFunctions(parForStartNode, doc, null));
+                        }
                         functionsList.add(parFor);
+                        generateFunctions(edge, doc, functionsList);
                         break;
-                    case "fork":
+                    }
+                    case "fork": {
                         for (int i = 0; i < edges.getLength(); i++) {
                             generateFunctions(edges.item(i), doc, functionsList);
                         }
                         break;
+                    }
                     case "merge":
                     case "join":
                     case "end":
@@ -134,6 +167,24 @@ public class WorkflowConversionService {
             System.out.println(n);
         }
         return functionsList;
+    }
+
+    protected static Node getNextNodeWithAttributeByFollowingEdges(Node n, String attrName, String attrValue) {
+        if (n != null && n.getNodeType() == Node.ELEMENT_NODE) {
+            Element curEl = (Element) n;
+            if (curEl.getAttribute(attrName).equals(attrValue)) {
+                return curEl;
+            }
+            try {
+                Node edge = getNode(n.getOwnerDocument(), "/Workflow/Array[@as='body']/Cell[@source='" + curEl.getAttribute("id") + "']");
+                Element edgeEl = (Element) edge;
+                Node t = getNode(n.getOwnerDocument(), "/Workflow/Array[@as='body']/Cell[@id='" + edgeEl.getAttribute("target") + "']");
+                return getNextNodeWithAttributeByFollowingEdges(t, attrName, attrValue);
+            } catch (Exception $e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     protected static void setPrimitiveFields(Element fnEl, Object afclObj) {
@@ -329,7 +380,7 @@ public class WorkflowConversionService {
         return (Node) xPathExpression.evaluate(doc, XPathConstants.NODE);
     }
 
-    protected static Document getDocument(String xml) throws Exception {
+    protected static Document getDocumentFromXmlString(String xml) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
 

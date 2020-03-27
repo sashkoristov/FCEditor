@@ -5,15 +5,18 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Payload;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.http.HttpRequest;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
 import com.google.gson.Gson;
 import persistence.*;
 import service.WorkflowConversionService;
@@ -44,20 +47,15 @@ public class Api extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String pathInfo = req.getPathInfo();
+        String[] pathSegments = pathInfo.split("/");
+
 
         if (pathInfo == null || pathInfo.equals("/")) {
             sendResponseJson(resp, "Not allowed", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
         }
 
-        StringBuilder buffer = new StringBuilder();
-        BufferedReader reader = req.getReader();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            buffer.append(line);
-        }
-
-        String payload = buffer.toString();
+        String payload = getRequestPayload(req);
 
         if (pathInfo.equals("/function")) {
             persistence.dto.Function f = gson.fromJson(payload, persistence.dto.Function.class);
@@ -75,39 +73,42 @@ public class Api extends HttpServlet {
         if (pathInfo.contains("/workflow")) {
 
             String contentType = req.getContentType();
-
-            // only accept xml
-            if (!"text/xml".equals(contentType) && !"application/xml".equals(contentType)) {
-                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
+            String targetType = req.getHeader("Accept");
 
             if (pathInfo.contains("/workflow/convert")) {
 
-                afcl.Workflow w = WorkflowConversionService.fromXml(payload);
-
-                String targetType = req.getHeader("Accept");
                 ObjectMapper om = new ObjectMapper();
 
-                switch (targetType) {
-                    case "application/x-yaml":
-                    case "text/yaml":
-                        YAMLFactory yf = new YAMLFactory();
-                        yf.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
-                        om = new ObjectMapper(yf);
+                if (pathSegments[pathSegments.length-1].contains("fromGraphXml")){
 
-                        sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".yaml");
-                        break;
-                    case "application/json":
-                        sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".json");
-                        break;
-                    default:
-                        break;
+                    if (!contentType.equals("application/xml") && !contentType.equals("text/xml")) {
+                        sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+                        return;
+                    }
+
+                    afcl.Workflow w = WorkflowConversionService.fromGraphXml(payload);
+
+                    switch (targetType) {
+                        case "application/x-yaml":
+                        case "text/yaml":
+                            YAMLFactory yf = new YAMLFactory();
+                            yf.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
+                            om = new ObjectMapper(yf);
+
+                            sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".yaml");
+                            return;
+                        case "application/json":
+                            sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".json");
+                            return;
+                        default:
+                            break;
+                    }
                 }
 
-                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
             }
+            sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
         }
+
     }
 
     @Override
@@ -179,5 +180,16 @@ public class Api extends HttpServlet {
 
         os.write(content , 0, content.length);
         os.close();
+    }
+
+    private String getRequestPayload(HttpServletRequest req) throws IOException {
+        StringBuilder buffer = new StringBuilder();
+        BufferedReader reader = req.getReader();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            buffer.append(line + System.lineSeparator());
+        }
+
+        return buffer.toString();
     }
 }
