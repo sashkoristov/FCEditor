@@ -58,6 +58,7 @@ const {
     mxUtils,
     mxPerimeter,
     mxShape,
+    mxSwimlaneManager,
     mxImage
 } = mxgraph;
 
@@ -69,7 +70,7 @@ import * as afcl from '../afcl/';
 import * as CellGenerator from '../graph/util/CellGenerator';
 import * as cellDefs from '../graph/cells';
 import * as mxGraphOverrides from '../graph';
-import EditorUtility from '../utils/EditorUtility';
+import AfclCodec from '../graph/io/AfclCodec';
 import {cellStyle, edgeStyle} from '../graph/styles';
 
 import Sidebar from './editor/Sidebar';
@@ -155,6 +156,9 @@ class Editor extends React.Component {
 
         // Enables rubberband selection
         new mxRubberband(graph);
+
+        // Applies size changes to siblings and parents
+        new mxSwimlaneManager(graph);
 
         // Enables Guides
         graph.graphHandler.guidesEnabled = true;
@@ -465,7 +469,7 @@ class Editor extends React.Component {
                 break;
             case 'yaml':
                 axios.post(
-                    'api/workflow/convert',
+                    'api/workflow/convert/fromGraphXml',
                     this._getWorkflowXml(),
                     {
                         headers: {
@@ -477,9 +481,10 @@ class Editor extends React.Component {
                     var blob = new Blob([response.data], {type: "application/x-yaml;charset=utf-8"});
                     FileSaver.saveAs(blob, this.state.workflow.getName() + '.yaml');
                 });
+                break;
             case 'json':
                 axios.post(
-                    'api/workflow/convert',
+                    'api/workflow/convert/fromGraphXml',
                     this._getWorkflowXml(),
                     {
                         transformResponse: [(data) => { return data; }], //https://github.com/axios/axios/issues/907
@@ -492,6 +497,7 @@ class Editor extends React.Component {
                     var blob = new Blob([response.data], {type: "application/json;charset=utf-8"});
                     FileSaver.saveAs(blob, this.state.workflow.getName() + '.json');
                 });
+                break;
         }
     };
 
@@ -541,9 +547,9 @@ class Editor extends React.Component {
     _loadYaml = (yamlString) => {
         const {graph} = this.state;
 
-        let util = new EditorUtility(this, graph);
+        let decoder = new AfclCodec();
 
-        let workflow = util.getGraphWorkflow(yamlString);
+        let workflow = decoder.decodeYamlWorkflow(yamlString);
 
         this._drawWorkflow(workflow);
     };

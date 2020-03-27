@@ -1,30 +1,26 @@
 import Yaml from 'js-yaml';
 
-import * as utils from './';
-import * as afcl from '../afcl/';
-import * as cellDefs from '../graph/cells';
-import * as mxGraphOverrides from '../graph/';
-import * as CellGenerator from '../graph/util/CellGenerator';
+import * as utils from '../../utils';
+import * as afcl from '../../afcl/';
+import * as cellDefs from '../cells';
+import * as mxGraphOverrides from '../';
+import * as CellGenerator from '../util/CellGenerator';
 
-import mxgraph from '../mxgraph';
-const { mxUtils, mxConstants, mxGraphModel, mxGeometry } = mxgraph;
+import mxgraph from '../../mxgraph';
+const { mxUtils, mxConstants } = mxgraph;
 
-class EditorUtility {
+class AfclCodec {
 
     constructor() {
-        this.createRoot();
+        this._createRoot();
     }
 
-    createRoot() {
+    _createRoot() {
         this.root = new mxGraphOverrides.Cell();
         this.root.insert(new mxGraphOverrides.Cell());
     }
 
-    getDefaultParent() {
-        return this.root.getChildAt(0);
-    }
-
-    getGraphWorkflow(afclYamlString) {
+    decodeYamlWorkflow(afclYamlString) {
 
         let workflow = new afcl.Workflow();
 
@@ -37,7 +33,7 @@ class EditorUtility {
 
             let list = [];
             if (_yamlObj && _yamlObj['workflowBody']) {
-                list = this._generateFunctions(_yamlObj['workflowBody'], this.getDefaultParent());
+                list = this._generateFunctions(_yamlObj['workflowBody'], this.root.getChildAt(0));
             }
 
             workflow.setBody(list);
@@ -58,18 +54,20 @@ class EditorUtility {
             fnArr.forEach(fn => {
                 for (var key in fn) {
                     switch (key) {
-                        case 'function':
+                        case 'function': {
                             let fnCell = CellGenerator.generateVertexCell(cellDefs.fn, this._generateAtomicFunction(fn[key]));
                             fnCell.setParent(currentParent);
                             list.push(fnCell);
                             break;
-                        case 'parallelFor':
+                        }
+                        case 'parallelFor': {
                             let parForCell = CellGenerator.generateVertexCell(cellDefs.parallelFor, this._generateParallelFor(fn[key]));
                             parForCell.setParent(currentParent);
                             parForCell.setChildren(parForCell.getChildren().concat(this._generateFunctions(fn[key]['loopBody'], parForCell, level + 1)));
                             list.push(parForCell);
                             break;
-                        case 'parallel':
+                        }
+                        case 'parallel': {
                             let parCell = CellGenerator.generateVertexCell(cellDefs.parallel, this._generateParallel(fn[key]));
                             parCell.setParent(currentParent);
                             let sections = fn[key]['parallelBody'].map(el => {
@@ -81,47 +79,51 @@ class EditorUtility {
                             let forkCell = parCell.getChildOfType(cellDefs.fork.name);
                             let joinCell = parCell.getChildOfType(cellDefs.join.name);
                             sections.forEach(section => {
-                                let sectionVertex = section.filter(c => c.isVertex());
-                                if (sectionVertex.length > 0) {
+                                let sectionVertices = section.filter(c => c.isVertex());
+                                if (sectionVertices.length > 0) {
                                     // generate edge from fork to first cell of each section
-                                    let forkEdge = CellGenerator.generateEdgeCell(forkCell, sectionVertex[0]);
+                                    let forkEdge = CellGenerator.generateEdgeCell(forkCell, sectionVertices[0]);
                                     forkEdge.setParent(parCell);
                                     forkEdge.setStyle(mxUtils.setStyle(forkEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
-                                    sectionVertex[0].insertEdge(forkEdge, false);
+                                    sectionVertices[0].insertEdge(forkEdge, false);
                                     section.push(forkEdge);
                                     // generate edge from last cell of each section to join
-                                    let joinEdge = CellGenerator.generateEdgeCell(sectionVertex[sectionVertex.length - 1], joinCell);
+                                    let joinEdge = CellGenerator.generateEdgeCell(sectionVertices[sectionVertices.length - 1], joinCell);
                                     joinEdge.setParent(parCell);
                                     joinEdge.setStyle(mxUtils.setStyle(joinEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
-                                    sectionVertex[sectionVertex.length - 1].insertEdge(joinEdge, true);
+                                    sectionVertices[sectionVertices.length - 1].insertEdge(joinEdge, true);
                                     section.push(joinEdge);
                                 }
                             });
                             parCell.setChildren(parCell.getChildren().concat(sections.reduce((acc, section) => acc.concat(section), [])));
                             list.push(parCell);
                             break;
-                        case 'if':
+                        }
+                        case 'if': {
                             let ifCell = CellGenerator.generateVertexCell(cellDefs.cond, this._generateIfThenElse(fn[key]));
                             ifCell.setParent(currentParent);
-                            let thenBranch = this._generateFunctions(fn[key]['then'], currentParent, level + 1).filter(c => c.isVertex());
-                            let elseBranch = this._generateFunctions(fn[key]['else'], currentParent, level + 1).filter(c => c.isVertex());
+                            let thenBranch = this._generateFunctions(fn[key]['then'], currentParent, level + 1);
+                            let elseBranch = this._generateFunctions(fn[key]['else'], currentParent, level + 1);
                             let mergeCell = CellGenerator.generateVertexCell(cellDefs.merge);
                             mergeCell.setParent(currentParent);
                             // generate edge from ifCell (then) to merge cell (default)
                             var thenEdge = CellGenerator.generateEdgeCell(ifCell, mergeCell);
                             var elseEdge = CellGenerator.generateEdgeCell(ifCell, mergeCell);
+
                             if (thenBranch.length > 0) {
+                                let thenBranchVertices = thenBranch.filter(c => c.isVertex());
+
                                 // set edge from ifCell (then) to first cell in then branch
-                                thenEdge = CellGenerator.generateEdgeCell(ifCell, thenBranch[0]);
-                                thenBranch[0].insertEdge(thenEdge, false);
+                                thenEdge = CellGenerator.generateEdgeCell(ifCell, thenBranchVertices[0]);
+                                thenBranchVertices[0].insertEdge(thenEdge, false);
                                 // generate edge from last cell in then branch to merge cell
-                                let thenEdge2 = CellGenerator.generateEdgeCell(thenBranch[thenBranch.length - 1], mergeCell);
-                                thenEdge2.setStyle(mxUtils.setStyle(thenEdge2.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
-                                thenEdge2.setStyle(mxUtils.setStyle(thenEdge2.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
-                                thenEdge2.setParent(currentParent);
-                                thenBranch[thenBranch.length - 1].insertEdge(thenEdge2, true);
-                                mergeCell.insertEdge(thenEdge2, false);
-                                list.push(thenEdge2);
+                                let mergeEdge = CellGenerator.generateEdgeCell(thenBranchVertices[thenBranchVertices.length - 1], mergeCell);
+                                mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
+                                mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
+                                mergeEdge.setParent(currentParent);
+                                thenBranchVertices[thenBranchVertices.length - 1].insertEdge(mergeEdge, true);
+                                mergeCell.insertEdge(mergeEdge, false);
+                                list.push(mergeEdge);
                             }
                             thenEdge.setValue('then');
                             thenEdge.setParent(currentParent);
@@ -130,17 +132,18 @@ class EditorUtility {
                             ifCell.insertEdge(thenEdge, true);
                             list.push(thenEdge);
                             if (elseBranch.length > 0) {
+                                let elseBranchVertices = elseBranch.filter(c => c.isVertex());
                                 // set else edge from ifCell to first cell in else branch
-                                elseEdge = CellGenerator.generateEdgeCell(ifCell, elseBranch[0]);
-                                elseBranch[0].insertEdge(elseEdge, false);
+                                elseEdge = CellGenerator.generateEdgeCell(ifCell, elseBranchVertices[0]);
+                                elseBranchVertices[0].insertEdge(elseEdge, false);
                                 // generate edge from last cell in then branch to merge cell
-                                let elseEdge2 = CellGenerator.generateEdgeCell(elseBranch[elseBranch.length-1], mergeCell);
-                                elseEdge2.setStyle(mxUtils.setStyle(elseEdge2.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
-                                elseEdge2.setStyle(mxUtils.setStyle(elseEdge2.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
-                                elseEdge2.setParent(currentParent);
-                                elseBranch[elseBranch.length - 1].insertEdge(elseEdge2, true);
-                                mergeCell.insertEdge(elseEdge2, false);
-                                list.push(elseEdge2);
+                                let mergeEdge = CellGenerator.generateEdgeCell(elseBranchVertices[elseBranchVertices.length - 1], mergeCell);
+                                mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
+                                mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
+                                mergeEdge.setParent(currentParent);
+                                elseBranchVertices[elseBranchVertices.length - 1].insertEdge(mergeEdge, true);
+                                mergeCell.insertEdge(mergeEdge, false);
+                                list.push(mergeEdge);
                             }
                             elseEdge.setValue('else');
                             elseEdge.setParent(currentParent);
@@ -153,40 +156,44 @@ class EditorUtility {
                             list = list.concat(elseBranch);
                             list.push(mergeCell);
                             break;
-                        case 'switch':
+                        }
+                        case 'switch': {
                             let switchCell = CellGenerator.generateVertexCell(cellDefs.multicond, this._generateSwitch(fn[key]));
                             switchCell.setParent(currentParent);
-                            let mrgCell = CellGenerator.generateVertexCell(cellDefs.merge);
-                            mrgCell.setParent(currentParent);
+                            let mergeCell = CellGenerator.generateVertexCell(cellDefs.merge);
+                            mergeCell.setParent(currentParent);
                             if (fn[key]['cases'] && Array.isArray(fn[key]['cases'])) {
+                                list.push(switchCell);
                                 fn[key]['cases'].forEach(cse => {
-                                    let caseBranch = this._generateFunctions(cse['functions'], currentParent, level+1).filter(c => c.isVertex());
+                                    let caseEdge = CellGenerator.generateEdgeCell(switchCell, mergeCell);
+                                    let caseBranch = this._generateFunctions(cse['functions'], currentParent, level + 1);
                                     if (caseBranch.length > 0) {
+                                        let caseBranchVertices = caseBranch.filter(c => c.isVertex());
                                         // generate edge from switchCell to first cell in case branch
-                                        let switchEdge1 = CellGenerator.generateEdgeCell(switchCell, caseBranch[0]);
-                                        switchEdge1.setParent(currentParent);
-                                        switchEdge1.setValue(cse['value']);
-                                        switchEdge1.setStyle(mxUtils.setStyle(switchEdge1.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
-                                        switchEdge1.setStyle(mxUtils.setStyle(switchEdge1.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
-                                        switchCell.insertEdge(switchEdge1, true);
-                                        caseBranch[0].insertEdge(switchEdge1, false);
-                                        list.push(switchEdge1);
+                                        caseEdge = CellGenerator.generateEdgeCell(switchCell, caseBranchVertices[0]);
+                                        caseBranchVertices[0].insertEdge(caseEdge, false);
 
-                                        let switchEdge2 = CellGenerator.generateEdgeCell(caseBranch[caseBranch.length-1], mrgCell);
-                                        switchEdge2.setParent(currentParent);
-                                        switchEdge2.setStyle(mxUtils.setStyle(switchEdge2.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
-                                        switchEdge2.setStyle(mxUtils.setStyle(switchEdge2.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
-                                        caseBranch[caseBranch.length - 1].insertEdge(switchEdge2, true);
-                                        mrgCell.insertEdge(switchEdge2, false);
-                                        list.push(switchEdge2);
+                                        let mergeEdge = CellGenerator.generateEdgeCell(caseBranchVertices[caseBranchVertices.length - 1], mergeCell);
+                                        mergeEdge.setParent(currentParent);
+                                        mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
+                                        mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
+                                        caseBranchVertices[caseBranchVertices.length - 1].insertEdge(mergeEdge, true);
+                                        mergeCell.insertEdge(mergeEdge, false);
+                                        list.push(mergeEdge);
 
-                                        list.push(switchCell);
                                         list = list.concat(caseBranch);
-                                        list.push(mrgCell);
                                     }
+                                    caseEdge.setParent(currentParent);
+                                    caseEdge.setValue(cse['value']);
+                                    caseEdge.setStyle(mxUtils.setStyle(caseEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
+                                    caseEdge.setStyle(mxUtils.setStyle(caseEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
+                                    switchCell.insertEdge(caseEdge, true);
+                                    list.push(caseEdge);
                                 });
+                                list.push(mergeCell);
                             }
                             break;
+                        }
                     }
                 }
             });
@@ -200,17 +207,17 @@ class EditorUtility {
             list.push(endCell);
         }
         // generate edges between vertices for program flow
-        let vertexList = list.filter(c => c.isVertex());
-        for (var i = 0; i < vertexList.length; i++) {
+        let vertices = list.filter(c => c.isVertex());
+        for (var i = 0; i < vertices.length; i++) {
             if (i > 0) {
                 // add edge from previous to this cell, if it has no incoming edges
-                if (vertexList[i].getIncomingEdges().length == 0) {
-                    let edge = CellGenerator.generateEdgeCell(vertexList[i-1], vertexList[i]);
+                if (vertices[i].getIncomingEdges().length == 0) {
+                    let edge = CellGenerator.generateEdgeCell(vertices[i-1], vertices[i]);
                     edge.setParent(currentParent);
                     edge.setStyle(mxUtils.setStyle(edge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
                     edge.setStyle(mxUtils.setStyle(edge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
-                    vertexList[i-1].insertEdge(edge, true);
-                    vertexList[i].insertEdge(edge, false);
+                    vertices[i-1].insertEdge(edge, true);
+                    vertices[i].insertEdge(edge, false);
                     list.push(edge);
                 }
             }
@@ -326,4 +333,4 @@ class EditorUtility {
 
 }
 
-export default EditorUtility;
+export default AfclCodec;

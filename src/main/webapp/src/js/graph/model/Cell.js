@@ -43,7 +43,7 @@ class Cell extends mxCell {
      * @return Array children
      */
     getChildren() {
-        return this.children;
+        return this.children ?? [];
     }
 
     /**

@@ -123,10 +123,6 @@ let container = {
     ports: {
         in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
         out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
-    },
-    subCells: {
-        fork: {x: 0.5, y: 0.025, offset: {x: -fork.width/2, y: 0}, style: fork.name},
-        join: {x: 0.5, y: 0.970, offset: {x: -join.width/2, y: -join.height}, style: join.name}
     }
 };
 container.style[mxConstants.STYLE_STROKEWIDTH] = 2;
@@ -150,6 +146,10 @@ container.style[mxConstants.STYLE_SWIMLANE_FILLCOLOR] = 'rgba(255, 255, 255, .5)
 let parallel = mxUtils.clone(container);
 parallel.name = 'parallel';
 parallel.type = mxUtils.getFunctionName(afcl.functions.Parallel);
+parallel.subCells = {
+    fork: {x: 0.5, y: 0.025, offset: {x: -fork.width/2, y: 0}, style: fork.name},
+    join: {x: 0.5, y: 0.970, offset: {x: -join.width/2, y: -join.height}, style: join.name}
+};
 parallel.style[mxConstants.STYLE_SPACING_LEFT] = 160;
 
 let parallelFor = mxUtils.clone(container);
