@@ -84,6 +84,7 @@ class AfclCodec {
                                     // generate edge from fork to first cell of each section
                                     let forkEdge = CellGenerator.generateEdgeCell(forkCell, sectionVertices[0]);
                                     forkEdge.setParent(parCell);
+                                    forkEdge.setStyle(mxUtils.setStyle(forkEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
                                     forkEdge.setStyle(mxUtils.setStyle(forkEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
                                     sectionVertices[0].insertEdge(forkEdge, false);
                                     section.push(forkEdge);
@@ -91,6 +92,7 @@ class AfclCodec {
                                     let joinEdge = CellGenerator.generateEdgeCell(sectionVertices[sectionVertices.length - 1], joinCell);
                                     joinEdge.setParent(parCell);
                                     joinEdge.setStyle(mxUtils.setStyle(joinEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
+                                    joinEdge.setStyle(mxUtils.setStyle(joinEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
                                     sectionVertices[sectionVertices.length - 1].insertEdge(joinEdge, true);
                                     section.push(joinEdge);
                                 }
@@ -109,6 +111,27 @@ class AfclCodec {
                             // generate edge from ifCell (then) to merge cell (default)
                             var thenEdge = CellGenerator.generateEdgeCell(ifCell, mergeCell);
                             var elseEdge = CellGenerator.generateEdgeCell(ifCell, mergeCell);
+
+                            if (elseBranch.length > 0) {
+                                let elseBranchVertices = elseBranch.filter(c => c.isVertex());
+                                // set else edge from ifCell to first cell in else branch
+                                elseEdge = CellGenerator.generateEdgeCell(ifCell, elseBranchVertices[0]);
+                                elseBranchVertices[0].insertEdge(elseEdge, false);
+                                // generate edge from last cell in then branch to merge cell
+                                let mergeEdge = CellGenerator.generateEdgeCell(elseBranchVertices[elseBranchVertices.length - 1], mergeCell);
+                                mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
+                                mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
+                                mergeEdge.setParent(currentParent);
+                                elseBranchVertices[elseBranchVertices.length - 1].insertEdge(mergeEdge, true);
+                                mergeCell.insertEdge(mergeEdge, false);
+                                list.push(mergeEdge);
+                            }
+                            elseEdge.setValue('else');
+                            elseEdge.setParent(currentParent);
+                            elseEdge.setStyle(mxUtils.setStyle(elseEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'else'));
+                            elseEdge.setStyle(mxUtils.setStyle(elseEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
+                            ifCell.insertEdge(elseEdge, true);
+                            list.push(elseEdge);
 
                             if (thenBranch.length > 0) {
                                 let thenBranchVertices = thenBranch.filter(c => c.isVertex());
@@ -131,26 +154,7 @@ class AfclCodec {
                             thenEdge.setStyle(mxUtils.setStyle(thenEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
                             ifCell.insertEdge(thenEdge, true);
                             list.push(thenEdge);
-                            if (elseBranch.length > 0) {
-                                let elseBranchVertices = elseBranch.filter(c => c.isVertex());
-                                // set else edge from ifCell to first cell in else branch
-                                elseEdge = CellGenerator.generateEdgeCell(ifCell, elseBranchVertices[0]);
-                                elseBranchVertices[0].insertEdge(elseEdge, false);
-                                // generate edge from last cell in then branch to merge cell
-                                let mergeEdge = CellGenerator.generateEdgeCell(elseBranchVertices[elseBranchVertices.length - 1], mergeCell);
-                                mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'out'));
-                                mergeEdge.setStyle(mxUtils.setStyle(mergeEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
-                                mergeEdge.setParent(currentParent);
-                                elseBranchVertices[elseBranchVertices.length - 1].insertEdge(mergeEdge, true);
-                                mergeCell.insertEdge(mergeEdge, false);
-                                list.push(mergeEdge);
-                            }
-                            elseEdge.setValue('else');
-                            elseEdge.setParent(currentParent);
-                            elseEdge.setStyle(mxUtils.setStyle(elseEdge.getStyle(), mxConstants.STYLE_SOURCE_PORT, 'else'));
-                            elseEdge.setStyle(mxUtils.setStyle(elseEdge.getStyle(), mxConstants.STYLE_TARGET_PORT, 'in'));
-                            ifCell.insertEdge(elseEdge, true);
-                            list.push(elseEdge);
+
                             list.push(ifCell);
                             list = list.concat(thenBranch);
                             list = list.concat(elseBranch);
