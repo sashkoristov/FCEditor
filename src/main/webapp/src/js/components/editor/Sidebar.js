@@ -113,7 +113,7 @@ class Sidebar extends React.Component {
                 <DropdownMenu className="rounded-0">
                     <FunctionsContext.Consumer>
                         {fc => (
-                            fc.functions.map(fn => <DropdownItem
+                            fc.functions.map(fn => <DropdownItem key={fn.id}
                                 onClick={() => this.props.editor._addFn(fn)}>{fn.name}<Badge>{fn.type}</Badge></DropdownItem>)
                         )}
                     </FunctionsContext.Consumer>

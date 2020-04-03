@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Container, Row, Col, CardTitle, InputGroup, Label, Input, Button } from 'reactstrap';
+import { Container, Row, Col, Card, CardTitle, InputGroup, Label, Input, Button } from 'reactstrap';
 
 import DataInsProperties from './DataInsProperties';
 import DataOutsProperties from './DataOutsProperties';
@@ -58,7 +58,7 @@ class ParallelForProperties extends React.Component {
     }
 
     render() {
-        return <>
+        return <Card className="p-2">
                 <CardTitle className="h5">ParallelFor</CardTitle>
                 <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-2">Loop Counter</div>
@@ -100,7 +100,7 @@ class ParallelForProperties extends React.Component {
                     <div className="font-weight-bold text-muted mb-1">Constraints</div>
                     <Constraints parentObj={this.props.obj} />
                 </div>
-            </>
+            </Card>
     }
 
 }

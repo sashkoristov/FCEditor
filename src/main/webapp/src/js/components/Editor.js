@@ -45,19 +45,21 @@ const {
     mxClient,
     mxCodec,
     mxCodecRegistry,
-    mxObjectCodec,
-    mxCellState,
     mxConstants,
     mxEvent,
-    mxHierarchicalLayout,
+    mxFastOrganicLayout,
     mxSwimlaneLayout,
     mxCompactTreeLayout,
+    mxParallelEdgeLayout,
+    mxHierarchicalLayout,
+    mxStackLayout,
+    mxCompositeLayout,
     mxKeyHandler,
     mxEdgeHandler,
     mxRubberband,
     mxUtils,
-    mxPerimeter,
-    mxShape,
+    mxUndoManager,
+    mxLayoutManager,
     mxSwimlaneManager,
     mxImage
 } = mxgraph;
@@ -103,6 +105,12 @@ class Editor extends React.Component {
 
     componentDidMount() {
         this._createGraph();
+
+        window.onbeforeunload = function() { return 'Leave page? changes lost'; };
+    }
+
+    componentWillUnmount() {
+        window.onbeforeunload = null;
     }
 
     _createGraph = () => {
@@ -118,6 +126,8 @@ class Editor extends React.Component {
 
             // Creates the graph inside the given container
             var graph = new mxGraphOverrides.Graph(container);
+
+            container.setAttribute('tabindex', '-1');
         }
 
         this.setState({
@@ -142,23 +152,18 @@ class Editor extends React.Component {
         graph.setDropEnabled(true);
         graph.setSplitEnabled(false);
         graph.setAllowDanglingEdges(false);
+        graph.allowAutoPanning = true;
         graph.setMultigraph(false);
         graph.setDisconnectOnMove(false);
         graph.setPortsEnabled(false);
         //graph.resetEdgesOnConnect = false;
         //graph.maintainEdgeParent = false;
 
-        // key handler
-        this._keyHandler = new mxKeyHandler(graph);
-
-        this._keyHandler.bindKey(46, this._removeSelected);
-        this._keyHandler.bindKey(8, this._removeSelected);
-
         // Enables rubberband selection
         new mxRubberband(graph);
 
         // Applies size changes to siblings and parents
-        new mxSwimlaneManager(graph);
+        //new mxSwimlaneManager(graph);
 
         // Enables Guides
         graph.graphHandler.guidesEnabled = true;
@@ -174,6 +179,12 @@ class Editor extends React.Component {
         graph.view.getTerminalPort = (state, terminal, source) => {
             return terminal;
         };
+
+        // undo manager
+        this._undoManager = new mxUndoManager();
+        let listener = (sender, evt) => this._undoManager.undoableEditHappened(evt.getProperty('edit'));
+        graph.getModel().addListener(mxEvent.UNDO, listener);
+        graph.getView().addListener(mxEvent.UNDO, listener);
 
         // add/remove cells callback
         graph.addListener(mxEvent.CELLS_ADDED, (sender, evt) => {
@@ -216,9 +227,27 @@ class Editor extends React.Component {
             return graph.connectionHandler.constraintHandler.pointImage;
         };
 
-        // I/O (https://jgraph.github.io/mxgraph/docs/js-api/files/io/mxCellCodec-js.html)
-        mxCodecRegistry.getCodec(mxCell).template = new mxGraphOverrides.Cell();
-        mxCodecRegistry.addAlias(mxUtils.getFunctionName(mxGraphOverrides.Cell), mxUtils.getFunctionName(mxCell));
+        // key handler
+        this._keyHandler = new mxKeyHandler(graph);
+        this._keyHandler.getFunction = (evt) => {
+            if (evt != null)
+            {
+                return (mxEvent.isControlDown(evt) || (mxClient.IS_MAC && evt.metaKey)) ? this._keyHandler.controlKeys[evt.keyCode] : this._keyHandler.normalKeys[evt.keyCode];
+            }
+
+            return null;
+        };
+
+        this._keyHandler.bindKey(46, this._removeSelected);
+        this._keyHandler.bindKey(8, this._removeSelected);
+
+        this._keyHandler.bindControlKey(90, () => {
+            this._undoManager.undo();
+        });
+        this._keyHandler.bindControlKey(89, this._undoManager.undo());
+
+        // fix focus
+        this._focusGraph();
 
         // style
         this._setGraphStyle();
@@ -339,12 +368,19 @@ class Editor extends React.Component {
         );
     };
 
+    _focusGraph = () => {
+        // https://jgraph.github.io/mxgraph/docs/known-issues.html#Focus
+        this.state.graph.container.focus();
+    };
+
     _onCellsAdded = (addedCells) => {
         this._updateEditingState();
+        this._focusGraph();
     };
 
     _onCellsRemoved = (removedCells) => {
         this._updateEditingState();
+        this._focusGraph();
     };
 
     _onCellSelectionChange = () => {
@@ -363,6 +399,7 @@ class Editor extends React.Component {
         this.setState({
             selectedCell: cell
         });
+        this._focusGraph();
     };
 
     _onCellConnected = (edge, source, target) => {
@@ -400,12 +437,43 @@ class Editor extends React.Component {
     _doLayout = () => {
         const {graph} = this.state;
 
-        var layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
+        // STACK LAYOUT
+        var stackLayout = new mxStackLayout(graph, false, 40, 0.5, 0);
+
+        // Makes sure all children fit into the parent swimlane
+        stackLayout.resizeParent = true;
+        stackLayout.allowGaps = true;
+        stackLayout.marginTop = 40;
+        stackLayout.marginBottom = 48;
+        stackLayout.marginLeft = 40;
+
+        // Fast Organic
+        //var layout = new mxFastOrganicLayout(graph);
+
+        // HIERARCHICAL
+        var hierarchicalLayout = new mxGraphOverrides.HierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
+
+        //var layout = new mxSwimlaneLayout(graph, mxConstants.DIRECTION_NORTH);
+
+        hierarchicalLayout.resizeParent = true;
+        hierarchicalLayout.disableEdgeStyle = false;
+        hierarchicalLayout.interHierarchySpacing = 20; // horizontal spacing between parents/roots
+        hierarchicalLayout.interRankCellSpacing = 40; // vertical spacing between connected cells
+        hierarchicalLayout.intraCellSpacing = 20; // horizontal spacing between cells on same branch
+        hierarchicalLayout.parentBorder = 20;
+        hierarchicalLayout.traverseAncestors = false; // wether to drill down into children
 
         //layout.forceConstant = 20;
         //layout.edgeStyle = 1;
 
-        layout.execute(graph.getDefaultParent());
+        // COMPACT TREE
+        var compactTreeLayout = new mxCompactTreeLayout(graph);
+
+        if (this.state.selectedCell) {
+            compactTreeLayout.execute(this.state.selectedCell, false);
+        } else {
+            hierarchicalLayout.execute(graph.getDefaultParent());
+        }
     };
 
     _showXml = () => {
@@ -686,58 +754,52 @@ class Editor extends React.Component {
         return <div className="animated fadeIn editor-component">
             <Row className="no-gutters">
                 <Col className="editor-graph-view">
-                    <Card className="w-100">
-                        <CardHeader>
-                            Graph
-                            <div className="graph-toolbar">
-                                <Button className="btn mr-2" onClick={this._doLayout}>
-                                    <span className="cil-layers mr-1" />
-                                    Layout
-                                </Button>
-                                <Button className="btn mr-2" onClick={this._showXml}>
-                                    <span className="cil-file mr-1" />
-                                    XML
-                                </Button>
-                                <Button className="btn mr-2" onClick={this._validateGraph}>
-                                    <span className="cil-reload mr-1" />
-                                    Validate
-                                </Button>
-                                |
-                                <Button className="btn mx-2" onClick={this._loadWorkflow}>
-                                    <span className="cil-folder-open mr-1" />
-                                    Load
-                                </Button>
-                                <UncontrolledButtonDropdown>
-                                    <DropdownToggle caret>
-                                        <span className="cil-cloud-download mr-1" />
-                                        Save
-                                    </DropdownToggle>
-                                    <DropdownMenu>
-                                        <DropdownItem onClick={() => this._saveWorkflow('xml')}>XML<Badge color="secondary">GUI</Badge></DropdownItem>
-                                        <DropdownItem onClick={() => this._saveWorkflow('yaml')}>YAML</DropdownItem>
-                                        <DropdownItem onClick={() => this._saveWorkflow('json')}>JSON</DropdownItem>
-                                    </DropdownMenu>
-                                </UncontrolledButtonDropdown>
-                            </div>
-                        </CardHeader>
-                        <div className="graph-wrapper">
-                            <Sidebar editor={this} />
-                            <div id="graph" className="graph" ref="_graphContainer"/>
+                    <div className="component-view-header">
+                        Graph
+                        <div className="graph-toolbar">
+                            <Button className="btn mr-2" onClick={this._doLayout}>
+                                <span className="cil-layers mr-1" />
+                                Layout
+                            </Button>
+                            <Button className="btn mr-2" onClick={this._showXml}>
+                                <span className="cil-file mr-1" />
+                                XML
+                            </Button>
+                            <Button className="btn mr-2" onClick={this._validateGraph}>
+                                <span className="cil-reload mr-1" />
+                                Validate
+                            </Button>
+                            |
+                            <Button className="btn mx-2" onClick={this._loadWorkflow}>
+                                <span className="cil-folder-open mr-1" />
+                                Load
+                            </Button>
+                            <UncontrolledButtonDropdown>
+                                <DropdownToggle caret>
+                                    <span className="cil-cloud-download mr-1" />
+                                    Save
+                                </DropdownToggle>
+                                <DropdownMenu>
+                                    <DropdownItem onClick={() => this._saveWorkflow('xml')}>XML<Badge color="secondary">GUI</Badge></DropdownItem>
+                                    <DropdownItem onClick={() => this._saveWorkflow('yaml')}>YAML</DropdownItem>
+                                    <DropdownItem onClick={() => this._saveWorkflow('json')}>JSON</DropdownItem>
+                                </DropdownMenu>
+                            </UncontrolledButtonDropdown>
                         </div>
-                    </Card>
+                    </div>
+                    <div className="graph-wrapper">
+                        <Sidebar editor={this} />
+                        <div id="graph" className="graph" ref="_graphContainer"/>
+                    </div>
                 </Col>
                 <Col className="editor-property-view">
-                    <Card>
-                        <CardHeader>Properties</CardHeader>
-                        <CardBody>
-                            {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction && <AtomicFunctionProperties obj={this.state.selectedCell.value} />}
-                            {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse && <IfThenElseProperties obj={this.state.selectedCell.value} />}
-                            {this.state.selectedCell?.value instanceof afcl.functions.Switch && <SwitchProperties obj={this.state.selectedCell.value} />}
-                            {this.state.selectedCell?.value instanceof afcl.functions.Parallel && <ParallelProperties obj={this.state.selectedCell.value} />}
-                            {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor && <ParallelForProperties obj={this.state.selectedCell.value} />}
-                            {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : <WorkflowProperties workflow={this.state.workflow} /> }
-                        </CardBody>
-                    </Card>
+                    <div className="component-view-header">Properties</div>
+                    {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction && <AtomicFunctionProperties obj={this.state.selectedCell.value} />}
+                    {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse && <IfThenElseProperties obj={this.state.selectedCell.value} />}
+                    {this.state.selectedCell?.value instanceof afcl.functions.Switch && <SwitchProperties obj={this.state.selectedCell.value} />}
+                    {this.state.selectedCell?.value instanceof afcl.functions.Parallel && <ParallelProperties obj={this.state.selectedCell.value} />}
+                    {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor && <ParallelForProperties obj={this.state.selectedCell.value} />}
+                    {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : <WorkflowProperties workflow={this.state.workflow} /> }
                 </Col>
             </Row>
             <Modal isOpen={this.state.isShowXmlModalOpen} size="lg">

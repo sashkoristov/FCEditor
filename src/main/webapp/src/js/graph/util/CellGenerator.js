@@ -4,7 +4,7 @@ import * as cellDefs from '../cells';
 import * as mxGraphOverrides from '../';
 
 import mxgraph from '../../mxgraph';
-const { mxGeometry } = mxgraph;
+const { mxGeometry, mxPoint } = mxgraph;
 
 function generateVertexCell(cellDef, userObj = null) {
     let cell = new mxGraphOverrides.Cell();
@@ -20,7 +20,7 @@ function generateVertexCell(cellDef, userObj = null) {
     }
 
     if (cellDef.offset) {
-        geometry.offset = cellDef.offset;
+        geometry.offset = new mxPoint(cellDef.offset.x, cellDef.offset.y);
     }
     if (cellDef.relative) {
         geometry.relative = true;
@@ -41,9 +41,7 @@ function generateVertexCell(cellDef, userObj = null) {
 
 function generateEdgeCell(source, target) {
     let edge = new mxGraphOverrides.Cell();
-    let geometry = new mxGeometry();
-    geometry.relative = true;
-    edge.setGeometry(geometry);
+    edge.setGeometry(new mxGeometry());
     edge.setEdge(true);
     edge.setVertex(false);
     edge.setTerminal(source, true);

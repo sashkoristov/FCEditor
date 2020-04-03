@@ -20,7 +20,7 @@ class Settings extends React.Component {
                             <FormGroup row>
                                 <Label sm="2">
                                     Test<br />
-                                    <span class="text-muted small">help text ...</span>
+                                    <span className="text-muted small">help text ...</span>
                                 </Label>
                                 <Col sm="6">
                                     <Input placeholder="A constant 1 ..." />

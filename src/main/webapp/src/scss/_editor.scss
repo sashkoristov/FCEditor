@@ -1,10 +1,11 @@
 .editor-component {
 
-  .card-header {
-    border-radius: 0;
+  .component-view-header {
+    padding: $card-spacer-y $card-spacer-x;
     background: white;
     color: $breadcrumb-active-color;
     height: 46px;
+    border-bottom: $card-border-width solid $card-border-color;
   }
 
   .card {
@@ -15,10 +16,12 @@
   .editor-graph-view {
     border-right: 1px solid $gray-300;
     max-width: calc(100% - 360px);
+    background: $white;
   }
 
   .editor-property-view {
     max-width: 360px;
+    background: $white;
   }
 
   .graph-sidebar {
@@ -50,11 +53,13 @@
 
   .graph-wrapper {
     width: 100%;
+    height: 100%;
     display: flex;
   }
 
   #graph {
-    width: 100%;
+    width: calc(100% - 72px);
     background-color: $white;
+    overflow: auto;
   }
 }

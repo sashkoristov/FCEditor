@@ -90,8 +90,8 @@ class Functions extends React.Component {
                                                 <Col xs="4">
                                                     <Label>Provider</Label>
                                                     <Input value={this.state.newFn.provider} type="select" onChange={e => this.setState({newFn: {...this.state.newFn, provider: e.target.value}})}>
-                                                        <option></option>
-                                                        {Object.keys(PROVIDERS).map(providerId => <option value={providerId}>{PROVIDERS[providerId].name}</option> )}
+                                                        <option key="none"></option>
+                                                        {Object.keys(PROVIDERS).map(providerId => <option key={providerId} value={providerId}>{PROVIDERS[providerId].name}</option> )}
                                                     </Input>
                                                 </Col>
                                                 <Col xs="8">
@@ -124,7 +124,7 @@ class Functions extends React.Component {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {fc.functions.map(fn => <tr>
+                                    {fc.functions.map(fn => <tr key={fn.id}>
                                             <td>{fn.id}</td>
                                             <td>{fn.name}</td>
                                             <td><Badge color="secondary">{fn.type}</Badge></td>
@@ -136,7 +136,7 @@ class Functions extends React.Component {
                                             {/*<td>{fn.url}</td>*/}
                                             <td><Button color="dark"
                                                         onClick={() => confirm('Really delete ?') ? fc.remove(fn.id) : null}>
-                                                <span class="cil-trash"></span>
+                                                <span className="cil-trash"></span>
                                             </Button>
                                             </td>
                                         </tr>

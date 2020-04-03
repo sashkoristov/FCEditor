@@ -52,7 +52,7 @@ class WorkflowProperties extends React.Component {
     };
 
     render() {
-        return <>
+        return <Card className="p-2">
                 <CardTitle className="h5">Workflow</CardTitle>
                 <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-2">Name</div>
@@ -78,7 +78,7 @@ class WorkflowProperties extends React.Component {
                     )}
                     <Button color="primary" onClick={() => this._addDataItem('dataOuts')} size="sm"><span className="cil-plus"></span></Button>
                 </div>
-            </>
+            </Card>
     }
 }
 

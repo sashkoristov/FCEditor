@@ -52,7 +52,7 @@ class IfThenElseProperties extends React.Component {
     }
 
     render() {
-        return <>
+        return <Card className="p-2">
                 <CardTitle className="h5">IfThenElse</CardTitle>
                 <div className="font-weight-bold text-muted mb-2">Condition</div>
                 <div className="mb-2">
@@ -111,7 +111,7 @@ class IfThenElseProperties extends React.Component {
                     <div className="font-weight-bold text-muted mb-1">Constraints</div>
                     <Constraints parentObj={this.props.obj} />
                 </div>
-            </>
+            </Card>
     }
 
 }

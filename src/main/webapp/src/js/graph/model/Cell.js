@@ -61,10 +61,12 @@ class Cell extends mxCell {
     }
 
     /**
+     * returns the first child cell which is
+     * a vertex and has given type
      * @return {Cell|null}
      */
     getChildOfType(type) {
-        return this.children.filter(c => c.getType() == type)?.[0];
+        return this.getChildren().filter(c => c.isVertex() && c.getType() == type)?.[0];
     }
 
 

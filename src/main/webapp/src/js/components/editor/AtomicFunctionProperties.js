@@ -52,7 +52,7 @@ class FunctionProperties extends React.Component {
     };
 
     render() {
-        return <>
+        return <Card className="p-2">
                 <CardTitle className="h5">AtomicFunction</CardTitle>
                 <div className="mb-3">
                     <div>Name: {this.props.obj.getName()}</div>
@@ -84,7 +84,7 @@ class FunctionProperties extends React.Component {
                     <div className="font-weight-bold text-muted mb-1">Constraints</div>
                     <Constraints parentObj={this.props.obj} />
                 </div>
-            </>
+            </Card>
     }
 
 }

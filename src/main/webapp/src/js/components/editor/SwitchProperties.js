@@ -37,7 +37,7 @@ class SwitchProperties extends React.Component {
     }
 
     render() {
-        return <>
+        return <Card className="p-2">
                 <CardTitle className="h5">Switch</CardTitle>
                 <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-2">Data Eval</div>
@@ -62,7 +62,7 @@ class SwitchProperties extends React.Component {
                     <div className="font-weight-bold text-muted mb-1">Constraints</div>
                     <Constraints parentObj={this.props.obj} />
                 </div>
-            </>
+            </Card>
     }
 
 }

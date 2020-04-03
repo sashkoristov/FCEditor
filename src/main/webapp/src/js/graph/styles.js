@@ -1,7 +1,7 @@
 /**
  * default cell and edge style definitions
  *
- * @author Ben Walch, 2018-2019
+ * @author Ben Walch, 2019-2020
  */
 import mxgraph from '../mxgraph';
 const { mxConstants, mxEdgeStyle, mxStylesheet } = mxgraph;
@@ -34,5 +34,9 @@ edgeStyle[mxConstants.STYLE_FONTCOLOR] = '#051923';
 edgeStyle[mxConstants.STYLE_FONTSIZE] = 12;
 edgeStyle[mxConstants.STYLE_FONTSTYLE] = mxConstants.FONT_BOLD;
 edgeStyle[mxConstants.STYLE_EDGE] = mxEdgeStyle.OrthConnector;
+// Jetty size is the minimum length of the orthogonal segment before
+// it attaches to a shape.
+edgeStyle[mxConstants.STYLE_JETTY_SIZE] = 24;
+//edgeStyle[mxConstants.STYLE_ROUTING_CENTER_Y] = 0.5;
 
 export { cellStyle, edgeStyle };

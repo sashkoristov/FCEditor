@@ -123,13 +123,26 @@ class Graph extends mxGraph {
      * returns true if cell is a port
      *
      * @param mxCell cell
-     * @returns {boolean}
+     * @return {boolean}
      */
     isPort(cell) {
         //let geo = this.getCellGeometry(cell);
         //return (geo != null) ? geo.relative : false;
+        if (cell instanceof Cell && [cellDefs.fork.name, cellDefs.join.name].includes(cell.getType())) {
+            return false;
+        }
         return super.isPort(cell);
     };
+
+    /**
+     * returns true if cell is a pool (
+     *
+     * @param mxCell cell
+     * @return {boolean}
+     */
+    isPool(cell) {
+        return this.isSwimlane(cell) && this.isSwimlane(cell.getParent());
+    }
 
     /**
      * returns true if a connection between source and target is valid
@@ -188,7 +201,7 @@ class Graph extends mxGraph {
             return error.length > 0 ? error : null;
         }
         // cells in swimlanes
-        else if (cell.parent.value instanceof afcl.functions.Parallel || cell.parent.value instanceof afcl.functions.ParallelFor) {
+        else if (cell.parent.value instanceof afcl.functions.Parallel) {
             let error = '';
             if (!this._hasPathToCell(cell, cellDefs.fork.name, 'up')) {
                 error += 'no path to fork found' + "\n";
@@ -269,7 +282,7 @@ class Graph extends mxGraph {
                 if (sourcePort == 'in') {
                     return 'input port of node is not valid for a connection source';
                 }
-                if (targetPort == 'out') {
+                if (targetPort == 'out' || targetPort == 'then' || targetPort == 'else') {
                     return 'output port of node is not valid for a connection target';
                 }
                 if (sourcePort == targetPort) {
@@ -394,7 +407,7 @@ class Graph extends mxGraph {
 
         // check if cell has ports ...
         if (cellDefs[state.cell.style]) {
-            let ports = cellDefs[state.cell.style].ports
+            let ports = cellDefs[state.cell.style].ports;
 
             // create a 6x6 rectangle where the mouse pointer is,
             // relative to the hovered cell

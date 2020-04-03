@@ -106,14 +106,25 @@ let fork = {
     name: 'fork',
     style: mxUtils.clone(cellStyle),
     width: 54,
-    height: 6
+    height: 6,
+    ports: {
+        out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
+    }
 };
 fork.style[mxConstants.STYLE_FILLCOLOR] = '#000';
 fork.style[mxConstants.STYLE_STROKEWIDTH] = 0;
 fork.style[mxConstants.STYLE_PERIMETER_SPACING] = 2;
+fork.style[mxConstants.STYLE_EDITABLE] = false;
+fork.style[mxConstants.STYLE_DELETABLE] = false;
+fork.style[mxConstants.STYLE_RESIZABLE] = false;
+fork.style[mxConstants.STYLE_MOVABLE] = false;
+fork.style[mxConstants.STYLE_ROTATABLE] = false;
 
 let join = mxUtils.clone(fork);
 join.name = 'join';
+join.ports = {
+    in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH}
+};
 
 let container = {
     name: 'container',
@@ -168,6 +179,16 @@ port.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
 port.style[mxConstants.STYLE_PERIMETER_SPACING] = 6;
 port.style[mxConstants.STYLE_FONTSTYLE] = 2;
 
+let dummy = {
+    name: 'dummy',
+    width: 50,
+    height: 20,
+    ports: {
+        in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
+        out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
+    }
+};
+
 export {
     start,
     end,
@@ -180,5 +201,6 @@ export {
     parallelFor,
     fork,
     join,
-    port
+    port,
+    dummy
 };
