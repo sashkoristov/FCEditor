@@ -41,19 +41,11 @@ import FileDialog from 'file-dialog'
 
 import mxgraph from '../mxgraph';
 const {
-    mxCell,
     mxClient,
     mxCodec,
-    mxCodecRegistry,
     mxConstants,
     mxEvent,
-    mxFastOrganicLayout,
-    mxSwimlaneLayout,
-    mxCompactTreeLayout,
-    mxParallelEdgeLayout,
     mxHierarchicalLayout,
-    mxStackLayout,
-    mxCompositeLayout,
     mxKeyHandler,
     mxEdgeHandler,
     mxRubberband,
@@ -72,8 +64,10 @@ import * as afcl from '../afcl/';
 import * as CellGenerator from '../graph/util/CellGenerator';
 import * as cellDefs from '../graph/cells';
 import * as mxGraphOverrides from '../graph';
-import AfclCodec from '../graph/io/AfclCodec';
 import {cellStyle, edgeStyle} from '../graph/styles';
+import AfclCodec from '../graph/io/AfclCodec';
+import AfclSwimlaneLayout from '../graph/layout/AfclSwimlaneLayout';
+import NestedSwimlaneLayout from '../graph/layout/NestedSwimlaneLayout';
 
 import Sidebar from './editor/Sidebar';
 
@@ -155,8 +149,14 @@ class Editor extends React.Component {
         graph.allowAutoPanning = true;
         graph.setMultigraph(false);
         graph.setDisconnectOnMove(false);
+        graph.setRecursiveResize(false);
+        graph.setConstrainRelativeChildren(false);
         graph.setPortsEnabled(false);
-        //graph.resetEdgesOnConnect = false;
+
+        graph.resetEdgesOnResize = true;
+        graph.resetEdgesOnMove = true;
+        graph.resetEdgesOnConnect = true;
+
         //graph.maintainEdgeParent = false;
 
         // Enables rubberband selection
@@ -206,9 +206,16 @@ class Editor extends React.Component {
 
         // on connect callback
         graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
-            var edge = evt.getProperty('cell');
+            let edge = evt.getProperty('cell');
+            let source = graph.getModel().getTerminal(edge, true);
+            let target = graph.getModel().getTerminal(edge, false);
 
-            this._onCellConnected(edge, edge.source, edge.target);
+            let style = graph.getCellStyle(edge);
+            let sourcePort = style[mxConstants.STYLE_SOURCE_PORT];
+            let targetPort = style[mxConstants.STYLE_TARGET_PORT];
+
+
+            this._onCellConnected(edge, source, target, sourcePort, targetPort);
         });
 
         // sets the port image
@@ -402,7 +409,7 @@ class Editor extends React.Component {
         this._focusGraph();
     };
 
-    _onCellConnected = (edge, source, target) => {
+    _onCellConnected = (edge, source, target, sourcePort, targetPort) => {
         const {graph} = this.state;
 
         // connection comes from switch - set a case label
@@ -411,13 +418,7 @@ class Editor extends React.Component {
         }
 
         if (source.value instanceof afcl.functions.IfThenElse) {
-            let style = graph.getCellStyle(edge);
-            if (style[mxConstants.STYLE_SOURCE_PORT] == 'then') {
-                edge.setValue('then');
-            }
-            if (style[mxConstants.STYLE_SOURCE_PORT] == 'else') {
-                edge.setValue('else');
-            }
+            edge.setValue(sourcePort);
         }
     };
 
@@ -437,43 +438,41 @@ class Editor extends React.Component {
     _doLayout = () => {
         const {graph} = this.state;
 
-        // STACK LAYOUT
-        var stackLayout = new mxStackLayout(graph, false, 40, 0.5, 0);
+        // define the layout for the single swimlanes
+        let swimlaneLayout = new AfclSwimlaneLayout(graph, mxConstants.DIRECTION_NORTH);
 
-        // Makes sure all children fit into the parent swimlane
-        stackLayout.resizeParent = true;
-        stackLayout.allowGaps = true;
-        stackLayout.marginTop = 40;
-        stackLayout.marginBottom = 48;
-        stackLayout.marginLeft = 40;
+        swimlaneLayout.resizeParent = true;
+        swimlaneLayout.disableEdgeStyle = false;
+        swimlaneLayout.interRankCellSpacing = 40; // vertical spacing between connected cells
+        swimlaneLayout.intraCellSpacing = 10; // horizontal spacing between cells on same branch
+        swimlaneLayout.parentBorder = 20; // group border
+        swimlaneLayout.traverseAncestors = false; // wether to drill down into children
 
-        // Fast Organic
-        //var layout = new mxFastOrganicLayout(graph);
+        // this layout walks through the graph and executes the swimlaneLayout on each found swimlane
+        let nestedSwimlaneLayout = new NestedSwimlaneLayout(graph, swimlaneLayout);
 
-        // HIERARCHICAL
-        var hierarchicalLayout = new mxGraphOverrides.HierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
+        // define the 'root' layout to apply on graph root level
+        let rootLayout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
+        rootLayout.resizeParent = false;
+        rootLayout.disableEdgeStyle = false;
+        swimlaneLayout.interHierarchySpacing = 20;
+        rootLayout.interRankCellSpacing = 50; // vertical spacing between connected cells
+        rootLayout.intraCellSpacing = 20;
+        rootLayout.traverseAncestors = false; // wether to drill down into children;
 
-        //var layout = new mxSwimlaneLayout(graph, mxConstants.DIRECTION_NORTH);
+        // order is important here
+        // first, execute the swimlane layout on swimlanes
+        nestedSwimlaneLayout.execute(graph.getDefaultParent())
 
-        hierarchicalLayout.resizeParent = true;
-        hierarchicalLayout.disableEdgeStyle = false;
-        hierarchicalLayout.interHierarchySpacing = 20; // horizontal spacing between parents/roots
-        hierarchicalLayout.interRankCellSpacing = 40; // vertical spacing between connected cells
-        hierarchicalLayout.intraCellSpacing = 20; // horizontal spacing between cells on same branch
-        hierarchicalLayout.parentBorder = 20;
-        hierarchicalLayout.traverseAncestors = false; // wether to drill down into children
+        // second, execute the root layout
+        rootLayout.execute(graph.getDefaultParent());
 
-        //layout.forceConstant = 20;
-        //layout.edgeStyle = 1;
-
-        // COMPACT TREE
-        var compactTreeLayout = new mxCompactTreeLayout(graph);
-
-        if (this.state.selectedCell) {
-            compactTreeLayout.execute(this.state.selectedCell, false);
-        } else {
-            hierarchicalLayout.execute(graph.getDefaultParent());
+        // reset all edges
+        for (let edge of graph.getModel().filterDescendants(c => c.isEdge())) {
+            graph.resetEdge(edge);
         }
+
+        graph.refresh();
     };
 
     _showXml = () => {
@@ -487,29 +486,11 @@ class Editor extends React.Component {
         graph.validateGraph();
     };
 
-    _getCells = (parent) => {
-        let cells = [];
-
-        if (parent == null) {
-            return [];
-        }
-
-        cells.push(parent);
-        var childCount = parent.getChildCount();
-
-        for (var i = 0; i < childCount; i++)
-        {
-            cells = cells.concat(this._getCells(parent.getChildAt(i)));
-        }
-
-        return cells;
-    };
-
     _getWorkflowXml = () => {
         const {workflow} = this.state;
         const {graph} = this.state;
 
-        workflow.setBody(this._getCells(graph.getDefaultParent()));
+        workflow.setBody(graph.getModel().filterDescendants());
 
         const enc = new mxCodec(mxUtils.createXmlDocument());
         const xmlModel = enc.encode(workflow);
@@ -584,6 +565,8 @@ class Editor extends React.Component {
                     return;
                 }
 
+                this.setState({ isLoading: true });
+
                 var reader = new FileReader();
                 reader.onload = (e) => {
                     var contents = e.target.result;
@@ -592,10 +575,14 @@ class Editor extends React.Component {
                             this._loadXml(contents);
                             break;
                         case JSON_MIME_TYPES.includes(file.type):
+                            this.loadJson(contents);
+                            //this._doLayout();
                             break;
                         default:
                             this._loadYaml(contents);
+                            this._doLayout();
                     }
+                    this.setState({ isLoading: false });
                 };
                 reader.readAsText(file);
             }
@@ -746,12 +733,8 @@ class Editor extends React.Component {
     };
 
     render() {
-        if (this.state.isLoading) {
-            return <div>
-                <Spinner size="lg" />
-            </div>
-        }
         return <div className="animated fadeIn editor-component">
+            {this.state.isLoading && <div class="loading-overlay"><Spinner size="lg" /></div>}
             <Row className="no-gutters">
                 <Col className="editor-graph-view">
                     <div className="component-view-header">

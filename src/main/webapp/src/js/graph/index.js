@@ -11,7 +11,6 @@ import * as cellDefs from './cells';
 import Graph from './view/Graph';
 import Cell from './model/Cell';
 import Codec from './io/Codec';
-import HierarchicalLayout from './layout/HierarchicalLayout';
 import Multiplicity from './view/Multiplicity';
 
 // I/O (https://jgraph.github.io/mxgraph/docs/js-api/files/io/mxCellCodec-js.html)
@@ -57,4 +56,4 @@ mxCodec.prototype.decode = function(dec, node, into)
 };
  */
 
-export { Graph, Multiplicity, Cell, Codec, HierarchicalLayout }
+export { Graph, Multiplicity, Cell, Codec }

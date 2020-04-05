@@ -130,7 +130,7 @@ let container = {
     name: 'container',
     style: mxUtils.clone(cellStyle),
     width: 200,
-    height: 300,
+    height: 150,
     ports: {
         in: {x: 0.5, y: 0, perimeter: true, constraint: mxConstants.DIRECTION_MASK_NORTH},
         out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},

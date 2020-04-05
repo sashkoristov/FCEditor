@@ -5,28 +5,37 @@
  */
 
 import React from 'react';
-import { Card, CardTitle, Table} from 'reactstrap';
+import { Card, CardTitle, Table, Button, Collapse, ModalHeader, ModalBody } from 'reactstrap';
 
 class CellProperties extends React.PureComponent {
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            isCellDebugOpen: false
+        };
     }
 
     render() {
         let childVertices = this.props.cell.isVertex() ? this.props.cell.getChildren().filter(c => c.isVertex()) : [];
         return <Card className="p-2">
-            <CardTitle className="h5">Cell</CardTitle>
-            <Table size="sm" borderless={true} className="w-auto">
-                <tbody>
-                    <tr><td>Id</td><td><span className="badge badge-secondary">{this.props.cell.id}</span></td></tr>
-                    <tr><td>{this.props.cell.isVertex() ? 'Vertex' : 'Edge'}</td><td><span className="badge badge-secondary">true</span></td></tr>
-                    {childVertices.length > 0 ? <tr><td>Children</td><td><span className="badge badge-secondary">{childVertices.length}</span></td></tr> : null}
-                    <tr><td>Style</td><td><span className="badge badge-secondary">{this.props.cell.getStyle()}</span></td></tr>
-                    <tr><td>Geometry</td><td>{JSON.stringify(this.props.cell.getGeometry())}</td></tr>
-                </tbody>
-            </Table>
-        </Card>
+                <CardTitle className="h5">Cell</CardTitle>
+                <div>
+                    <div>Id: <span className="badge badge-secondary">{this.props.cell.id}</span></div>
+                    <div>{this.props.cell.isVertex() ? 'Vertex' : 'Edge'}: <span className="badge badge-secondary">true</span></div>
+                    {childVertices.length > 0 ? <div>Children: <span className="badge badge-secondary">{childVertices.length}</span></div> : null}
+                    <div>Style: <span className="badge badge-secondary">{this.props.cell.getStyle()}</span></div>
+                </div>
+                <div>
+                    <Button size="sm" color="link" className="px-0" onClick={() => this.setState({isCellDebugOpen: !this.state.isCellDebugOpen})}>Debug Information</Button>
+                    <Collapse isOpen={this.state.isCellDebugOpen}>
+                        <pre>
+                            Cell: {JSON.stringify(this.props.cell, ['id', 'type', 'geometry', 'x', 'y', 'width', 'height', 'offset', 'relative', 'points'], 2).replace(/[",]/g, '')}
+                        </pre>
+                    </Collapse>
+                </div>
+            </Card>
     }
 
 }

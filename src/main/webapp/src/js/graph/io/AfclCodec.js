@@ -1,3 +1,9 @@
+/**
+ * implementation of an 'codec', to read from AFCL YAML
+ * to a <mxGraph> model
+ *
+ * @author Ben Walch, 2019-2020
+ */
 import Yaml from 'js-yaml';
 
 import * as utils from '../../utils';

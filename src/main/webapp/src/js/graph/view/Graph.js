@@ -368,7 +368,7 @@ class Graph extends mxGraph {
             return c;
         }
 
-        return null;
+        return super.getConnectionConstraint(edge, terminal, source);
     };
 
     /**
@@ -436,6 +436,56 @@ class Graph extends mxGraph {
         }
 
         return tip || super.getTooltip(state, node, x, y);
+    }
+
+    /**
+     * /**
+     * Overrides the parent implementation to respect non-movable cells
+     * and filter them out
+     *
+     * @param cells
+     * @param border
+     * @param moveGroup
+     * @param topBorder
+     * @param rightBorder
+     * @param bottomBorder
+     * @param leftBorder
+     * @return {*|void}
+     */
+    updateGroupBounds(cells, border, moveGroup, topBorder, rightBorder, bottomBorder, leftBorder) {
+        if (cells != null && Array.isArray(cells)) {
+            cells = cells.filter(c => {
+                let style = this.getCellStyle(c);
+                return style[mxConstants.STYLE_MOVABLE] != null ? style[mxConstants.STYLE_MOVABLE] : true;
+            });
+        }
+
+        return super.updateGroupBounds(cells, border, moveGroup, topBorder, rightBorder, bottomBorder, leftBorder);
+    }
+
+    /**
+     * Overrides the parent implementation to respect non-movable cells
+     * and filter them out
+     *
+     * @param cells
+     * @param dx
+     * @param dy
+     * @param clone
+     * @param target
+     * @param evt
+     * @param mapping
+     * @return {*|void}
+     */
+    moveCells(cells, dx, dy, clone, target, evt, mapping) {
+
+        if (cells != null && Array.isArray(cells)) {
+            cells = cells.filter(c => {
+                let style = this.getCellStyle(c);
+                return style[mxConstants.STYLE_MOVABLE] != null ? style[mxConstants.STYLE_MOVABLE] : true;
+            });
+        }
+
+        return super.moveCells(cells, dx, dy, clone, target, evt, mapping);
     }
 
 }
