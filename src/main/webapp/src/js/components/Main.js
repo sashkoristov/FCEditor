@@ -89,9 +89,9 @@ class Main extends React.Component {
                         </FunctionsContextProvider>
                     </main>
                 </div>
-                <AppFooter>
+                {/*<AppFooter>
                     <span className="ml-auto">Made with <span className="cil-heart"></span> and passion by Ben Walch, powered by <a href="https://coreui.io/react">CoreUI for React</a></span>
-                </AppFooter>
+                </AppFooter>*/}
             </div>
         )
     }

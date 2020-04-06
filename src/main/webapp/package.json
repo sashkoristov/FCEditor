@@ -37,7 +37,7 @@
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-router-dom": "^5.1.2",
-    "mxgraph": "^4.0.0",
+    "mxgraph": "^4.1.1",
     "file-saver": "^2.0.2",
     "file-dialog": "^0.0.8",
     "js-yaml": "^3.13.1"

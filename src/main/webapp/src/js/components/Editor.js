@@ -735,7 +735,7 @@ class Editor extends React.Component {
     render() {
         return <div className="animated fadeIn editor-component">
             {this.state.isLoading && <div class="loading-overlay"><Spinner size="lg" /></div>}
-            <Row className="no-gutters">
+            <Row className="no-gutters flex-grow-1">
                 <Col className="editor-graph-view">
                     <div className="component-view-header">
                         Graph
@@ -777,12 +777,14 @@ class Editor extends React.Component {
                 </Col>
                 <Col className="editor-property-view">
                     <div className="component-view-header">Properties</div>
-                    {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction && <AtomicFunctionProperties obj={this.state.selectedCell.value} />}
-                    {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse && <IfThenElseProperties obj={this.state.selectedCell.value} />}
-                    {this.state.selectedCell?.value instanceof afcl.functions.Switch && <SwitchProperties obj={this.state.selectedCell.value} />}
-                    {this.state.selectedCell?.value instanceof afcl.functions.Parallel && <ParallelProperties obj={this.state.selectedCell.value} />}
-                    {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor && <ParallelForProperties obj={this.state.selectedCell.value} />}
-                    {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : <WorkflowProperties workflow={this.state.workflow} /> }
+                    <div className="editor-property-view-wrapper">
+                        {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction && <AtomicFunctionProperties obj={this.state.selectedCell.value} />}
+                        {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse && <IfThenElseProperties obj={this.state.selectedCell.value} />}
+                        {this.state.selectedCell?.value instanceof afcl.functions.Switch && <SwitchProperties obj={this.state.selectedCell.value} />}
+                        {this.state.selectedCell?.value instanceof afcl.functions.Parallel && <ParallelProperties obj={this.state.selectedCell.value} />}
+                        {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor && <ParallelForProperties obj={this.state.selectedCell.value} />}
+                        {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : <WorkflowProperties workflow={this.state.workflow} /> }
+                    </div>
                 </Col>
             </Row>
             <Modal isOpen={this.state.isShowXmlModalOpen} size="lg">

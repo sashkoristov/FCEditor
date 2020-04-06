@@ -1,3 +1,8 @@
+.app {
+  /* height scrollbar fix */
+  min-height: calc(100vh - 1px);
+}
+
 .main {
 
 }

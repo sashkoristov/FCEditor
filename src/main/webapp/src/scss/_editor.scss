@@ -22,6 +22,11 @@
   .editor-property-view {
     max-width: 360px;
     background: $white;
+    .editor-property-view-wrapper {
+      overflow: auto;
+      height: calc(100vh - 102px);
+      margin: 0;
+    }
   }
 
   .graph-sidebar {
@@ -52,13 +57,13 @@
   }
 
   .graph-wrapper {
-    width: 100%;
-    height: 100%;
+    flex-grow: 1;
     display: flex;
   }
 
   #graph {
     width: calc(100% - 72px);
+    height: calc(100vh - 102px);
     background-color: $white;
     overflow: auto;
   }
