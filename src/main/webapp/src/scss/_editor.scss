@@ -44,6 +44,12 @@
       width: 100%;
       font-size: .68rem;
     }
+
+    .functions-dropdown {
+      .dropdown-menu {
+        min-width: 240px;
+      }
+    }
   }
 
   .graph-toolbar {

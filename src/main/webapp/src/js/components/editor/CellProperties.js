@@ -7,6 +7,12 @@
 import React from 'react';
 import { Card, CardTitle, Table, Button, Collapse, ModalHeader, ModalBody } from 'reactstrap';
 
+import mxgraph from '../../mxgraph';
+const {
+    mxCodec,
+    mxUtils
+} = mxgraph;
+
 class CellProperties extends React.PureComponent {
 
     constructor(props) {
@@ -15,6 +21,13 @@ class CellProperties extends React.PureComponent {
         this.state = {
             isCellDebugOpen: false
         };
+    }
+
+    _getCellXml() {
+        const enc = new mxCodec(mxUtils.createXmlDocument());
+        const xmlModel = enc.encode(this.props.cell);
+
+        return mxUtils.getPrettyXml(xmlModel);
     }
 
     render() {
@@ -32,7 +45,7 @@ class CellProperties extends React.PureComponent {
                     <Button size="sm" color="link" className="px-0" onClick={() => this.setState({isCellDebugOpen: !this.state.isCellDebugOpen})}>Debug Information</Button>
                     <Collapse isOpen={this.state.isCellDebugOpen}>
                         <pre>
-                            Cell: {JSON.stringify(this.props.cell, ['id', 'type', 'geometry', 'x', 'y', 'width', 'height', 'offset', 'relative', 'points'], 2).replace(/[",]/g, '')}
+                            {this.state.isCellDebugOpen && this._getCellXml()}
                         </pre>
                     </Collapse>
                 </div>

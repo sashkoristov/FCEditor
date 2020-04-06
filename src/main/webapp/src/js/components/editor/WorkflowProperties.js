@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Row, Col, Card, CardTitle, InputGroup, InputGroupAddon, InputGroupText, Input, Label, Button } from 'reactstrap';
+import { Row, Card, CardTitle, Collapse, Input, Button } from 'reactstrap';
 
 import DataInsProperties from './DataInsProperties';
 import DataOutsProperties from './DataOutsProperties';
@@ -17,7 +17,10 @@ class WorkflowProperties extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {workflow: props.workflow};
+        this.state = {
+            workflow: props.workflow,
+            isWorkflowDebugOpen: false
+        };
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
@@ -77,6 +80,14 @@ class WorkflowProperties extends React.Component {
                         </>
                     )}
                     <Button color="primary" onClick={() => this._addDataItem('dataOuts')} size="sm"><span className="cil-plus"></span></Button>
+                </div>
+                <div>
+                    <Button size="sm" color="link" className="px-0" onClick={() => this.setState({isWorkflowDebugOpen: !this.state.isWorkflowDebugOpen})}>Debug Information</Button>
+                    <Collapse isOpen={this.state.isWorkflowDebugOpen}>
+                        <pre>
+                            {this.state.isWorkflowDebugOpen && this.props.editor._getWorkflowXml()}
+                        </pre>
+                    </Collapse>
                 </div>
             </Card>
     }

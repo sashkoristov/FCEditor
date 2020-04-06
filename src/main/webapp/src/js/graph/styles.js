@@ -36,7 +36,7 @@ edgeStyle[mxConstants.STYLE_FONTSTYLE] = mxConstants.FONT_BOLD;
 edgeStyle[mxConstants.STYLE_EDGE] = mxEdgeStyle.OrthConnector;
 // Jetty size is the minimum length of the orthogonal segment before
 // it attaches to a shape.
-edgeStyle[mxConstants.STYLE_JETTY_SIZE] = 25;
+edgeStyle[mxConstants.STYLE_JETTY_SIZE] = 20;
 edgeStyle[mxConstants.STYLE_ROUTING_CENTER_Y] = 0.5;
 
 export { cellStyle, edgeStyle };

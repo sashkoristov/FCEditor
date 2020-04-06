@@ -106,11 +106,11 @@ class Sidebar extends React.Component {
         return <div className="graph-sidebar">
             <Button onClick={this.props.editor._addStart} className="btn-square item" ref="_addStartBtn">Start</Button>
             <Button onClick={this.props.editor._addEnd} className="btn-square item" ref="_addEndBtn">End</Button>
-            <UncontrolledDropdown direction="right" className="item">
+            <UncontrolledDropdown direction="right" className="functions-dropdown">
                 <DropdownToggle className="btn-square" ref="_fnDropdownToggle">
                     Function
                 </DropdownToggle>
-                <DropdownMenu className="rounded-0">
+                <DropdownMenu>
                     <FunctionsContext.Consumer>
                         {fc => (
                             fc.functions.map(fn => <DropdownItem key={fn.id}
@@ -126,7 +126,7 @@ class Sidebar extends React.Component {
                 <DropdownToggle className="btn-square" ref="_compoundDropdownToggle">
                     Compound
                 </DropdownToggle>
-                <DropdownMenu className="rounded-0">
+                <DropdownMenu>
                     <DropdownItem onClick={() => this.props.editor._addParallel()}>Parallel</DropdownItem>
                     <DropdownItem onClick={() => this.props.editor._addParallelFor()}>ParallelFor</DropdownItem>
                 </DropdownMenu>

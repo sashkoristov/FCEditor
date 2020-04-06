@@ -22,8 +22,6 @@ import { Prompt } from 'react-router';
 import {
     Row,
     Col,
-    Card, CardHeader, CardBody, CardText, CardLink,
-    ButtonGroup,
     Button,
     Badge,
     Modal,
@@ -70,6 +68,7 @@ import AfclSwimlaneLayout from '../graph/layout/AfclSwimlaneLayout';
 import NestedSwimlaneLayout from '../graph/layout/NestedSwimlaneLayout';
 
 import Sidebar from './editor/Sidebar';
+import Toolbar from './editor/Toolbar';
 
 import WorkflowProperties from './editor/WorkflowProperties';
 import CellProperties from './editor/CellProperties';
@@ -92,8 +91,7 @@ class Editor extends React.Component {
             graph: {},
             selectedCell: null,
             isLoading: false,
-            isEditing: false,
-            isShowXmlModalOpen: false
+            isEditing: false
         };
     }
 
@@ -168,9 +166,10 @@ class Editor extends React.Component {
         // Enables Guides
         graph.graphHandler.guidesEnabled = true;
 
-        //
+        // ?
         graph.connectionHandler.movePreviewAway = false;
 
+        // override mxEdgeHandler isConnectableCell
         mxEdgeHandler.prototype.isConnectableCell = cell => {
             return graph.connectionHandler.isConnectableCell(cell);
         };
@@ -179,6 +178,24 @@ class Editor extends React.Component {
         graph.view.getTerminalPort = (state, terminal, source) => {
             return terminal;
         };
+
+        // sets the port image
+        graph.connectionHandler.constraintHandler.pointImage = new mxImage(pointImg, 16, 16);
+
+        // gets the respective port image
+        graph.connectionHandler.constraintHandler.getImageForConstraint = (state, constraint, point) => {
+            switch (constraint.id) {
+                case 'then':
+                    return new mxImage(checkImg, 16, 16);
+                case 'else':
+                    return new mxImage(cancelImg, 16, 16);
+                default:
+                    return graph.connectionHandler.constraintHandler.pointImage;
+            }
+            return graph.connectionHandler.constraintHandler.pointImage;
+        };
+
+        graph.border = 60;
 
         // undo manager
         this._undoManager = new mxUndoManager();
@@ -218,21 +235,6 @@ class Editor extends React.Component {
             this._onCellConnected(edge, source, target, sourcePort, targetPort);
         });
 
-        // sets the port image
-        graph.connectionHandler.constraintHandler.pointImage = new mxImage(pointImg, 16, 16);
-
-        // gets the respective port image
-        graph.connectionHandler.constraintHandler.getImageForConstraint = (state, constraint, point) => {
-            switch (constraint.id) {
-                case 'then':
-                    return new mxImage(checkImg, 16, 16);
-                case 'else':
-                    return new mxImage(cancelImg, 16, 16);
-                default:
-                    return graph.connectionHandler.constraintHandler.pointImage;
-            }
-            return graph.connectionHandler.constraintHandler.pointImage;
-        };
 
         // key handler
         this._keyHandler = new mxKeyHandler(graph);
@@ -251,7 +253,9 @@ class Editor extends React.Component {
         this._keyHandler.bindControlKey(90, () => {
             this._undoManager.undo();
         });
-        this._keyHandler.bindControlKey(89, this._undoManager.undo());
+        this._keyHandler.bindControlKey(89, () => {
+            this._undoManager.redo()
+        });
 
         // fix focus
         this._focusGraph();
@@ -435,6 +439,19 @@ class Editor extends React.Component {
         graph.isEnabled() && graph.removeCells(graph.getSelectionCells());
     };
 
+    _zoomTo = (scale) => {
+        const {graph} = this.state;
+        graph.zoomTo(scale, false);
+    };
+
+    _undo = () => {
+        this._undoManager.undo();
+    };
+
+    _redo = () => {
+        this._undoManager.redo();
+    };
+
     _doLayout = () => {
         const {graph} = this.state;
 
@@ -473,12 +490,6 @@ class Editor extends React.Component {
         }
 
         graph.refresh();
-    };
-
-    _showXml = () => {
-        this.setState({
-            isShowXmlModalOpen: true
-        });
     };
 
     _validateGraph = () => {
@@ -576,7 +587,7 @@ class Editor extends React.Component {
                             break;
                         case JSON_MIME_TYPES.includes(file.type):
                             this.loadJson(contents);
-                            //this._doLayout();
+                            this._doLayout();
                             break;
                         default:
                             this._loadYaml(contents);
@@ -739,36 +750,7 @@ class Editor extends React.Component {
                 <Col className="editor-graph-view">
                     <div className="component-view-header">
                         Graph
-                        <div className="graph-toolbar">
-                            <Button className="btn mr-2" onClick={this._doLayout}>
-                                <span className="cil-layers mr-1" />
-                                Layout
-                            </Button>
-                            <Button className="btn mr-2" onClick={this._showXml}>
-                                <span className="cil-file mr-1" />
-                                XML
-                            </Button>
-                            <Button className="btn mr-2" onClick={this._validateGraph}>
-                                <span className="cil-reload mr-1" />
-                                Validate
-                            </Button>
-                            |
-                            <Button className="btn mx-2" onClick={this._loadWorkflow}>
-                                <span className="cil-folder-open mr-1" />
-                                Load
-                            </Button>
-                            <UncontrolledButtonDropdown>
-                                <DropdownToggle caret>
-                                    <span className="cil-cloud-download mr-1" />
-                                    Save
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                    <DropdownItem onClick={() => this._saveWorkflow('xml')}>XML<Badge color="secondary">GUI</Badge></DropdownItem>
-                                    <DropdownItem onClick={() => this._saveWorkflow('yaml')}>YAML</DropdownItem>
-                                    <DropdownItem onClick={() => this._saveWorkflow('json')}>JSON</DropdownItem>
-                                </DropdownMenu>
-                            </UncontrolledButtonDropdown>
-                        </div>
+                        <Toolbar editor={this} />
                     </div>
                     <div className="graph-wrapper">
                         <Sidebar editor={this} />
@@ -783,18 +765,10 @@ class Editor extends React.Component {
                         {this.state.selectedCell?.value instanceof afcl.functions.Switch && <SwitchProperties obj={this.state.selectedCell.value} />}
                         {this.state.selectedCell?.value instanceof afcl.functions.Parallel && <ParallelProperties obj={this.state.selectedCell.value} />}
                         {this.state.selectedCell?.value instanceof afcl.functions.ParallelFor && <ParallelForProperties obj={this.state.selectedCell.value} />}
-                        {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : <WorkflowProperties workflow={this.state.workflow} /> }
+                        {this.state.selectedCell ? <CellProperties cell={this.state.selectedCell} /> : <WorkflowProperties workflow={this.state.workflow} editor={this} /> }
                     </div>
                 </Col>
             </Row>
-            <Modal isOpen={this.state.isShowXmlModalOpen} size="lg">
-                <ModalHeader toggle={() => this.setState({'isShowXmlModalOpen': !this.state.isShowXmlModalOpen})}>View Workflow XML</ModalHeader>
-                <ModalBody>
-                    <pre>
-                        {this.state.isShowXmlModalOpen ? this._getWorkflowXml() : ''}
-                    </pre>
-                </ModalBody>
-            </Modal>
             <Prompt when={this.state.isEditing} message={location => location.pathname.startsWith('/editor') ? true : 'Are you sure you want to go to ' + location.pathname + "?\n" + 'All unsaved changes will be lost.'} />
         </div>
     }
