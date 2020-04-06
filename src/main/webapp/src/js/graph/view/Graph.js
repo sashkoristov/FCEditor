@@ -104,19 +104,20 @@ class Graph extends mxGraph {
      * @param boolean autoSize
      */
     cellLabelChanged(cell, newValue, autoSize) {
-        /*
-        if (cell.value instanceof afcl.functions.BaseFunction)
-        {
-            // Clones the value for correct undo/redo
-            var elt = mxUtils.clone(cell.value);
-            elt.label = newValue;
-            newValue = elt;
-        }
-        */
-        if (cell.isEdge() && !(cell.source.value instanceof afcl.functions.Switch)) {
+        // disable for edges except cases
+        if (cell.isEdge() && cell.getTerminal(true) != null && !cell.getTerminal(true).getValue() instanceof afcl.functions.Switch) {
             return;
         }
-        super.cellLabelChanged(cell, newValue, autoSize);
+        // for vertices, enable for all 'afcl.functions.*' but atomic functions
+        if (cell.isVertex()) {
+            if (cell.getValue() instanceof afcl.functions.AtomicFunction) {
+                return;
+            }
+            if (cell.getValue() instanceof afcl.functions.BaseFunction) {
+                cell.getValue().setName(newValue);
+                super.cellLabelChanged(cell, cell.getValue(), false);
+            }
+        }
     }
 
     /**
@@ -126,8 +127,7 @@ class Graph extends mxGraph {
      * @return {boolean}
      */
     isPort(cell) {
-        //let geo = this.getCellGeometry(cell);
-        //return (geo != null) ? geo.relative : false;
+        // fork and join are relative, but no port
         if (cell instanceof Cell && [cellDefs.fork.name, cellDefs.join.name].includes(cell.getType())) {
             return false;
         }

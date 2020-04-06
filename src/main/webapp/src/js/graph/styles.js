@@ -9,7 +9,7 @@ const { mxConstants, mxEdgeStyle, mxStylesheet } = mxgraph;
 const cellStyle = new mxStylesheet().getDefaultVertexStyle();
 const edgeStyle = new mxStylesheet().getDefaultEdgeStyle();
 
-cellStyle[mxConstants.STYLE_EDITABLE] = false;
+cellStyle[mxConstants.STYLE_EDITABLE] = true;
 cellStyle[mxConstants.STYLE_RESIZABLE] = false;
 cellStyle[mxConstants.STYLE_ROTATABLE] = false;
 cellStyle[mxConstants.STYLE_FONTSIZE] = 10;

@@ -66,6 +66,7 @@ let fn = {
         out: {x: 0.5, y: 1, perimeter: true, constraint: mxConstants.DIRECTION_MASK_SOUTH},
     }
 };
+fn.style[mxConstants.STYLE_EDITABLE] = false;
 fn.style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RECTANGLE;
 fn.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
 fn.style[mxConstants.STYLE_ROUNDED] = true;

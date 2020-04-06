@@ -39,6 +39,9 @@ class SwitchProperties extends React.Component {
     render() {
         return <Card className="p-2">
                 <CardTitle className="h5">Switch</CardTitle>
+                <div className="mb-3">
+                    <div>Name: {this.props.obj.getName()}</div>
+                </div>
                 <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-2">Data Eval</div>
                     <Row className="no-gutters mb-1">

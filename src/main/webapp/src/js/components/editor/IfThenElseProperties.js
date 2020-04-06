@@ -34,26 +34,29 @@ class IfThenElseProperties extends React.Component {
     _handleConditionPropertyChange = (prop, newVal) => {
         this.props.obj.condition[prop] = newVal;
         this.setState(this.props.obj);
-    }
+    };
 
     _addConditionItem = () => {
         this.props.obj.condition.addCondition(new afcl.objects.Condition());
         this.setState(this.props.obj);
-    }
+    };
 
     _removeConditionItem = (index) => {
         this.props.obj.condition.removeCondition(index);
         this.setState(this.props.obj);
-    }
+    };
 
-    _handleConditionItemChange = (index, prop, newVal) => {
+    _handleConditionItemPropertyChange = (index, prop, newVal) => {
         this.props.obj.condition.conditions[index][prop] = newVal;
         this.setState(this.props.obj);
-    }
+    };
 
     render() {
         return <Card className="p-2">
                 <CardTitle className="h5">IfThenElse</CardTitle>
+                <div className="mb-3">
+                    <div>Name: {this.props.obj.getName()}</div>
+                </div>
                 <div className="font-weight-bold text-muted mb-2">Condition</div>
                 <div className="mb-2">
                     <Input type="select" size="sm" value={this.state.condition.getCombinedWith()} onChange={e => this._handleConditionPropertyChange('combinedWith', e.target.value)}>
@@ -69,7 +72,7 @@ class IfThenElseProperties extends React.Component {
                                 <Col>
                                     <FormGroup check inline>
                                         <Label check className="small mt-2">
-                                            <Input type="checkbox" checked={condition.getNegation()} onChange={e => this._handleConditionItemChange(index, 'negation', !condition.getNegation())} /> Negation
+                                            <Input type="checkbox" checked={condition.getNegation()} onChange={e => this._handleConditionItemPropertyChange(index, 'negation', !condition.getNegation())} /> Negation
                                         </Label>
                                     </FormGroup>
                                 </Col>
@@ -78,13 +81,13 @@ class IfThenElseProperties extends React.Component {
                                 </Col>
                             </Row>
                             <div className="mb-1">
-                                <Input size="sm" placeholder="data 1" value={condition.getData1()} onChange={e => this._handleConditionItemChange(index, 'data1', e.target.value)} />
+                                <Input size="sm" placeholder="data 1" value={condition.getData1()} onChange={e => this._handleConditionItemPropertyChange(index, 'data1', e.target.value)} />
                             </div>
                             <div className="mb-1">
-                                <Input size="sm" placeholder="data 2" value={condition.getData2()} onChange={e => this._handleConditionItemChange(index, 'data2', e.target.value)} />
+                                <Input size="sm" placeholder="data 2" value={condition.getData2()} onChange={e => this._handleConditionItemPropertyChange(index, 'data2', e.target.value)} />
                             </div>
                             <div className="mb-1">
-                                <Input type="select" size="sm" value={condition.getOperator()} onChange={e => this._handleConditionItemChange(index, 'operator', e.target.value)}>
+                                <Input type="select" size="sm" value={condition.getOperator()} onChange={e => this._handleConditionItemPropertyChange(index, 'operator', e.target.value)}>
                                     <option value="">operator</option>
                                     <option value="<">less than</option>
                                     <option value="<=">less than or equal</option>
