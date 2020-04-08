@@ -1,22 +1,286 @@
-\begin{thebibliography}{1}
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.0 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
 
-\bibitem{articles-going-serverless-savage}
-N.~Savage, ``Going serverless,'' {\em Commun. ACM}, vol.~61, p.~15–16, Jan.
-  2018.
 
-\bibitem{articles-rise-of-serverless-castro}
-P.~Castro, V.~Ishakian, V.~Muthusamy, and A.~Slominski, ``The rise of
-  serverless computing,'' {\em Commun. ACM}, vol.~62, p.~44–54, Nov. 2019.
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{articles-rise-of-serverless-castro}{article}{}
+      \name{author}{4}{}{%
+        {{hash=40b283e6fd979b6dd5f1b44c51d3c22a}{%
+           family={Castro},
+           familyi={C\bibinitperiod},
+           given={Paul},
+           giveni={P\bibinitperiod}}}%
+        {{hash=dd23ef8017bbe3559acf3ff8e4343af9}{%
+           family={Ishakian},
+           familyi={I\bibinitperiod},
+           given={Vatche},
+           giveni={V\bibinitperiod}}}%
+        {{hash=e67440e54a895e8bc7a482305017edbf}{%
+           family={Muthusamy},
+           familyi={M\bibinitperiod},
+           given={Vinod},
+           giveni={V\bibinitperiod}}}%
+        {{hash=62d7bc22cbac7e9404d8d38b1b378c33}{%
+           family={Slominski},
+           familyi={S\bibinitperiod},
+           given={Aleksander},
+           giveni={A\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {New York, NY, USA}%
+      }
+      \list{publisher}{1}{%
+        {Association for Computing Machinery}%
+      }
+      \strng{namehash}{5a296682321f86921b7ddccaf3197a28}
+      \strng{fullhash}{71eeb11c940edcbbceeb8476f947889f}
+      \strng{bibnamehash}{5a296682321f86921b7ddccaf3197a28}
+      \strng{authorbibnamehash}{5a296682321f86921b7ddccaf3197a28}
+      \strng{authornamehash}{5a296682321f86921b7ddccaf3197a28}
+      \strng{authorfullhash}{71eeb11c940edcbbceeb8476f947889f}
+      \field{sortinit}{C}
+      \field{sortinithash}{963e9d84a3da2344e8833203de5aed05}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0001-0782}
+      \field{journaltitle}{Commun. ACM}
+      \field{month}{11}
+      \field{number}{12}
+      \field{title}{The Rise of Serverless Computing}
+      \field{volume}{62}
+      \field{year}{2019}
+      \field{pages}{44\bibrangedash 54}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1145/3368454
+      \endverb
+    \endentry
+    \entry{thesis-design-serverless-worfklow-system-eyk}{thesis}{}
+      \name{author}{1}{}{%
+        {{hash=6767c4e5a86ea027c81be9733d0ee454}{%
+           family={Eyk},
+           familyi={E\bibinitperiod},
+           given={Erwin},
+           giveni={E\bibinitperiod},
+           prefix={van},
+           prefixi={v\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Delft University of Technology}%
+      }
+      \strng{namehash}{6767c4e5a86ea027c81be9733d0ee454}
+      \strng{fullhash}{6767c4e5a86ea027c81be9733d0ee454}
+      \strng{bibnamehash}{6767c4e5a86ea027c81be9733d0ee454}
+      \strng{authorbibnamehash}{6767c4e5a86ea027c81be9733d0ee454}
+      \strng{authornamehash}{6767c4e5a86ea027c81be9733d0ee454}
+      \strng{authorfullhash}{6767c4e5a86ea027c81be9733d0ee454}
+      \field{sortinit}{E}
+      \field{sortinithash}{f615fb9c6fba11c6f962fb3fd599810e}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{The design, productization, and evaluation of a serverless workflow-management system}
+      \field{year}{2019}
+    \endentry
+    \entry{online-what-is-serverless-cloudflare}{online}{}
+      \name{author}{1}{}{%
+        {{hash=3d4fe1032e0b00d54224504fb29fc4c8}{%
+           family={Inc.},
+           familyi={I\bibinitperiod},
+           given={Cloudflare},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{3d4fe1032e0b00d54224504fb29fc4c8}
+      \strng{fullhash}{3d4fe1032e0b00d54224504fb29fc4c8}
+      \strng{bibnamehash}{3d4fe1032e0b00d54224504fb29fc4c8}
+      \strng{authorbibnamehash}{3d4fe1032e0b00d54224504fb29fc4c8}
+      \strng{authornamehash}{3d4fe1032e0b00d54224504fb29fc4c8}
+      \strng{authorfullhash}{3d4fe1032e0b00d54224504fb29fc4c8}
+      \field{sortinit}{I}
+      \field{sortinithash}{320bc8fe8101b9376f9f21cd507de0e8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{What Is Serverless Computing?}
+      \field{urlday}{8}
+      \field{urlmonth}{3}
+      \field{urlyear}{2020}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.cloudflare.com/learning/serverless/what-is-serverless/
+      \endverb
+      \verb{url}
+      \verb https://www.cloudflare.com/learning/serverless/what-is-serverless/
+      \endverb
+    \endentry
+    \entry{inproceedings-serverless-beyond-the-cloud-kanso}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{hash=d0c6b193cd4794ab6a7dc24cd1020abf}{%
+           family={Kanso},
+           familyi={K\bibinitperiod},
+           given={Ali},
+           giveni={A\bibinitperiod}}}%
+        {{hash=f9a5870caeb1118323bfa9863c8b765f}{%
+           family={Youssef},
+           familyi={Y\bibinitperiod},
+           given={Alaa},
+           giveni={A\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Las Vegas, Nevada}%
+      }
+      \list{publisher}{1}{%
+        {Association for Computing Machinery}%
+      }
+      \strng{namehash}{f85418446f85734f8ce9829c20556df6}
+      \strng{fullhash}{f85418446f85734f8ce9829c20556df6}
+      \strng{bibnamehash}{f85418446f85734f8ce9829c20556df6}
+      \strng{authorbibnamehash}{f85418446f85734f8ce9829c20556df6}
+      \strng{authornamehash}{f85418446f85734f8ce9829c20556df6}
+      \strng{authorfullhash}{f85418446f85734f8ce9829c20556df6}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the 2nd International Workshop on Serverless Computing}
+      \field{isbn}{9781450354349}
+      \field{series}{WoSC ’17}
+      \field{title}{Serverless: Beyond the Cloud}
+      \field{year}{2017}
+      \field{pages}{6\bibrangedash 10}
+      \range{pages}{5}
+      \verb{doi}
+      \verb 10.1145/3154847.3154854
+      \endverb
+      \keyw{function as a service,serverless computing,cloud computing,linux containers}
+    \endentry
+    \entry{manuals-mxgraph-user-manual}{manual}{}
+      \name{author}{1}{}{%
+        {{hash=0bd2cec540d8be2098d8fda9dee6c57a}{%
+           family={Ltd.},
+           familyi={L\bibinitperiod},
+           given={JGraph},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{0bd2cec540d8be2098d8fda9dee6c57a}
+      \strng{fullhash}{0bd2cec540d8be2098d8fda9dee6c57a}
+      \strng{bibnamehash}{0bd2cec540d8be2098d8fda9dee6c57a}
+      \strng{authorbibnamehash}{0bd2cec540d8be2098d8fda9dee6c57a}
+      \strng{authornamehash}{0bd2cec540d8be2098d8fda9dee6c57a}
+      \strng{authorfullhash}{0bd2cec540d8be2098d8fda9dee6c57a}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{mxGraph User Manual}
+      \field{urlday}{7}
+      \field{urlmonth}{4}
+      \field{urlyear}{2020}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://jgraph.github.io/mxgraph/docs/manual.html
+      \endverb
+      \verb{url}
+      \verb https://jgraph.github.io/mxgraph/docs/manual.html
+      \endverb
+    \endentry
+    \entry{reports-workflow-control-patterns-russell}{report}{}
+      \name{author}{4}{}{%
+        {{hash=f1645e1e99fb959634edc46a4402c490}{%
+           family={Russell},
+           familyi={R\bibinitperiod},
+           given={Nick},
+           giveni={N\bibinitperiod}}}%
+        {{hash=97b0f039214b123f96f6af03d24be98a}{%
+           family={Hofstede},
+           familyi={H\bibinitperiod},
+           given={Arthur\bibnamedelimb H.M.\bibnamedelimi ter},
+           giveni={A\bibinitperiod\bibinitdelim H\bibinitperiod\bibinitdelim t\bibinitperiod}}}%
+        {{hash=45fed513d4bd5fb28cebd7bb58a35c4a}{%
+           family={Aalst},
+           familyi={A\bibinitperiod},
+           given={Wil\bibnamedelima M.P.},
+           giveni={W\bibinitperiod\bibinitdelim M\bibinitperiod},
+           prefix={van\bibnamedelima der},
+           prefixi={v\bibinitperiod\bibinitdelim d\bibinitperiod}}}%
+        {{hash=4612c1e2b1a188fd97ee74c9305834d2}{%
+           family={Mulyar},
+           familyi={M\bibinitperiod},
+           given={Nataliya},
+           giveni={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{78150c62ca09fe68c56a1d7d9bd85ee7}
+      \strng{fullhash}{2e0ac4384b5c3e8a6e5d7d338f01d64c}
+      \strng{bibnamehash}{78150c62ca09fe68c56a1d7d9bd85ee7}
+      \strng{authorbibnamehash}{78150c62ca09fe68c56a1d7d9bd85ee7}
+      \strng{authornamehash}{78150c62ca09fe68c56a1d7d9bd85ee7}
+      \strng{authorfullhash}{2e0ac4384b5c3e8a6e5d7d338f01d64c}
+      \field{sortinit}{R}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{BPM Center Report BPM-06-22}
+      \field{title}{Workflow Control-Flow Patterns: A Revised View}
+      \field{year}{2006}
+      \verb{urlraw}
+      \verb http://workflowpatterns.com/documentation/documents/BPM-06-22.pdf
+      \endverb
+      \verb{url}
+      \verb http://workflowpatterns.com/documentation/documents/BPM-06-22.pdf
+      \endverb
+    \endentry
+    \entry{articles-going-serverless-savage}{article}{}
+      \name{author}{1}{}{%
+        {{hash=6f23369450d1a6260497a2a7cb81713d}{%
+           family={Savage},
+           familyi={S\bibinitperiod},
+           given={Neil},
+           giveni={N\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {New York, NY, USA}%
+      }
+      \list{publisher}{1}{%
+        {Association for Computing Machinery}%
+      }
+      \strng{namehash}{6f23369450d1a6260497a2a7cb81713d}
+      \strng{fullhash}{6f23369450d1a6260497a2a7cb81713d}
+      \strng{bibnamehash}{6f23369450d1a6260497a2a7cb81713d}
+      \strng{authorbibnamehash}{6f23369450d1a6260497a2a7cb81713d}
+      \strng{authornamehash}{6f23369450d1a6260497a2a7cb81713d}
+      \strng{authorfullhash}{6f23369450d1a6260497a2a7cb81713d}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0001-0782}
+      \field{journaltitle}{Commun. ACM}
+      \field{month}{1}
+      \field{number}{2}
+      \field{title}{Going Serverless}
+      \field{volume}{61}
+      \field{year}{2018}
+      \field{pages}{15\bibrangedash 16}
+      \range{pages}{2}
+      \verb{doi}
+      \verb 10.1145/3171583
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
 
-\bibitem{inproceedings-serverless-beyond-the-cloud-kanso}
-A.~Kanso and A.~Youssef, ``Serverless: Beyond the cloud,'' in {\em Proceedings
-  of the 2nd International Workshop on Serverless Computing}, WoSC ’17, (New
-  York, NY, USA), p.~6–10, Association for Computing Machinery, 2017.
-
-\bibitem{online-what-is-serverless-cloudflare}
-I.~Cloudflare, ``What is serverless computing?.''
-
-\bibitem{webpack-js}
-``{Webpack},'' February 2020.
-
-\end{thebibliography}

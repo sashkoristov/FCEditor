@@ -1,6 +1,6 @@
-\documentclass[a4paper,11pt,pdftex,halfparskip,cleardoubleempty,bibtotoc,liststotoc]{scrbook}
+\documentclass[a4paper,12pt,pdftex,halfparskip,cleardoubleempty,bibtotoc,liststotoc]{scrbook}
 
-\raggedbottom
+%\raggedbottom
 
 % \usepackage{fancyhdr}
 
@@ -10,21 +10,34 @@
 \usepackage{eso-pic}
 \usepackage{array}
 \usepackage{tabularx}
+\usepackage{makecell}
 \usepackage{xcolor}
 \usepackage{float}
 \usepackage{listings}
 \usepackage[toc,page]{appendix}
+\usepackage[english]{babel}
+\usepackage[backend=biber, style=numeric, natbib=true, hyperref=true]{biblatex}
 
+\addbibresource{thesis.bib}
+
+\linespread{1.25}
 \setlength{\tabcolsep}{20pt}
-\renewcommand{\arraystretch}{4}
+
+% chapters, numbering
+\newcommand*{\xchapter}{\stepcounter{chapter}\setcounter{section}{0}\addchap}
+
+% tables
+\renewcommand\theadalign{bc}
+\renewcommand\theadfont{\bfseries}
+%\renewcommand\theadgape{\Gape[4pt]}
+\renewcommand\cellgape{\Gape[1pt]}
+\renewcommand{\arraystretch}{2}
 
 \graphicspath{{img/}}
-\newcommand*{\xchapter}{\stepcounter{chapter}\setcounter{section}{0}\addchap}
+
 %\renewcommand*{\thesection}{\arabic{section}}
 
 %\chapterstyle{hangnum}
-
-\usepackage{xcolor}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -113,24 +126,25 @@ The aim of this bachelor project is to develop a visual workflow editor, which m
 With the rise of serverless technologies during the last years, \emph{Function-as-a-Service} (FaaS) became more and more popular. This cloud computing concept offers new advantages for software development: very high flexibility, nearly unlimited scalability and pay-per-use pricing. Global Players like Amazon, Google, IBM and Microsoft jumped on the train and provide their infrastructure to developers, with the ability to deploy and execute their code in the cloud. 
 
 Moving from \emph{Infrastucture-as-a-service} (IaaS) over \emph{Platform-as-a-service} (Paas) to Faas, developers can completely focus on the program they need to run and not worry at all about the machine it is on or the resources it requires \cite{articles-going-serverless-savage}.
-An entire program can be defined by a workflow, which in turn consists of functions. Workflows, though, can be executed using serverless technology in the cloud.
+An entire program can be defined by a workflow, which in turn consists of functions and control structure. Workflows, though, can be executed using serverless technology in the cloud.
 
-Many providers offer a tool to create a workflow and execute it (Amazon Step Functions, IBM Cloud Functions, Microsoft Azure Functions, Google Cloud Functions, ...). Most of them also offer the option to export the composed workflow to a text file.
+Many FaaS providers offer a tool to create a workflow and execute it (Amazon Step Functions, IBM Cloud Functions, Microsoft Azure Functions, Google Cloud Functions, ...). Most of them also offer the option to export the composed workflow definition into a text file.
 But each provider has its own definitions on how a workflow is expressed, as well as different pricing models, limits and quotas. Additionally, different providers also support different programming languages. That being said, a workflow from one system is not compatible with another, what means, the user is bound to a specific provider, if he wants to reuse or change a workflow later.
 
-The distributed and parallel systems group developed a specification to describe serverless function choreographies generically. This specification is called \emph{Abstract Function Choreography Language} (AFCL) and was developed to eliminate incompatibility of workflows between different providers. 
+The distributed and parallel systems group developed a specification to describe serverless function choreographies generically. This specification is called \emph{Abstract Function Choreography Language} (AFCL) and was created to eliminate incompatibility of workflows between different providers.
 
 \section{Objective}
 
 Castro et al. mentions that "One of the major challenges slowing the adoption of serverless is the lack of tools and frameworks" \cite{articles-rise-of-serverless-castro}. 
 
-Therefore, this thesis has the goal to implement a new tool providing a graphical user interface for modeling workflows and export them in AFCL. In addition, loading and visualizing of existing workflows should be supported.
+Therefore, this thesis has the goal to implement a new tool providing a graphical user interface, able to model workflows at a high abstraction level and export them in AFCL. In addition, visualizing - in particular loading, displaying and editing - of existing AFCL workflows in should be supported.
 The tool should also be able to optimize composed workflows.
 
 It is assumed that concrete implementations of the functions are already developed and deployed to a FaaS provider.
   
 \section{Requirements}
 
+\textbf{General}
 \begin{itemize}
 	\item design for the overall application [coreUI]
 	\item clean and intuitive UI [bootstrap]
@@ -140,6 +154,7 @@ It is assumed that concrete implementations of the functions are already develop
 	\item cross-browser [?]
 	\item performance [?]
 \end{itemize}
+\textbf{Libraries}
 \begin{itemize}
 	\item open-source
 	\item good documentation
@@ -158,23 +173,39 @@ It is assumed that concrete implementations of the functions are already develop
 \chapter{Background}
 
 This chapter contains important details on the terms and technologies used in this thesis and helps the reader to better understand the further topics.\\
-First of all, the serverless concept, in particular \emph{Function-as-a-Service}, Workflows and Functions are explained, before giving a short overview about AFCL. The tools and technologies used for the development are also presented to readers who are not yet familiar with them.
+First of all, the serverless concept, in particular Function-as-a-Service, Serverless Functions and Workflows are explained, before giving a short overview about AFCL. The tools and technologies used for the development are also presented to readers who are not yet familiar with them.
 
 \section{Serverless Computing}
 
-Serverless computing is widely known as an event-driven cloud execution model. In this model, the client provides the code and the cloud provider manages the life-cycle of the execution environment of that code.
+Serverless computing is widely known as an event-driven cloud execution model. In this model, the client provides the code  and the cloud provider manages the life-cycle of the execution environment of that code.
 The idea is based on reducing the life span of the program to execute functionality in response to an event. Hence, the program's processes are born when an event is triggered and are killed after the event is processed \cite{inproceedings-serverless-beyond-the-cloud-kanso}.
 
-Castro et al. define serverless computing as follows: "Serverless comuting is a platform that hides server usage from developers and runs code on-demand automatically scaled and billed only for the time the code is running" \cite{articles-rise-of-serverless-castro}.
+Castro et al. define serverless computing as follows: "Serverless computing is a platform that hides server usage from developers and runs code on-demand automatically scaled and billed only for the time the code is running" \cite{articles-rise-of-serverless-castro}.
 
 The term ‘serverless’ can be misleading though, as there are still servers providing these backend services, but all of the server space and infrastructure concerns are handled by the vendor. Serverless means that the developers can do their work without having to worry about servers at all \cite{online-what-is-serverless-cloudflare}.
 
+\section{FaaS}
 
+FaaS is a form of serverless computing, which is disrupting the way applications and systems have been built for decades. By abstracting infrastructure provisioning and deployment, user-provided functions can be invoked and executed remotely. The user only has to worry about development and triggering of the function. This serverless runtime has not only the advantage that it avoids costly pre-allocated or dedicated hardware, but also offers almost unlimited possibilities in scalability and billing.
 
-\section{Workflows and Functions}
+\section{Serverless Functions}
+Serverless functions - or tasks - are single-purpose, mostly stateless, programmatic functions that are hosted on cloud infrastructure. These infrastructure is provided through a FaaS platform. They are event-driven and can be invoked through the internet, mainly using HTTP. Like conventional functions, they accept arguments and and return the result of the computation  - with the difference that this is done over a network.
 
+\section{Serverless Workflows}
+On an abstract level, a workflow consists of a set of interdependent tasks that need to be executed to achieve a specific goal. [...] A task within a workflow has the following properties: dependencies on the software or service used by the task to perform its computation (software flow), dependencies on data (data flow), and dependencies on other tasks (control flow) \cite{thesis-design-serverless-worfklow-system-eyk}.\\
+Basic and advanced workflow control-flow patterns for workflows are shown in \cite{reports-workflow-control-patterns-russell}.
+
+A serverless workflow is a complex workflow defined through the composition of serverless functions. Serverless workflows make it possible to combine and reuse serverless functions in order to build more complex applications. 
+Workflows can declare the structure of applications - and using formats like YAML, XML or JSON, they can be described in a text-based file.
 
 \section{AFCL}
+
+The \emph{Abstract Function Choreography Language} (AFCL) was created to eliminate incompatibility of workflows between different providers. As the name indicates, AFCL describes workflows in an abstract, provider independent way. For example, if a workflow exported from AWS should be executed on IBM, the workflow has to be ported to be compatible, what means it has to be recreated - for example using the exported workflow as a template.
+
+This specification forms a step on the way to cross-cloud workflow execution. To be able to execute multi-cloud workflows described in AFCL, some more tools are needed: an Enactment Engine and a Scheduler\footnote{https://dps.uibk.ac.at}.
+
+\subsection{Supported Control-Structures}
+% here the different control structures of AFCL?
 
 \section{Development Tools and Technologies}
 \subsection{npm}
@@ -208,7 +239,7 @@ A lot of CSS Frameworks also provide their source code in SASS, often served wit
 
 % what the system does, what if offers
 
-The Implementation of a Graphical User Interface as well as the optimization of workflows were the main goals of this bachelor thesis.
+The Implementation of a Graphical User Interface to visualize and create or edit workflows, as well as a proof-of-concept for workflow optimization were the main goals of this bachelor thesis.
 
 %A prototyping phase was the kickoff for the development: Different frameworks and libraries have been researched, tested and selected. The result of this phase was a working prototype as proof-of-concept.
 % In order to achieve the goals, i did the following ...
@@ -221,7 +252,7 @@ The Implementation of a Graphical User Interface as well as the optimization of 
 % (to subsystems: FE constists of this ..., BE constists of this - goals of both BE and FE)
 % more grained visualization
 
-Operating mostly decoupled from one another, the application  consists of two sub systems - a Java backend and a web-based frontend. Those communicate and share JSON encoded objects between each other through an API the backend provides and the frontend consumes. The backend is responsible for converting and optimizing workflows at low-level as well as persisting of function data. The conversion of workflows is needed because the frontend encodes the visual representation of a workflow in XML, which is given as input to the backend. The conversion process is done by utilizing the AFCL API. 
+Tthe application  consists of two sub systems which are operating mostly decoupled from each other: a Java backend and a web-based frontend. Those communicate and share JSON encoded objects between each other through an API the backend provides and the frontend consumes. The backend is responsible for converting and optimizing workflows at low-level as well as persisting of function data. The conversion of workflows is needed because the frontend encodes the visual representation of a workflow in XML, which is given as input to the backend. The conversion process is done by utilizing the AFCL API\footnote{http://dps.uibk.ac.at/projects/afcl/files/jar/afclAPI.jar}. 
 
 The frontend displays and controls the application's user interface. It is responsible for visualizing the data and provide the canvas where the user can compose a workflow.
 
@@ -235,19 +266,15 @@ The frontend displays and controls the application's user interface. It is respo
 \section{Frontend}
 Since a web based frontend which runs in the user's web browser, is a hard requirement, the core technologies are limited to HTML, CSS and JavaScript.
 
-
-% add definitions here (EcmaScript JavaScript SASS ...)
-
 % \subsection{Development Workflow}
 % SYSTEM DESIGN
 \subsection{Setup}
 
 The setup of the frontend application is a selection of tools and technologies for modern and complex web development.
-The base forms the node package manager (npm) which is used to manage and resolve the dependencies. Additionally, npm's CLI is used as tool to execute development and build tasks.
+The base forms npm which is used to manage and resolve the dependencies. Additionally, npm's CLI is used as tool to execute development and build tasks. Webpack is in use to bundle all sources and assets into single files, and execute additional build steps by utilizing so-called 'loaders'.
 
 Under the hood, JavaScript and several JavaScript Frameworks are in action to control the application consisting of several UI components. To give the application its look and feel, CSS and some CSS Frameworks are in use.
 
-Webpack does much of heavy-lifting, by bundling all sources with the assets into single files, and execute additional build steps by utilizing so-called 'loaders'.
 Babel is used as such a webpack loader, for compiling the ECMAScript and React JSX source code to browser-compatible JavaScript.
 The same applies for the CSS extension SASS, which is also integrated as a webpack loader, and is used to make the process of styling the user interface more efficient.
 
@@ -266,23 +293,80 @@ All AFCL Java model classes have been ported to ECMAScript, to have all classes 
 
 \subsection{Graph drawing}
 
-A workflow can be visualized as a directed graph.
-The graph library used in this thesis to visualize a workflow is the JavaScript portion of mxGraph\footnote{https://jgraph.github.io/mxgraph/}. It is actively maintained and developed (during the development of the frontend, three bugfix releases and one minor release have been made public) and has an outstanding documentation. Additionally, it has a lot of demos and example code which show a lot of use cases and extensive features. Furthermore it integrates easily with React.
+A workflow can be visualized as a directed acyclic graph (DAG). For reasons of efficiency, reusability, documentation and future safety, there is no question that an existing library has to be used to do the visualizing part.
+At the time of implementation, the JavaScript library mxGraph\footnote{https://jgraph.github.io/mxgraph/} was the best choice\footnote{see \ref{sec:graph-alternatives} to learn why} to achieve the mentioned goals.
+It has an outstanding documentation, enriched with a lot of demos and example code which show many use cases and extensive features. The authors of mxGraph state:\\
+\begin{quote}
+``mxGraph is pretty much feature complete, production tested in many large enterprises and stable for many years. We actively fix bugs and add features [...].''
+\end{quote}
 
-Basically, vertices and edges are represented by an \texttt{mxCell} model, which stores information about the cell's position, dimension, geometry and style.
-Additionally, a user object can be attached to a \texttt{mxCell}. User objects give the graph its context, they store the business logic associated with the visual part. In this application, the cell's user objects are instances of AFCL objects.
+In mxGraph, vertices and edges are represented by an \texttt{mxCell} model, which stores information about the cell's position, dimension, geometry and style.
 
-Thus, the graph visualizes the execution sequence of the workflow.
+\begin{figure}[H]
+  \centering
+  \vspace{0.8cm}
+  \includegraphics[]{mxCell}
+  \caption{\texttt{mxCell} model}
+\end{figure}
+
+% \texttt{mxCell} instances are controlled by the \texttt{mxGraphModel}, its visual representation is rendered by \texttt{mxCellRenderer}.
+Additionally, a \textit{user object} can be associated with a \texttt{mxCell} through the \texttt{value} property. User objects give the graph its context, they store the business logic associated with the visual part. \cite{manuals-mxgraph-user-manual} For simple cases, the user object may be a string to display the cell's label. In more complex applications, the user object may be an object and some property of that object will generally be the label that the visual cell displays. In this application, the cell's user objects are instances of the ported AFCL classes, respectively.
+
+The following table shows the \texttt{mxCell}'s shapes which are implemented and used for composing a workflow. Beside a short description, the type of the associated user object is denoted.
+
+\begin{tabular}{ |c|c|c| } 
+\hline
+\thead{Cell} & \thead{Description} & \thead{User Object} \\
+\hline
+\makecell{\includegraphics[width=32pt,height=32pt]{cell-start} \\ \textsf{Start}}  & Defines the workflow's entry point & \makecell{\texttt{String} \\ \small(for the label)} \\
+\hline
+\makecell{\includegraphics[width=32pt,height=32pt]{cell-end} \\ \textsf{End}}  & Defines the workflow's termination & \makecell{\texttt{String} \\ \small(for the label)} \\
+\hline
+\makecell{\includegraphics[width=52pt,height=28pt]{cell-function} \\ \textsf{Function}}  & An atomic function & \texttt{AtomicFunction} \\
+\hline
+\makecell{\includegraphics[width=32pt,height=32pt]{cell-ifthenelse} \\ \textsf{If-Then-Else}}  & A mutual exclusive condition & \texttt{IfThenElse} \\
+\hline
+\makecell{\includegraphics[width=32pt,height=32pt]{cell-switch} \\ \textsf{Switch}}  & A multi condition & \texttt{Switch} \\
+\hline
+\makecell{\includegraphics[width=32pt,height=24pt]{cell-merge} \\ \textsf{Merge}}  & For merging previous branches & \makecell{\texttt{null} \\ \small(None)} \\
+\hline
+\makecell{\includegraphics[width=50pt,height=32pt]{cell-compound} \\ \textsf{Parallel}}  & \makecell{A container, where each child cell\\ is meant to be executed in parallel.} & \texttt{Parallel} \\
+\hline
+\makecell{\includegraphics[width=50pt,height=32pt]{cell-compound} \\ \textsf{ParallelFor}}  & \makecell{A container, where each child cell\\ is meant to be executed in a parallel for loop.} & \texttt{ParallelFor} \\
+\hline
+\end{tabular}
 
 % table vertices and user objects
 
-\subsubsection{Validation}
+\subsection{Validation}
 
-\subsubsection{Encoding}
+Graph validation is implemented at two different stages: At runtime, when composing a workflow by adding and connecting the vertices, and before export, when saving the current graph. 
+In AFCL, a valid workflow represented by a DAG always fulfills the following constraints:
+\begin{itemize}
+	\item There exists only one starting point
+	\item Start has only one outgoing edge
+	\item There exists only one termination point
+	\item End has only one incoming edge
+	\item There exist no cycles
+	\item Functions have only one incoming and only one outgoing edge
+	\item IfThenElse have exactly two outgoing edges (then, else)
+	\item ...
+\end{itemize}
 
-\subsubsection{Alternatives}
 
-One of the more difficult tasks was to choose a proper library for graph drawing. Since the graph drawing and visualization is one of the most important features of the frontend, a careful choice has to be made. Of course there exist multiple excellent JavaScript graph drawing libraries. 
+\subsection{Encoding}
+
+The visual representation of the workflow and the included data targets human-readability. This data needs to put into another, proper format for storing. mxGraph provides built-in support for converting the visual representation to XML. An advantage of using XML over JSON is that constructor names (class names) are mapped to the XML node names, no additional property is required.
+XML is mostly convenient for the backend, since Java has excellent built-in XML support. The XML-encoded workflow is converted on backend-side internally to a AFCL object.
+
+\subsection{Layouting}
+
+Combination of nested hierarchical layout
+
+\label{sec:graph-alternatives}
+\subsection{Alternatives}
+
+One of the more difficult tasks was to choose a proper library for graph drawing. Since the graph drawing and visualization is one of the most important features of the frontend, a careful choice has to be made. Of course there exist multiple excellent JavaScript graph drawing libraries.
 
 Below is a list of tested and researched JavaScript graph libraries with additional information why they were insufficient for the project.
 \begin{itemize}
@@ -310,7 +394,7 @@ The dashboard is the entry point where the user lands after accessing the app. T
 
 \subsubsection{Functions}
 
-A function repository is needed to know about available functions when composing a workflow. An item in the function repository holds the following data: name, type and provider. For In the implementation of this thesis, this data is persisted to an internal file.\footnote{see \ref{Backend-Persistence} for detailed information on how data is persisted}
+A function repository is needed to know about available functions when composing a workflow. An item in the function repository holds the following data: \texttt{name}, \texttt{type} and \texttt{provider}. In the implementation of this thesis, this data is persisted to an internal file.\footnote{see \ref{sec:backend-persistence} for detailed information on how data is persisted}
 
 \begin{figure}[H]
   \centering
@@ -342,13 +426,15 @@ RESTful (Functions) and RPC-Style (Workflows)
 % https://www.smashingmagazine.com/2016/09/understanding-rest-and-rpc-for-http-apis/
 
 \subsection{Decoding}
+\label{sec:backend-decoding}
  XML is good because built-in XPath support in Java.
+
 \subsection{Persistence}
-\label{Backend-Persistence}
+\label{sec:backend-persistence}
 
 Composed workflows are saved to the user's file system by offering a download. The user can then choose the target location.
 The storing of function data, on the other hand, is abstracted from the user and persisting of the data is handled internally.
-An interface\footnote{https://docs.oracle.com/javase/specs/jls/se7/html/jls-9.html} for the repository implementation was created on the backend side to be capable of supporting any data source. The repository which implements the interface in this thesis, stores the serialized data into a file. This could be easily replaced with any other implementation, for example an implementation which stores the data in a DBMS.
+An interface\footnote{https://docs.oracle.com/javase/specs/jls/se7/html/jls-9.html} for the repository was created on the backend side to be capable of supporting any data source. The repository which implements the interface in this thesis, stores the serialized data into a file. This could be easily replaced with any other implementation, for example an implementation which stores the data in a DBMS.
 
 \begin{lstlisting}[language=Java, caption=Repository Interface]
 public interface Repository<T> {
@@ -369,12 +455,14 @@ public interface Repository<T> {
 
 \subsection{Optimization}
 
+\subsection{Improvements/Known Issues}
+
 % interface so that someone can update the yaml file based on 
 % decision
 
-\section{Continuous Delivery}
-
 \chapter{Evaluation}
+
+
 
 % manually vs modeling -> what is the benefit
 % compare manually vs modeling (time)
@@ -383,11 +471,6 @@ public interface Repository<T> {
 
 \chapter{Conclusion}
 
-
-% causes to print all bibliography
-\nocite{*}
-
-\bibliographystyle{ieeetr}
-\bibliography{thesis.bib}
+\printbibliography
 
 \end{document} 
