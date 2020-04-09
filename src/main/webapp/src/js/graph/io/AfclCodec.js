@@ -4,7 +4,7 @@
  *
  * @author Ben Walch, 2019-2020
  */
-import Yaml from 'js-yaml';
+import YAML from 'js-yaml';
 
 import * as utils from '../../utils';
 import * as afcl from '../../afcl/';
@@ -31,24 +31,49 @@ class AfclCodec {
         let workflow = new afcl.Workflow();
 
         try {
-            let _yamlObj = Yaml.safeLoad(afclYamlString);
+            let yamlObj = YAML.safeLoad(afclYamlString);
 
 
-            this._setPrimitiveProperties(workflow, _yamlObj);
-            this._setCommonProperties(workflow, _yamlObj);
+            this._setPrimitiveProperties(workflow, yamlObj);
+            this._setCommonProperties(workflow, yamlObj);
 
             let list = [];
-            if (_yamlObj && _yamlObj['workflowBody']) {
-                list = this._generateFunctions(_yamlObj['workflowBody'], this.root.getChildAt(0));
+            if (yamlObj && yamlObj['workflowBody']) {
+                list = this._generateFunctions(yamlObj['workflowBody'], this.root.getChildAt(0));
             }
 
             workflow.setBody(list);
 
         } catch (error) {
-            if (error instanceof Yaml.YAMLException) {
+            if (error instanceof YAML.YAMLException) {
                 alert('Error loading YAML. Invalid file contents');
             }
             console.log(error);
+            return null;
+        }
+
+        return workflow;
+    }
+
+    decodeJsonWorkflow(afclJsonString) {
+        let workflow = new afcl.Workflow();
+
+        try {
+            let jsonObj = JSON.parse(afclJsonString);
+
+            this._setPrimitiveProperties(workflow, jsonObj);
+            this._setCommonProperties(workflow, jsonObj);
+
+            let list = [];
+            if (jsonObj && jsonObj['workflowBody']) {
+                list = this._generateFunctions(jsonObj['workflowBody'], this.root.getChildAt(0));
+            }
+
+            workflow.setBody(list);
+
+        } catch (error) {
+            console.log(error);
+            return null;
         }
 
         return workflow;

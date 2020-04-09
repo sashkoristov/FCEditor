@@ -4,7 +4,7 @@
  * @author Ben Walch, 2018-2019
  */
 import mxgraph from '../../mxgraph';
-const { mxGraph, mxConstants, mxMultiplicity, mxUtils, mxConnectionConstraint, mxPoint, mxConstraintHandler, mxImage, mxCell, mxRectangle } = mxgraph;
+const { mxGraph, mxConstants, mxUtils, mxConnectionConstraint, mxPoint, mxRectangle } = mxgraph;
 
 import ConnectionHandler from '../handler/ConnectionHandler';
 import Cell from '../model/Cell';
@@ -29,6 +29,7 @@ class Graph extends mxGraph {
     }
 
     /**
+     * overrides the create vertex to return an instance of Cell
      *
      * @param mxCell parent
      * @param string id
@@ -185,46 +186,46 @@ class Graph extends mxGraph {
      */
     validateCell(cell, context) {
         if (cell.isVertex() && cell instanceof Cell) {
-            return this._checkCell(cell);
+            // cells at outermost level
+            if (cell.getParent() == this.getDefaultParent()) {
+                let error = '';
+                if (!this.hasPathToCell(cell, cellDefs.start.name, mxConstants.DIRECTION_NORTH)) {
+                    error += 'no path to a start node found' + "\n";
+                }
+                if (!this.hasPathToCell(cell, cellDefs.end.name, mxConstants.DIRECTION_SOUTH)) {
+                    error += 'no path to an end node found' + "\n";
+                }
+                return error.length > 0 ? error : null;
+            }
+            // cells in swimlanes
+            else if (cell.getParent().getValue() instanceof afcl.functions.Parallel) {
+                let error = '';
+                if (!this.hasPathToCell(cell, cellDefs.fork.name, mxConstants.DIRECTION_NORTH)) {
+                    error += 'no path to fork found' + "\n";
+                }
+                if (!this.hasPathToCell(cell, cellDefs.join.name, mxConstants.DIRECTION_SOUTH)) {
+                    error += 'no path to join found' + "\n";
+                }
+                return error.length > 0 ? error : null;
+            }
         }
         return super.validateCell(cell, context);
     }
 
-    _checkCell(cell) {
-        // cells at outermost level
-        if (cell.parent == this.getDefaultParent()) {
-            let error = '';
-            if (!this._hasPathToCell(cell, cellDefs.start.name, 'up')) {
-                error += 'no path to a start node found' + "\n";
-            }
-            if (!this._hasPathToCell(cell, cellDefs.end.name, 'down')) {
-                error += 'no path to an end node found' + "\n";
-            }
-            return error.length > 0 ? error : null;
-        }
-        // cells in swimlanes
-        else if (cell.parent.value instanceof afcl.functions.Parallel) {
-            let error = '';
-            if (!this._hasPathToCell(cell, cellDefs.fork.name, 'up')) {
-                error += 'no path to fork found' + "\n";
-            }
-            if (!this._hasPathToCell(cell, cellDefs.join.name, 'down')) {
-                error += 'no path to join found' + "\n";
-            }
-            return error.length > 0 ? error : null;
-        }
-        return null;
-    }
-
-    _hasPathToCell(cell, name, direction) {
-        if (cell.type && cell.type == name) {
+    /**
+     * returns true if there exist a path in the graph to a cell of given type
+     * @param Cell cell
+     * @param string type
+     * @param string direction
+     * @return {boolean|boolean|*}
+     */
+    hasPathToCell(cell, type, direction) {
+        if (cell instanceof Cell && cell.getType() == type) {
             return true;
         }
-        if (cell.edges && cell.edges.length > 0) {
-            let edge = cell.edges.filter((edge) => { return direction == 'up' ? edge.target == cell : edge.source == cell })[0];
-            if (edge) {
-                return this._hasPathToCell((direction == 'up' ? edge.source : edge.target), name, direction);
-            }
+        let edges = direction == mxConstants.DIRECTION_NORTH ? this.getModel().getIncomingEdges(cell) : this.getModel().getOutgoingEdges(cell);
+        if (edges.length > 0) {
+            return this.hasPathToCell(direction == mxConstants.DIRECTION_NORTH ? this.getModel().getTerminal(edges[0], true) : this.getModel().getTerminal(edges[0], false), type, direction);
         }
         return false;
     }
@@ -294,14 +295,21 @@ class Graph extends mxGraph {
         }
 
         // disallow loops over multiple steps
-        if (this._hasLoop(target, source)) {
+        if (this.hasLoop(target, source)) {
             return 'this edge produces a loop.';
         }
 
         return null;
     }
 
-    _hasLoop(currentCell, start) {
+    /**
+     * returns true if there exists a loop between two given cells
+     *
+     * @param currentCell
+     * @param start
+     * @return {boolean}
+     */
+    hasLoop(currentCell, start) {
         if (currentCell == start) {
             return true;
         }
@@ -311,7 +319,7 @@ class Graph extends mxGraph {
         }
         let res = false;
         for (let e of outgoingEdges) {
-            res = this._hasLoop(this.getModel().getTerminal(e, false), start);
+            res = this.hasLoop(this.getModel().getTerminal(e, false), start);
             if (res) {
                 return res;
             }

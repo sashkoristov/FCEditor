@@ -8,7 +8,7 @@ class Toolbar extends React.Component {
             <UncontrolledButtonDropdown className="mr-1">
                 <DropdownToggle caret>
                     <span className="cil-zoom mr-1" />
-                    Zoom
+                    &nbsp;
                 </DropdownToggle>
                 <DropdownMenu className="small">
                     <DropdownItem onClick={() => this.props.editor._zoomTo(0.5)}>50%</DropdownItem>
@@ -20,22 +20,22 @@ class Toolbar extends React.Component {
             </UncontrolledButtonDropdown>
             <Button className="btn mx-1" onClick={this.props.editor._undo}>
                 <span className="cil cil-action-undo" />
-                Undo
+                &nbsp;
             </Button>
             <Button className="btn mx-1" onClick={this.props.editor._redo}>
                 <span className="cil cil-action-redo" />
-                Redo
+                &nbsp;
             </Button>
             <Button className="btn mx-1" onClick={this.props.editor._removeSelected}>
                 <span className="cil cil-trash" />
-                Delete
+                &nbsp;
             </Button>
             |
             <Button className="btn mx-1" onClick={this.props.editor._doLayout}>
-                <span className="cil-reload mr-1" />
+                <span className="cil-layers mr-1" />
                 Layout
             </Button>
-            <Button className="btn mx-1" onClick={this.props.editor._validateGraph}>
+            <Button className="btn mx-1" onClick={this.props.editor._validateWorkflow}>
                 <span className="cil-reload mr-1" />
                 Validate
             </Button>

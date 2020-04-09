@@ -130,6 +130,7 @@ class Editor extends React.Component {
     _configureGraph = () => {
         const {graph} = this.state;
 
+        graph.border = 60;
         graph.gridSize = 4;
         graph.setPanning(true);
         graph.setTooltips(true);
@@ -187,13 +188,9 @@ class Editor extends React.Component {
                     return new mxImage(checkImg, 16, 16);
                 case 'else':
                     return new mxImage(cancelImg, 16, 16);
-                default:
-                    return graph.connectionHandler.constraintHandler.pointImage;
             }
             return graph.connectionHandler.constraintHandler.pointImage;
         };
-
-        graph.border = 60;
 
         // undo manager
         this._undoManager = new mxUndoManager();
@@ -497,7 +494,7 @@ class Editor extends React.Component {
         graph.refresh();
     };
 
-    _validateGraph = () => {
+    _validateWorkflow = () => {
         const {graph} = this.state;
         return graph.validateGraph();
     };
@@ -518,12 +515,12 @@ class Editor extends React.Component {
         const {graph} = this.state;
 
         if (graph.isEmpty()) {
-            alert('Cannot save an empty graph');
+            alert('Cannot save an empty workflow');
             return;
         }
 
-        if (this._validateGraph() != null) {
-            alert('Cannot save an invalid graph');
+        if (this._validateWorkflow() != null) {
+            alert('Cannot save an invalid workflow');
             return;
         }
 
@@ -571,7 +568,6 @@ class Editor extends React.Component {
         }
     };
 
-    // Parses the mxGraph XML file format
     _loadWorkflow = () => {
 
         let allMimeTypes = this.JSON_MIME_TYPES.concat(this.XML_MIME_TYPES).concat(this.YAML_MIME_TYPES);
@@ -604,7 +600,7 @@ class Editor extends React.Component {
                         this._loadXml(contents);
                         break;
                     case this.JSON_MIME_TYPES.includes(file.type):
-                        this.loadJson(contents);
+                        this._loadJson(contents);
                         this._doLayout();
                         break;
                     default:
@@ -620,6 +616,7 @@ class Editor extends React.Component {
     _loadXml = (xmlString) => {
         const {graph} = this.state;
 
+        // Parses the mxGraph XML file format
         let xmlDoc = mxUtils.parseXml(xmlString);
         let decoder = new mxGraphOverrides.Codec(xmlDoc);
         let workflow = decoder.decode(xmlDoc.documentElement);
@@ -634,7 +631,20 @@ class Editor extends React.Component {
 
         let workflow = decoder.decodeYamlWorkflow(yamlString);
 
-        this._drawWorkflow(workflow);
+        if (workflow instanceof afcl.Workflow) {
+            this._drawWorkflow(workflow);
+        }
+    };
+
+    _loadJson = (jsonString) => {
+        const {graph} = this.state;
+
+        let decoder = new AfclCodec();
+        let workflow = decoder.decodeJsonWorkflow(jsonString);
+
+        if (workflow instanceof afcl.Workflow) {
+            this._drawWorkflow(workflow);
+        }
     };
 
     _drawWorkflow = (workflow) => {
@@ -781,7 +791,9 @@ class Editor extends React.Component {
                     </div>
                 </Col>
                 <Col className="editor-property-view">
-                    <div className="component-view-header">Properties</div>
+                    <div className="component-view-header">
+                        Properties
+                    </div>
                     <div className="editor-property-view-wrapper animated fadeIn">
                         {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction && <AtomicFunctionProperties obj={this.state.selectedCell.value} />}
                         {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse && <IfThenElseProperties obj={this.state.selectedCell.value} />}
