@@ -56,7 +56,6 @@ public class WorkflowConversionService {
         if (n != null && n.getNodeType() == Node.ELEMENT_NODE) {
             Element el = (Element) n;
             if (el.hasAttribute("vertex")) {
-                System.out.println(el.getAttribute("type"));
                 Node edge = getNode(doc, "/Workflow/Array[@as='body']/Cell[@source='" + el.getAttribute("id") + "']");
                 NodeList edges = getNodes(doc, "/Workflow/Array[@as='body']/Cell[@source='" + el.getAttribute("id") + "']");
                 switch (el.getAttribute("type")) {
@@ -158,7 +157,6 @@ public class WorkflowConversionService {
                 }
             }
             if (el.hasAttribute("edge")) {
-                System.out.println("Following edge to target " + el.getAttribute("target"));
                 Node t = getNode(doc, "/Workflow/Array[@as='body']/Cell[@id='" + el.getAttribute("target") + "']");
                 generateFunctions(t, doc, functionsList);
             }
