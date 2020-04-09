@@ -499,7 +499,7 @@ class Editor extends React.Component {
 
     _validateGraph = () => {
         const {graph} = this.state;
-        graph.validateGraph();
+        return graph.validateGraph();
     };
 
     _getWorkflowXml = () => {
@@ -519,6 +519,11 @@ class Editor extends React.Component {
 
         if (graph.isEmpty()) {
             alert('Cannot save an empty graph');
+            return;
+        }
+
+        if (this._validateGraph() != null) {
+            alert('Cannot save an invalid graph');
             return;
         }
 

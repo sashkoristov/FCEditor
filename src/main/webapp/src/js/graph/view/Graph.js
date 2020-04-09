@@ -184,7 +184,7 @@ class Graph extends mxGraph {
      * @param object context
      */
     validateCell(cell, context) {
-        if (cell.value instanceof afcl.functions.BaseFunction) {
+        if (cell.isVertex() && cell instanceof Cell) {
             return this._checkCell(cell);
         }
         return super.validateCell(cell, context);

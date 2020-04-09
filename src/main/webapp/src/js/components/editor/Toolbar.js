@@ -30,6 +30,11 @@ class Toolbar extends React.Component {
                 <span className="cil cil-trash" />
                 Delete
             </Button>
+            |
+            <Button className="btn mx-1" onClick={this.props.editor._doLayout}>
+                <span className="cil-reload mr-1" />
+                Layout
+            </Button>
             <Button className="btn mx-1" onClick={this.props.editor._validateGraph}>
                 <span className="cil-reload mr-1" />
                 Validate
