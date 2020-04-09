@@ -1,23 +1,5 @@
-function jsonStringifyWithoutCircular(obj, depth = 4) {
-    return JSON.stringify(
-        obj,
-        ( key, value) => {
-            if((key === 'parent' || key == 'source' || key == 'target') && value !== null) {
-                return value.id;
-            } else if(key === 'value' && value !== null && value.localName) {
-                let results = {};
-                Object.keys(value.attributes).forEach(
-                    (attrKey)=>{
-                        const attribute = value.attributes[attrKey];
-                        results[attribute.nodeName] = attribute.nodeValue;
-                    }
-                );
-                return results;
-            }
-            return value;
-        },
-        depth
-    );
+function sleep(miliseconds) {
+    return new Promise(res => setTimeout(() => res(), miliseconds));
 }
 
 const capitalize = (s) => {
@@ -25,4 +7,4 @@ const capitalize = (s) => {
     return s.charAt(0).toUpperCase() + s.slice(1)
 };
 
-export { capitalize, jsonStringifyWithoutCircular }
+export { capitalize, sleep }

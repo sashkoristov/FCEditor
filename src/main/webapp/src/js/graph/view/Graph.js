@@ -104,15 +104,17 @@ class Graph extends mxGraph {
      * @param boolean autoSize
      */
     cellLabelChanged(cell, newValue, autoSize) {
-        // disable for edges except cases
-        if (cell.isEdge() && cell.getTerminal(true) != null && !cell.getTerminal(true).getValue() instanceof afcl.functions.Switch) {
-            return;
-        }
-        // for vertices, enable for all 'afcl.functions.*' but atomic functions
-        if (cell.isVertex()) {
+        if (cell.isEdge()) {
+            // disable for edges except cases from Switch
+            if (cell.getTerminal(true) != null && cell.getTerminal(true).getValue() instanceof afcl.functions.Switch) {
+                super.cellLabelChanged(cell, newValue, autoSize);
+            }
+        } else if (cell.isVertex()) {
+            // disallow atomic functions
             if (cell.getValue() instanceof afcl.functions.AtomicFunction) {
                 return;
             }
+            // but allow the rest
             if (cell.getValue() instanceof afcl.functions.BaseFunction) {
                 cell.getValue().setName(newValue);
                 super.cellLabelChanged(cell, cell.getValue(), false);

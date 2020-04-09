@@ -66,8 +66,46 @@ class Functions extends React.Component {
             <>
                 <AppBreadcrumb appRoutes={routes} router={router} />
                 <Container fluid>
+                    <p>Add functions you wish to use in the editor.</p>
                     <FunctionsContext.Consumer>
                         {fc => <div className="animated fadeIn">
+                            <div className="mb-4">
+                                <Button color="primary" onClick={this._toggleAddFunctionModal}><span className="cil-plus"></span> Add Function</Button>
+                            </div>
+                            <Card>
+                                {fc.isLoading ? "Loading" : null}
+                                <Table hover striped borderless>
+                                    <thead>
+                                    <tr>
+                                        <th>Identifier</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Provider</th>
+                                        {/* <th>URL</th> */}
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {fc.functions.map(fn => <tr key={fn.id}>
+                                            <td>{fn.id}</td>
+                                            <td>{fn.name}</td>
+                                            <td><Badge color="secondary">{fn.type}</Badge></td>
+                                            <td>
+                                                <a title={PROVIDERS[fn.provider]?.name} className="text-lg">
+                                                    <span className={PROVIDERS[fn.provider]?.icon + " font-2xl"}></span>
+                                                </a>
+                                            </td>
+                                            {/*<td>{fn.url}</td>*/}
+                                            <td><Button color="dark"
+                                                        onClick={() => confirm('Really delete ?') ? fc.remove(fn.id) : null}>
+                                                <span className="cil-trash"></span>
+                                            </Button>
+                                            </td>
+                                        </tr>
+                                    )}
+                                    </tbody>
+                                </Table>
+                            </Card>
                             <Modal isOpen={this.state.isAddFunctionModalOpen} size="lg">
                                 <ModalHeader toggle={this._toggleAddFunctionModal}>Add Function</ModalHeader>
                                 <ModalBody>
@@ -107,43 +145,6 @@ class Functions extends React.Component {
                                     <Button color="secondary" onClick={this._toggleAddFunctionModal}>Cancel</Button>
                                 </ModalFooter>
                             </Modal>
-                            <div className="mb-4">
-                                <Button color="primary" onClick={this._toggleAddFunctionModal}><span className="cil-plus"></span> Add Function</Button>
-                            </div>
-                            <Card>
-                                {fc.isLoading ? "Loading" : null}
-                                <Table hover striped borderless>
-                                    <thead>
-                                    <tr>
-                                        <th>Identifier</th>
-                                        <th>Name</th>
-                                        <th>Type</th>
-                                        <th>Provider</th>
-                                        {/* <th>URL</th> */}
-                                        <th>Actions</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {fc.functions.map(fn => <tr key={fn.id}>
-                                            <td>{fn.id}</td>
-                                            <td>{fn.name}</td>
-                                            <td><Badge color="secondary">{fn.type}</Badge></td>
-                                            <td>
-                                                <a title={PROVIDERS[fn.provider]?.name} className="text-lg">
-                                                    <span className={PROVIDERS[fn.provider]?.icon + " font-2xl"}></span>
-                                                </a>
-                                            </td>
-                                            {/*<td>{fn.url}</td>*/}
-                                            <td><Button color="dark"
-                                                        onClick={() => confirm('Really delete ?') ? fc.remove(fn.id) : null}>
-                                                <span className="cil-trash"></span>
-                                            </Button>
-                                            </td>
-                                        </tr>
-                                    )}
-                                    </tbody>
-                                </Table>
-                            </Card>
                         </div>
                         }
                     </FunctionsContext.Consumer>

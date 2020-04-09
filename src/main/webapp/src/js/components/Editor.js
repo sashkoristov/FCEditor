@@ -4,17 +4,6 @@
  * @author Ben Walch, 2019-2020
  */
 
-const XML_MIME_TYPES = ['text/xml', 'application/xml'];
-
-const JSON_MIME_TYPES = ['application/json'];
-
-const YAML_MIME_TYPES = [
-    'text/vnd.yaml',
-    'application/vnd.yaml',
-    'text/x-yaml',
-    'application/x-yaml'
-];
-
 import axios from 'axios';
 import React from 'react';
 import { Prompt } from 'react-router';
@@ -22,15 +11,6 @@ import { Prompt } from 'react-router';
 import {
     Row,
     Col,
-    Button,
-    Badge,
-    Modal,
-    ModalHeader,
-    ModalBody,
-    UncontrolledButtonDropdown,
-    DropdownToggle,
-    DropdownMenu,
-    DropdownItem,
     Spinner
 } from 'reactstrap';
 
@@ -48,6 +28,7 @@ const {
     mxEdgeHandler,
     mxRubberband,
     mxUtils,
+    mxPoint,
     mxUndoManager,
     mxLayoutManager,
     mxSwimlaneManager,
@@ -58,11 +39,13 @@ import pointImg from '../../assets/images/point.svg';
 import checkImg from '../../assets/images/check.svg';
 import cancelImg from '../../assets/images/cancel.svg';
 
+import * as utils from '../utils/';
 import * as afcl from '../afcl/';
 import * as CellGenerator from '../graph/util/CellGenerator';
 import * as cellDefs from '../graph/cells';
 import * as mxGraphOverrides from '../graph';
 import {cellStyle, edgeStyle} from '../graph/styles';
+
 import AfclCodec from '../graph/io/AfclCodec';
 import AfclSwimlaneLayout from '../graph/layout/AfclSwimlaneLayout';
 import NestedSwimlaneLayout from '../graph/layout/NestedSwimlaneLayout';
@@ -83,6 +66,18 @@ import ParallelForProperties from './editor/ParallelForProperties';
  */
 class Editor extends React.Component {
 
+    // initial position for placing new cells
+    INIT_POSITION = new mxPoint(40, 40);
+
+    XML_MIME_TYPES = ['text/xml', 'application/xml'];
+    JSON_MIME_TYPES = ['application/json'];
+    YAML_MIME_TYPES = [
+        'text/vnd.yaml',
+        'application/vnd.yaml',
+        'text/x-yaml',
+        'application/x-yaml'
+    ];
+
     constructor(props) {
         super(props);
 
@@ -93,6 +88,9 @@ class Editor extends React.Component {
             isLoading: false,
             isEditing: false
         };
+
+        // wether to record undoable changes
+        this.recordUndoableChanges = true;
     }
 
     componentDidMount() {
@@ -199,7 +197,7 @@ class Editor extends React.Component {
 
         // undo manager
         this._undoManager = new mxUndoManager();
-        let listener = (sender, evt) => this._undoManager.undoableEditHappened(evt.getProperty('edit'));
+        let listener = (sender, evt) => this.recordUndoableChanges && this._undoManager.undoableEditHappened(evt.getProperty('edit'));
         graph.getModel().addListener(mxEvent.UNDO, listener);
         graph.getView().addListener(mxEvent.UNDO, listener);
 
@@ -416,11 +414,13 @@ class Editor extends React.Component {
     _onCellConnected = (edge, source, target, sourcePort, targetPort) => {
         const {graph} = this.state;
 
-        // connection comes from switch - set a case label
+        // connection comes from switch - set a case label and allow editing
         if (source.value instanceof afcl.functions.Switch) {
-            edge.setValue('Case [...]');
+            edge.setValue('[Case ...]');
+            edge.setStyle(mxUtils.setStyle(edge.getStyle(), mxConstants.STYLE_EDITABLE, true));
         }
 
+        // if connection has if as source - set port id (then or else) as label
         if (source.value instanceof afcl.functions.IfThenElse) {
             edge.setValue(sourcePort);
         }
@@ -455,6 +455,10 @@ class Editor extends React.Component {
     _doLayout = () => {
         const {graph} = this.state;
 
+        // since the layout process produces a lot of single steps,
+        // don't add them to the undo manager
+        this.recordUndoableChanges = false;
+
         // define the layout for the single swimlanes
         let swimlaneLayout = new AfclSwimlaneLayout(graph, mxConstants.DIRECTION_NORTH);
 
@@ -479,7 +483,7 @@ class Editor extends React.Component {
 
         // order is important here
         // first, execute the swimlane layout on swimlanes
-        nestedSwimlaneLayout.execute(graph.getDefaultParent())
+        nestedSwimlaneLayout.execute(graph.getDefaultParent());
 
         // second, execute the root layout
         rootLayout.execute(graph.getDefaultParent());
@@ -488,6 +492,7 @@ class Editor extends React.Component {
         for (let edge of graph.getModel().filterDescendants(c => c.isEdge())) {
             graph.resetEdge(edge);
         }
+        this.recordUndoableChanges = true;
 
         graph.refresh();
     };
@@ -564,40 +569,47 @@ class Editor extends React.Component {
     // Parses the mxGraph XML file format
     _loadWorkflow = () => {
 
-        FileDialog(
-            {
-                multiple: false,
-                accept: JSON_MIME_TYPES.concat(XML_MIME_TYPES).concat(YAML_MIME_TYPES)
-            },
-            files => {
-                let file = files[0];
+        let allMimeTypes = this.JSON_MIME_TYPES.concat(this.XML_MIME_TYPES).concat(this.YAML_MIME_TYPES);
 
-                if (!file) {
-                    return;
-                }
+        FileDialog({
+            multiple: false,
+            accept: allMimeTypes
+        }).then(async files => {
+            let file = files[0];
 
-                this.setState({ isLoading: true });
-
-                var reader = new FileReader();
-                reader.onload = (e) => {
-                    var contents = e.target.result;
-                    switch (true) {
-                        case XML_MIME_TYPES.includes(file.type):
-                            this._loadXml(contents);
-                            break;
-                        case JSON_MIME_TYPES.includes(file.type):
-                            this.loadJson(contents);
-                            this._doLayout();
-                            break;
-                        default:
-                            this._loadYaml(contents);
-                            this._doLayout();
-                    }
-                    this.setState({ isLoading: false });
-                };
-                reader.readAsText(file);
+            if (!file) {
+                return;
             }
-        );
+
+            if (file.type != '' && !allMimeTypes.includes(file.type)) {
+                alert('Unsupported file type');
+                return;
+            }
+
+            this.setState({ isLoading: true });
+
+            // a little delay ;)
+            await utils.sleep(500);
+
+            let reader = new FileReader();
+            reader.onload = (e) => {
+                var contents = e.target.result;
+                switch (true) {
+                    case this.XML_MIME_TYPES.includes(file.type):
+                        this._loadXml(contents);
+                        break;
+                    case this.JSON_MIME_TYPES.includes(file.type):
+                        this.loadJson(contents);
+                        this._doLayout();
+                        break;
+                    default:
+                        this._loadYaml(contents);
+                        this._doLayout();
+                }
+                this.setState({ isLoading: false });
+            };
+            reader.readAsText(file);
+        });
     };
 
     _loadXml = (xmlString) => {
@@ -730,21 +742,27 @@ class Editor extends React.Component {
 
         let cell = CellGenerator.generateVertexCell(cellDef, userObj);
 
+        // set initial position
+        if (cell.getGeometry() != null) {
+            cell.getGeometry().x = this.INIT_POSITION.x;
+            cell.getGeometry().y = this.INIT_POSITION.y;
+        }
+
         // Adds cells to the model in a single step
         graph.getModel().beginUpdate();
         try {
-
             graph.addCell(cell, parent);
-
         } finally {
             // Updates the display
             graph.getModel().endUpdate();
         }
 
+        graph.setSelectionCell(cell);
+
     };
 
     render() {
-        return <div className="animated fadeIn editor-component">
+        return <div className="editor-component">
             {this.state.isLoading && <div class="loading-overlay"><Spinner size="lg" /></div>}
             <Row className="no-gutters flex-grow-1">
                 <Col className="editor-graph-view">
@@ -752,14 +770,14 @@ class Editor extends React.Component {
                         Graph
                         <Toolbar editor={this} />
                     </div>
-                    <div className="graph-wrapper">
+                    <div className="graph-wrapper animated fadeIn">
                         <Sidebar editor={this} />
                         <div id="graph" className="graph" ref="_graphContainer"/>
                     </div>
                 </Col>
                 <Col className="editor-property-view">
                     <div className="component-view-header">Properties</div>
-                    <div className="editor-property-view-wrapper">
+                    <div className="editor-property-view-wrapper animated fadeIn">
                         {this.state.selectedCell?.value instanceof afcl.functions.AtomicFunction && <AtomicFunctionProperties obj={this.state.selectedCell.value} />}
                         {this.state.selectedCell?.value instanceof afcl.functions.IfThenElse && <IfThenElseProperties obj={this.state.selectedCell.value} />}
                         {this.state.selectedCell?.value instanceof afcl.functions.Switch && <SwitchProperties obj={this.state.selectedCell.value} />}

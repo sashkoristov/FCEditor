@@ -8,6 +8,10 @@ class Settings extends React.Component {
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            maxNumberConcurrentFunctions: 1000
+        }
     }
 
     render() {
@@ -18,17 +22,17 @@ class Settings extends React.Component {
                     <div className="animated fadeIn">
                         <Form horizontal>
                             <FormGroup row>
-                                <Label sm="2">
-                                    Test<br />
-                                    <span className="text-muted small">help text ...</span>
+                                <Label md="2">
+                                    Max concurrent functions<br />
+                                    <span className="text-muted small">Specify the maximum number of concurrent function executions</span>
                                 </Label>
-                                <Col sm="6">
-                                    <Input placeholder="A constant 1 ..." />
+                                <Col md="4">
+                                    <Input type="number" placeholder="Max concurrent functions" value={this.state.maxNumberConcurrentFunctions} onChange={e => this.setState({ maxNumberConcurrentFunctions: e.target.value })} />
                                 </Col>
                             </FormGroup>
                             <FormGroup row>
-                                <Label sm="2">Test 2</Label>
-                                <Col sm="6">
+                                <Label md="2">Test 2</Label>
+                                <Col md="4">
                                     <Input type="select">
                                         <option>1</option>
                                         <option>2</option>
