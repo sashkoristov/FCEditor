@@ -39,6 +39,7 @@ class CellProperties extends React.PureComponent {
                     <div>{this.props.cell.isVertex() ? 'Vertex' : 'Edge'}: <span className="badge badge-secondary">true</span></div>
                     {typeof this.props.cell.getType == 'function' && this.props.cell.getType() != null && <div>Type: <span className="badge badge-secondary">{this.props.cell.getType()}</span></div>}
                     <div>Style: <span className="badge badge-secondary">{this.props.cell.getStyle()}</span></div>
+                    {typeof this.props.cell.getValue() == 'string' ? <div>Label: <span className="badge badge-secondary">{this.props.cell.getValue()}</span></div> : null}
                     {childVertices.length > 0 ? <div>Children: <span className="badge badge-secondary">{childVertices.length}</span></div> : null}
                 </div>
                 <div>
