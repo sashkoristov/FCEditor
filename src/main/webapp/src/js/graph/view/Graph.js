@@ -137,7 +137,7 @@ class Graph extends mxGraph {
     };
 
     /**
-     * returns true if cell is a pool (
+     * returns true if cell is a pool
      *
      * @param mxCell cell
      * @return {boolean}
@@ -236,7 +236,6 @@ class Graph extends mxGraph {
      * @returns {string|null}
      */
     getCellValidationError(cell) {
-
         // super call validates all multiplicities, etc
         return super.getCellValidationError(cell);
     }
@@ -253,7 +252,8 @@ class Graph extends mxGraph {
      */
     getEdgeValidationError(edge, source, target) {
         let err = super.getEdgeValidationError(edge, source, target);
-        if (err) {
+
+        if (err != null) {
             return err;
         }
 
@@ -292,6 +292,31 @@ class Graph extends mxGraph {
                 }
             }
         }
+
+        // disallow loops over multiple steps
+        if (this._hasLoop(target, source)) {
+            return 'this edge produces a loop.';
+        }
+
+        return null;
+    }
+
+    _hasLoop(currentCell, start) {
+        if (currentCell == start) {
+            return true;
+        }
+        let outgoingEdges = this.getModel().getOutgoingEdges(currentCell);
+        if (outgoingEdges.length == 0) {
+            return false;
+        }
+        let res = false;
+        for (let e of outgoingEdges) {
+            res = this._hasLoop(this.getModel().getTerminal(e, false), start);
+            if (res) {
+                return res;
+            }
+        }
+        return false;
     }
 
     /**
