@@ -621,20 +621,24 @@ class Editor extends React.Component {
 
             let reader = new FileReader();
             reader.onload = (e) => {
-                var contents = e.target.result;
-                switch (true) {
-                    case this.XML_MIME_TYPES.includes(file.type):
-                        this._loadXml(contents);
-                        break;
-                    case this.JSON_MIME_TYPES.includes(file.type):
-                        this._loadJson(contents);
-                        this._doLayout();
-                        break;
-                    default:
-                        this._loadYaml(contents);
-                        this._doLayout();
+                try {
+                    let contents = e.target.result;
+                    switch (true) {
+                        case this.XML_MIME_TYPES.includes(file.type):
+                            this._loadXml(contents);
+                            break;
+                        case this.JSON_MIME_TYPES.includes(file.type):
+                            this._loadJson(contents) && this._doLayout();
+                            break;
+                        default:
+                            this._loadYaml(contents) && this._doLayout();
+                    }
+                } catch (error) {
+                    console.log(error);
+                    alert(error);
+                } finally {
+                    this.setState({ isLoading: false });
                 }
-                this.setState({ isLoading: false });
             };
             reader.readAsText(file);
         });
@@ -660,7 +664,9 @@ class Editor extends React.Component {
 
         if (workflow instanceof afcl.Workflow) {
             this._drawWorkflow(workflow);
+            return true;
         }
+        return false;
     };
 
     _loadJson = (jsonString) => {
@@ -671,7 +677,9 @@ class Editor extends React.Component {
 
         if (workflow instanceof afcl.Workflow) {
             this._drawWorkflow(workflow);
+            return true;
         }
+        return false;
     };
 
     _drawWorkflow = (workflow) => {
@@ -681,7 +689,6 @@ class Editor extends React.Component {
         let edges = workflow.getBody().filter(cell => cell.isEdge());
 
         // clear graph
-        // ToDo: confirm
         graph.getModel().clear();
 
         graph.getModel().beginUpdate();

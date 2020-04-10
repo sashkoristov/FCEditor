@@ -30,27 +30,18 @@ class AfclCodec {
 
         let workflow = new afcl.Workflow();
 
-        try {
-            let yamlObj = YAML.safeLoad(afclYamlString);
+        let yamlObj = YAML.safeLoad(afclYamlString);
 
 
-            this._setPrimitiveProperties(workflow, yamlObj);
-            this._setCommonProperties(workflow, yamlObj);
+        this._setPrimitiveProperties(workflow, yamlObj);
+        this._setCommonProperties(workflow, yamlObj);
 
-            let list = [];
-            if (yamlObj && yamlObj['workflowBody']) {
-                list = this._generateFunctions(yamlObj['workflowBody'], this.root.getChildAt(0));
-            }
-
-            workflow.setBody(list);
-
-        } catch (error) {
-            if (error instanceof YAML.YAMLException) {
-                alert('Error loading YAML. Invalid file contents');
-            }
-            console.log(error);
-            return null;
+        let list = [];
+        if (yamlObj && yamlObj['workflowBody']) {
+            list = this._generateFunctions(yamlObj['workflowBody'], this.root.getChildAt(0));
         }
+
+        workflow.setBody(list);
 
         return workflow;
     }
@@ -58,23 +49,17 @@ class AfclCodec {
     decodeJsonWorkflow(afclJsonString) {
         let workflow = new afcl.Workflow();
 
-        try {
-            let jsonObj = JSON.parse(afclJsonString);
+        let jsonObj = JSON.parse(afclJsonString);
 
-            this._setPrimitiveProperties(workflow, jsonObj);
-            this._setCommonProperties(workflow, jsonObj);
+        this._setPrimitiveProperties(workflow, jsonObj);
+        this._setCommonProperties(workflow, jsonObj);
 
-            let list = [];
-            if (jsonObj && jsonObj['workflowBody']) {
-                list = this._generateFunctions(jsonObj['workflowBody'], this.root.getChildAt(0));
-            }
-
-            workflow.setBody(list);
-
-        } catch (error) {
-            console.log(error);
-            return null;
+        let list = [];
+        if (jsonObj && jsonObj['workflowBody']) {
+            list = this._generateFunctions(jsonObj['workflowBody'], this.root.getChildAt(0));
         }
+
+        workflow.setBody(list);
 
         return workflow;
     }
