@@ -471,7 +471,7 @@ class Editor extends React.Component {
 
         // define the 'root' layout to apply on graph root level
         let rootLayout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
-        rootLayout.resizeParent = false;
+        rootLayout.resizeParent = true;
         rootLayout.disableEdgeStyle = false;
         swimlaneLayout.interHierarchySpacing = 20;
         rootLayout.interRankCellSpacing = 50; // vertical spacing between connected cells
@@ -511,21 +511,21 @@ class Editor extends React.Component {
         return mxUtils.getPrettyXml(xmlModel);
     };
 
-    _optimizeWorkflow = () => {
+    _adaptWorkflow = () => {
         const {graph} = this.state;
 
         if (graph.isEmpty()) {
-            alert('Cannot optimize an empty workflow');
+            alert('Cannot adapt an empty workflow');
             return;
         }
 
         if (this._validateWorkflow() != null) {
-            alert('Cannot optimize an invalid workflow');
+            alert('Cannot adapt an invalid workflow');
             return;
         }
 
         axios.post(
-            'api/workflow/optimize/fromGraphXml',
+            'api/workflow/adapt/fromGraphXml',
             this._getWorkflowXml(),
             {
                 headers: {
@@ -719,6 +719,16 @@ class Editor extends React.Component {
         this.setState({ workflow: workflow });
     };
 
+    _getUniqueName = (preferredName, type) => {
+        const {graph} = this.state;
+        let cellsOfType = graph.getModel().filterDescendants(c => c instanceof mxGraphOverrides.Cell && c.getType() == type);
+        let i = 0;
+        while (cellsOfType.filter(c => graph.getLabel(c) == (preferredName + i)).length > 0) {
+            i++;
+        }
+        return preferredName + i;
+    };
+
     _addStart = () => {
         const {graph} = this.state;
 
@@ -758,28 +768,28 @@ class Editor extends React.Component {
 
     _addIfThenElse = () => {
         return this._addCell(
-            new afcl.functions.IfThenElse('IfThenElse'),
+            new afcl.functions.IfThenElse(this._getUniqueName('IfThenElse', cellDefs.cond.type)),
             cellDefs.cond
         );
     };
 
     _addSwitch = () => {
         return this._addCell(
-            new afcl.functions.Switch('Switch'),
+            new afcl.functions.Switch(this._getUniqueName('Switch', cellDefs.multicond.type)),
             cellDefs.multicond
         );
     };
 
     _addParallel = () => {
         return this._addCell(
-            new afcl.functions.Parallel('Parallel'),
+            new afcl.functions.Parallel(this._getUniqueName('Parallel', cellDefs.parallel.type)),
             cellDefs.parallel
         );
     };
 
     _addParallelFor = () => {
         return this._addCell(
-            new afcl.functions.ParallelFor('ParallelFor'),
+            new afcl.functions.ParallelFor(this._getUniqueName('ParallelFor', cellDefs.parallelFor.type)),
             cellDefs.parallelFor
         );
     };

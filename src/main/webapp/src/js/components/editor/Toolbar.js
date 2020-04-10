@@ -40,9 +40,9 @@ class Toolbar extends React.Component {
                 Validate
             </Button>
             |
-            <Button className="btn mx-1" onClick={this.props.editor._optimizeWorkflow}>
+            <Button className="btn mx-1" onClick={this.props.editor._adaptWorkflow}>
                 <span className="cil-diamond mr-1" />
-                Optimize
+                Adapt
             </Button>
             |
             <Button className="btn mx-1" onClick={this.props.editor._loadWorkflow}>
