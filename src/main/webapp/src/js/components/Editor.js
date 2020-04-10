@@ -22,6 +22,7 @@ const {
     mxClient,
     mxCodec,
     mxConstants,
+    mxClipboard,
     mxEvent,
     mxHierarchicalLayout,
     mxKeyHandler,
@@ -245,12 +246,10 @@ class Editor extends React.Component {
         this._keyHandler.bindKey(46, this._removeSelected);
         this._keyHandler.bindKey(8, this._removeSelected);
 
-        this._keyHandler.bindControlKey(90, () => {
-            this._undoManager.undo();
-        });
-        this._keyHandler.bindControlKey(89, () => {
-            this._undoManager.redo()
-        });
+        this._keyHandler.bindControlKey(90, () => this._undoManager.undo());
+        this._keyHandler.bindControlKey(89, () => this._undoManager.redo());
+        //this._keyHandler.bindControlKey(67, () => mxClipboard.copy(graph));
+        //this._keyHandler.bindControlKey(86, () => mxClipboard.paste(graph));
 
         // fix focus
         this._focusGraph();
