@@ -511,6 +511,33 @@ class Editor extends React.Component {
         return mxUtils.getPrettyXml(xmlModel);
     };
 
+    _optimizeWorkflow = () => {
+        const {graph} = this.state;
+
+        if (graph.isEmpty()) {
+            alert('Cannot optimize an empty workflow');
+            return;
+        }
+
+        if (this._validateWorkflow() != null) {
+            alert('Cannot optimize an invalid workflow');
+            return;
+        }
+
+        axios.post(
+            'api/workflow/optimize/fromGraphXml',
+            this._getWorkflowXml(),
+            {
+                headers: {
+                    'Content-Type': 'text/xml',
+                    'Accept': 'application/json'
+                }
+            }
+        ).then(response => {
+            console.log(response.data);
+        })
+    };
+
     _saveWorkflow = (type) => {
         const {graph} = this.state;
 

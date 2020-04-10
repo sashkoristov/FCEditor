@@ -75,37 +75,47 @@ public class Api extends HttpServlet {
             String contentType = req.getContentType();
             String targetType = req.getHeader("Accept");
 
+            ObjectMapper om = new ObjectMapper();
+            afcl.Workflow w = null;
+
+            if (pathSegments[pathSegments.length-1].contains("fromGraphXml")) {
+                if (!contentType.equals("application/xml") && !contentType.equals("text/xml")) {
+                    sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+
+                w = WorkflowConversionService.fromGraphXml(payload);
+            }
+
+            if (w == null) {
+                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
             if (pathInfo.contains("/workflow/convert")) {
 
-                ObjectMapper om = new ObjectMapper();
+                switch (targetType) {
+                    case "application/x-yaml":
+                    case "text/yaml":
+                        YAMLFactory yf = new YAMLFactory();
+                        yf.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
+                        om = new ObjectMapper(yf);
 
-                if (pathSegments[pathSegments.length-1].contains("fromGraphXml")){
-
-                    if (!contentType.equals("application/xml") && !contentType.equals("text/xml")) {
-                        sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+                        sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".yaml");
                         return;
-                    }
-
-                    afcl.Workflow w = WorkflowConversionService.fromGraphXml(payload);
-
-                    switch (targetType) {
-                        case "application/x-yaml":
-                        case "text/yaml":
-                            YAMLFactory yf = new YAMLFactory();
-                            yf.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
-                            om = new ObjectMapper(yf);
-
-                            sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".yaml");
-                            return;
-                        case "application/json":
-                            sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".json");
-                            return;
-                        default:
-                            break;
-                    }
+                    case "application/json":
+                        sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".json");
+                        return;
+                    default:
+                        break;
                 }
 
             }
+
+            if (pathInfo.contains("/workflow/optimize")) {
+                sendResponseJson(resp, om.writeValueAsString(w));
+            }
+
             sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
         }
 
