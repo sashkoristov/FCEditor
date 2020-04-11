@@ -21,17 +21,17 @@ class Properties extends React.Component {
                 value: ''
             }
         });
-    }
+    };
 
     _setProperty = (index, prop) => {
         this.props.parentObj.setProperty(index, prop);
         this.forceUpdate();
-    }
+    };
 
     _removeProperty = (index) => {
         this.props.parentObj.removeProperty(index);
         this.forceUpdate();
-    }
+    };
 
     render() {
         return <>

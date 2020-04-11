@@ -11,6 +11,7 @@ import Properties from './Properties';
 import Constraints from './Constraints';
 
 import { types } from '../../afcl';
+import DataInsOuts from "./DataInsOuts";
 
 class SwitchProperties extends React.Component {
 
@@ -56,6 +57,14 @@ class SwitchProperties extends React.Component {
                     <Row className="no-gutters mb-1">
                         <Input size="sm" placeholder="Source" value={this.state.dataEval.getSource()} onChange={e => this._handleDataEvalPropertyChange('source', e.target.value)} />
                     </Row>
+                </div>
+                <div className="mb-2">
+                    <div className="font-weight-bold text-muted mb-1">Input data</div>
+                    <DataInsOuts type="dataIns" parentObj={this.props.obj} />
+                </div>
+                <div className="mb-2">
+                    <div className="font-weight-bold text-muted mb-1">Output Data</div>
+                    <DataInsOuts type="dataOuts" parentObj={this.props.obj} />
                 </div>
                 <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-1">Properties</div>

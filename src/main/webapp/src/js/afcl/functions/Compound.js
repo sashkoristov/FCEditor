@@ -20,7 +20,7 @@ class Compound extends BaseFunction {
         this.dataIns.push(dataIn);
     }
 
-    removeDataIn(name) {
+    removeDataInByName(name) {
         this.dataIns = this.dataIns.filter(d => d.name != name);
     }
 
@@ -36,7 +36,7 @@ class Compound extends BaseFunction {
         this.dataOuts.push(dataOut);
     }
 
-    removeDataOut(name) {
+    removeDataOutByName(name) {
         this.dataOuts = this.dataOuts.filter(d => d.name != name);
     }
 

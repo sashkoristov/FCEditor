@@ -5,12 +5,13 @@
  */
 
 import React from 'react';
-import { Container, Row, Col, Card, CardTitle, Form, FormGroup, Label, Input, Button } from 'reactstrap';
+import { Container, Row, Col, Card, CardTitle, FormGroup, Label, Input, Button } from 'reactstrap';
 
 import Properties from './Properties';
 import Constraints from './Constraints';
 
 import * as afcl from '../../afcl';
+import DataInsOuts from "./DataInsOuts";
 
 class IfThenElseProperties extends React.Component {
 
@@ -106,6 +107,14 @@ class IfThenElseProperties extends React.Component {
                         <Button color="primary" onClick={this._addConditionItem} size="sm"><span className="cil-plus"></span></Button>
                     </div>
                 </Card>
+                <div className="mb-2">
+                    <div className="font-weight-bold text-muted mb-1">Input data</div>
+                    <DataInsOuts type="dataIns" parentObj={this.props.obj} />
+                </div>
+                <div className="mb-2">
+                    <div className="font-weight-bold text-muted mb-1">Output Data</div>
+                    <DataInsOuts type="dataOuts" parentObj={this.props.obj} />
+                </div>
                 <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-1">Properties</div>
                     <Properties parentObj={this.props.obj} />

@@ -11,6 +11,8 @@ import DataInsProperties from './DataInsProperties';
 import DataOutsProperties from './DataOutsProperties';
 
 import * as afcl from '../../afcl';
+import * as utils from '../../utils';
+import DataInsOuts from "./DataInsOuts";
 
 class WorkflowProperties extends React.Component {
 
@@ -35,25 +37,6 @@ class WorkflowProperties extends React.Component {
         this.setState({workflow: workflow});
     };
 
-    _handleDataItemChange = (type, index, prop, newVal) => {
-        const {workflow} = this.state;
-        workflow[type][index][prop] = newVal;
-        this.setState({workflow: workflow});
-    };
-
-    _addDataItem = (type) => {
-        const {workflow} = this.state;
-        let className = type.charAt(0).toUpperCase() + type.slice(1);
-        workflow[type].push(new afcl.objects[className]());
-        this.setState({workflow: workflow});
-    };
-
-    _removeDataItem = (type, index) => {
-        const {workflow} = this.state;
-        workflow[type].splice(index,1);
-        this.setState({workflow: workflow});
-    };
-
     render() {
         return <Card className="p-2">
                 <CardTitle className="h5">Workflow</CardTitle>
@@ -63,24 +46,14 @@ class WorkflowProperties extends React.Component {
                         <Input value={this.state.workflow.name} onChange={e => this._handlePropChange('name', e.target.value)} />
                     </Row>
                 </div>
-                <div className="mb-2">
-                    <div className="font-weight-bold text-muted mb-1">Input data</div>
-                    {this.state.workflow.dataIns.map((dataIn, index) => <>
-                            <DataInsProperties obj={dataIn} index={index} changeHandler={this._handleDataItemChange} removeHandler={this._removeDataItem} key={"AtomicFunction-DataIns-" + index} />
-                            <hr />
-                        </>
-                    )}
-                    <Button color="primary" onClick={() => this._addDataItem('dataIns')} size="sm"><span className="cil-plus"></span></Button>
-                </div>
-                <div className="mb-2">
-                    <div className="font-weight-bold text-muted mb-1">Output Data</div>
-                    {this.state.workflow.dataOuts.map((dataOut, index) => <>
-                            <DataOutsProperties obj={dataOut} index={index} changeHandler={this._handleDataItemChange} removeHandler={this._removeDataItem} key={"AtomicFunction-DataOuts-" + index} />
-                            <hr />
-                        </>
-                    )}
-                    <Button color="primary" onClick={() => this._addDataItem('dataOuts')} size="sm"><span className="cil-plus"></span></Button>
-                </div>
+            <div className="mb-2">
+                <div className="font-weight-bold text-muted mb-1">Input data</div>
+                <DataInsOuts type="dataIns" parentObj={this.props.workflow} />
+            </div>
+            <div className="mb-2">
+                <div className="font-weight-bold text-muted mb-1">Output Data</div>
+                <DataInsOuts type="dataOuts" parentObj={this.props.workflow} />
+            </div>
                 <div>
                     <Button size="sm" color="link" className="px-0" onClick={() => this.setState({isWorkflowDebugOpen: !this.state.isWorkflowDebugOpen})}>Debug Information</Button>
                     <Collapse isOpen={this.state.isWorkflowDebugOpen}>
