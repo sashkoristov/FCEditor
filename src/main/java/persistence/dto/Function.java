@@ -9,6 +9,10 @@ public class Function extends DomainObject {
     public String provider;
     public String url;
 
+    public Function() {
+        super();
+    }
+
     public Function(String id, String name) {
         super(id);
         this.name = name;
