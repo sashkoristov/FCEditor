@@ -523,17 +523,36 @@ class Editor extends React.Component {
             return;
         }
 
+        const parallelForCells = graph.getModel().filterDescendants(c => c instanceof mxGraphOverrides.Cell && c.getType() == cellDefs.parallelFor.type);
+        const adaptationMap = {};
+
+        let errorMsg = '';
+        let userInput = null;
+        for (let c of parallelForCells) {
+            while (isNaN(userInput = parseInt(prompt((errorMsg != null ? errorMsg + '\n\n' : '') + 'Please specify the number of divides for ParallelFor: ' + graph.getLabel(c))))) {
+                if (userInput == null) {
+                    return;
+                }
+                errorMsg = 'Given Value was not a number.'
+            }
+            adaptationMap[c.getValue().getName()] = userInput;
+        }
+
         axios.post(
             'api/workflow/adapt/fromGraphXml',
-            this._getWorkflowXml(),
             {
+                adaptationMap: adaptationMap,
+                workflow: this._getWorkflowXml()
+            },
+            {
+                transformResponse: [(data) => { return data; }], //https://github.com/axios/axios/issues/907
                 headers: {
                     'Content-Type': 'text/xml',
                     'Accept': 'application/json'
                 }
             }
         ).then(response => {
-            console.log(response.data);
+            this._loadJson(response.data) && this._doLayout();
         })
     };
 
@@ -563,7 +582,9 @@ class Editor extends React.Component {
             case 'yaml':
                 axios.post(
                     'api/workflow/convert/fromGraphXml',
-                    this._getWorkflowXml(),
+                    {
+                        workflow: this._getWorkflowXml()
+                    },
                     {
                         headers: {
                             'Content-Type': 'text/xml',
@@ -578,7 +599,9 @@ class Editor extends React.Component {
             case 'json':
                 axios.post(
                     'api/workflow/convert/fromGraphXml',
-                    this._getWorkflowXml(),
+                    {
+                        workflow: this._getWorkflowXml()
+                    },
                     {
                         transformResponse: [(data) => { return data; }], //https://github.com/axios/axios/issues/907
                         headers: {
@@ -718,16 +741,6 @@ class Editor extends React.Component {
         this.setState({ workflow: workflow });
     };
 
-    _getUniqueName = (preferredName, type) => {
-        const {graph} = this.state;
-        let cellsOfType = graph.getModel().filterDescendants(c => c instanceof mxGraphOverrides.Cell && c.getType() == type);
-        let i = 0;
-        while (cellsOfType.filter(c => graph.getLabel(c) == (preferredName + i)).length > 0) {
-            i++;
-        }
-        return preferredName + i;
-    };
-
     _addStart = () => {
         const {graph} = this.state;
 
@@ -766,29 +779,37 @@ class Editor extends React.Component {
     };
 
     _addIfThenElse = () => {
+        const {graph} = this.state;
+
         return this._addCell(
-            new afcl.functions.IfThenElse(this._getUniqueName('IfThenElse', cellDefs.cond.type)),
+            new afcl.functions.IfThenElse(graph.getUniqueLabel('IfThenElse', cellDefs.cond.type)),
             cellDefs.cond
         );
     };
 
     _addSwitch = () => {
+        const {graph} = this.state;
+
         return this._addCell(
-            new afcl.functions.Switch(this._getUniqueName('Switch', cellDefs.multicond.type)),
+            new afcl.functions.Switch(graph.getUniqueLabel('Switch', cellDefs.multicond.type)),
             cellDefs.multicond
         );
     };
 
     _addParallel = () => {
+        const {graph} = this.state;
+
         return this._addCell(
-            new afcl.functions.Parallel(this._getUniqueName('Parallel', cellDefs.parallel.type)),
+            new afcl.functions.Parallel(graph.getUniqueLabel('Parallel', cellDefs.parallel.type)),
             cellDefs.parallel
         );
     };
 
     _addParallelFor = () => {
+        const {graph} = this.state;
+
         return this._addCell(
-            new afcl.functions.ParallelFor(this._getUniqueName('ParallelFor', cellDefs.parallelFor.type)),
+            new afcl.functions.ParallelFor(graph.getUniqueLabel('ParallelFor', cellDefs.parallelFor.type)),
             cellDefs.parallelFor
         );
     };

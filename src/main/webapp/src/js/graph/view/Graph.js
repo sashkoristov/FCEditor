@@ -10,6 +10,7 @@ import ConnectionHandler from '../handler/ConnectionHandler';
 import Cell from '../model/Cell';
 import * as afcl from '../../afcl';
 import * as cellDefs from '../cells';
+import * as mxGraphOverrides from "../index";
 
 /**
  * Graph
@@ -105,6 +106,8 @@ class Graph extends mxGraph {
      * @param boolean autoSize
      */
     cellLabelChanged(cell, newValue, autoSize) {
+        newValue = newValue.replace(/[^a-z0-9\_\-]/gmi, '');
+        if (newValue == '') { return; }
         if (cell.isEdge()) {
             // disable for edges except cases from Switch
             if (cell.getTerminal(true) != null && cell.getTerminal(true).getValue() instanceof afcl.functions.Switch) {
@@ -117,11 +120,28 @@ class Graph extends mxGraph {
             }
             // but allow the rest
             if (cell.getValue() instanceof afcl.functions.BaseFunction) {
-                cell.getValue().setName(newValue);
+                cell.getValue().setName(this.getUniqueLabel(newValue, true));
                 super.cellLabelChanged(cell, cell.getValue(), false);
             }
         }
     }
+
+    /**
+     * returns a label which is unique in this graph
+     * @param preferredLabel
+     * @param type
+     * @return {*}
+     */
+    getUniqueLabel(preferredLabel, isVertex) {
+        let cells = this.getModel().filterDescendants(c => isVertex ? c.isVertex() : c.isEdge());
+        let newLabel = preferredLabel;
+        let i = 0;
+        while (cells.filter(c => this.getLabel(c) == newLabel).length > 0) {
+            newLabel = preferredLabel + i;
+            i++;
+        }
+        return newLabel;
+    };
 
     /**
      * returns true if cell is a port

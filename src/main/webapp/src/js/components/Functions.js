@@ -15,7 +15,7 @@ const PROVIDERS = {
     },
     google: {
         name: 'Google Cloud',
-        icon: 'cib-google-cloud'
+        icon: 'cib-google'
     },
     azure: {
         name: 'Microsoft Azure',
