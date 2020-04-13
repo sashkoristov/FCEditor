@@ -14,8 +14,8 @@ public class Index extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    request.getSession().setAttribute("title", "Serverless Workflow Editor");
-    request.getSession().setAttribute("description", "An editor for creating serverless Workflows");
+    request.getSession().setAttribute("title", "AFCL Toolkit");
+    request.getSession().setAttribute("description", "A toolkit for AFCL");
     request.getRequestDispatcher("index.jsp").forward(request, response);
   }
 }

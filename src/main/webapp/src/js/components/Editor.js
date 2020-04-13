@@ -529,14 +529,16 @@ class Editor extends React.Component {
         let errorMsg = '';
         let userInput = null;
         for (let c of parallelForCells) {
-            while (isNaN(userInput = parseInt(prompt((errorMsg != null ? errorMsg + '\n\n' : '') + 'Please specify the number of divides for ParallelFor: ' + graph.getLabel(c))))) {
+            while (isNaN(parseInt(userInput = prompt((errorMsg != null ? errorMsg + '\n\n' : '') + 'Please specify the number of divides for ParallelFor: ' + graph.getLabel(c))))) {
                 if (userInput == null) {
                     return;
                 }
                 errorMsg = 'Given Value was not a number.'
             }
-            adaptationMap[c.getValue().getName()] = userInput;
+            adaptationMap[c.getValue().getName()] = parseInt(userInput);
         }
+
+        this.setState({ isLoading: true });
 
         axios.post(
             'api/workflow/adapt/fromGraphXml',
@@ -553,6 +555,7 @@ class Editor extends React.Component {
             }
         ).then(response => {
             this._loadJson(response.data) && this._doLayout();
+            this.setState({ isLoading: false });
         })
     };
 

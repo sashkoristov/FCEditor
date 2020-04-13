@@ -116,7 +116,7 @@ public class Api extends HttpServlet {
 
             if (pathInfo.contains("/workflow/adapt")) {
 
-                Map<String, String> adaptationMap = om.convertValue(requestData.get("adaptationMap"), Map.class);
+                Map<String, Integer> adaptationMap = om.convertValue(requestData.get("adaptationMap"), Map.class);
 
                 afcl.Workflow adaptedWorkflow = WorkflowAdaptationService.getAdaptedWorkflow(w, adaptationMap);
 
