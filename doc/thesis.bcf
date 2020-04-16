@@ -2002,7 +2002,9 @@
     <bcf:citekey order="5">online-what-is-serverless-cloudflare</bcf:citekey>
     <bcf:citekey order="6">thesis-design-serverless-worfklow-system-eyk</bcf:citekey>
     <bcf:citekey order="7">reports-workflow-control-patterns-russell</bcf:citekey>
-    <bcf:citekey order="8">manuals-mxgraph-user-manual</bcf:citekey>
+    <bcf:citekey order="8">online-afcl-docs-dps</bcf:citekey>
+    <bcf:citekey order="9">online-afcl-docs-dps</bcf:citekey>
+    <bcf:citekey order="10">manuals-mxgraph-user-manual</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

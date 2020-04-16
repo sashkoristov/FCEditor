@@ -19,6 +19,22 @@
 
 \refsection{0}
   \datalist[entry]{nty/global//global/global}
+    \entry{online-afcl-docs-dps}{online}{}
+      \field{sortinit}{A}
+      \field{sortinithash}{d77c7cdd82ff690d4c3ef13216f92f0b}
+      \field{labeltitlesource}{title}
+      \field{title}{AFCL Documentation}
+      \field{urlday}{10}
+      \field{urlmonth}{4}
+      \field{urlyear}{2020}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb http://dps.uibk.ac.at/projects/afcl/files/documentation/index.html
+      \endverb
+      \verb{url}
+      \verb http://dps.uibk.ac.at/projects/afcl/files/documentation/index.html
+      \endverb
+    \endentry
     \entry{articles-rise-of-serverless-castro}{article}{}
       \name{author}{4}{}{%
         {{hash=40b283e6fd979b6dd5f1b44c51d3c22a}{%
