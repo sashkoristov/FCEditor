@@ -5,24 +5,9 @@ import afcl.Workflow;
 import afcl.functions.*;
 import afcl.functions.objects.Case;
 import afcl.functions.objects.Section;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.*;
-import java.io.StringReader;
-import java.io.StringWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,39 +43,7 @@ public class WorkflowAdaptationService {
             }
         }
 
-        /*
 
-        String xml = "";
-        XmlMapper xmlMapper = new XmlMapper();
-        xmlMapper.enable((SerializationFeature.INDENT_OUTPUT));
-
-            xml = xmlMapper.writeValueAsString(wf);
-
-            Document doc = getDocumentFromXmlString(xml);
-
-            for (Map.Entry<String, Integer> e : adaptationMap.entrySet()) {
-                Node parallelForNode = getNode(doc, "//* /parallelFor/name[text()='" + e.getKey() + "']/..");
-                Node parent = parallelForNode.getParentNode().getParentNode();
-                Element parallelEl = generateParallelElement(doc, "ParallelFor_ea4fas4");
-                Element parallelBody = getDirectChild(parallelEl, "parallelBody");
-
-                for (int i = 0; i < e.getValue(); i++) {
-                    Element section = doc.createElement("section");
-                    Element fn = generateFunctionElement(doc, "function", "test" + i);
-                    section.appendChild(parallelForNode.cloneNode(true));
-                    parallelBody.appendChild(wrapElement(doc, wrapElement(doc, section, "section"), "parallelBody"));
-                }
-
-                parent.insertBefore(wrapElement(doc, parallelEl, "workflowBody"), parallelForNode.getParentNode());
-                parent.removeChild(parallelForNode.getParentNode());
-            }
-
-            String newXml = getXmlFromDocument(doc);
-
-            System.out.println(newXml);
-
-            wfn = xmlMapper.readValue(newXml, Workflow.class);
-         */
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -272,68 +225,4 @@ public class WorkflowAdaptationService {
         }
         return null;
     }
-
-    /*
-    protected static Element wrapElement(Document doc, Node n, String wrapperName) {
-        Element wrapEl = doc.createElement(wrapperName);
-        wrapEl.appendChild(n);
-        return wrapEl;
-    }
-
-    protected static Element generateParallelElement(Document doc, String name) {
-        Element parEl = generateFunctionElement(doc, "parallel", name);
-        Element parBodyEl = doc.createElement("parallelBody");
-        parEl.appendChild(parBodyEl);
-        return parEl;
-    }
-
-    protected static Element generateFunctionElement(Document doc, String type, String name) {
-        Element fnNode = doc.createElement(type);
-        Element nameNode = doc.createElement("name");
-        nameNode.setTextContent(name);
-        fnNode.appendChild(nameNode);
-        return fnNode;
-    }
-
-    protected static Element getDirectChild(Element parent, String tagName) {
-        for (Node child = parent.getFirstChild(); child != null; child = child.getNextSibling()) {
-            if (child instanceof Element && tagName.equals(child.getNodeName())) return (Element) child;
-        }
-        return null;
-    }
-
-    protected static NodeList getNodes(Document doc, String xPathExpr) throws XPathException {
-        XPathFactory xPathFactory = XPathFactory.newInstance();
-        XPath xPath = xPathFactory.newXPath();
-        XPathExpression xPathExpression = xPath.compile(xPathExpr);
-
-        return (NodeList) xPathExpression.evaluate(doc, XPathConstants.NODESET);
-    }
-
-    protected static Node getNode(Document doc, String xPathExpr) throws XPathException {
-        XPathFactory xPathFactory = XPathFactory.newInstance();
-        XPath xPath = xPathFactory.newXPath();
-        XPathExpression xPathExpression = xPath.compile(xPathExpr);
-
-        return (Node) xPathExpression.evaluate(doc, XPathConstants.NODE);
-    }
-
-    protected static Document getDocumentFromXmlString(String xml) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        return builder.parse(new InputSource(new StringReader(xml)));
-    }
-
-    protected static String getXmlFromDocument(Document doc) throws TransformerException {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer transformer = tf.newTransformer();
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        StringWriter writer = new StringWriter();
-        transformer.transform(new DOMSource(doc), new StreamResult(writer));
-        return writer.toString();
-    }
-     */
-
 }
