@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class WorkflowAdaptationService {
 
@@ -20,55 +21,70 @@ public class WorkflowAdaptationService {
         try {
 
         for (Map.Entry<String, Integer> e : adaptationMap.entrySet()) {
-            Function fn = getFunctionWithName(wf, e.getKey());
-            List<Function> parentList = getListContainingFunction(wf, fn);
+            Function fn = getFunctionByName(wf, e.getKey());
 
             if (fn instanceof ParallelFor) {
                 ParallelFor parFor = (ParallelFor)fn;
-                List<Object> dataItemsUsed = getDataItemsWithSource(parFor, parentList.subList(parentList.indexOf(fn), parentList.size()));
+                List<Function> parentList = getListContainingFunction(wf, parFor);
+                List<Object> dataItemsUsed = getDataItemsBySource(parFor, parentList.subList(parentList.indexOf(parFor), parentList.size()));
 
+                // 1. create a new parallel compound
                 Parallel par = new Parallel();
-                par.setName("parallel_" + fn.getName());
+                par.setName("parallelized_" + fn.getName());
                 par.setParallelBody(new ArrayList<>());
+                par.setDataIns(new ArrayList<>());
                 par.setDataOuts(new ArrayList<>());
 
-                // 1. move data ins from inner parallelFor to new parallel compound
-                moveDataIns(parFor, par);
+                // 2. replace parallelFor with our new parallel compound
+                parentList.set(parentList.indexOf(parFor), par);
 
-                // 2. data flow from parallel to inner parallelFor
+                // 3. move data ins from parallelFor to new parallel compound
+                moveDataItems(parFor, par, DataIns.class);
+
+                // 4. data flow from parallel to (inner) parallelFor
                 generateDataFlow(par, parFor, DataIns.class, DataIns.class, true);
 
-                // 3. prepare dataOuts to collect all output data from inner parallelFor's
+                // 5. prepare dataOuts to collect all output data from inner parallelFor's
                 DataOuts dataOuts = new DataOuts();
                 dataOuts.setType("collection");
                 dataOuts.setName("OutVal");
                 String[] dataOutsSource = new String[e.getValue()];
 
-                // 4. multiply parallelFor according to given input
+                // 6. multiply parallelFor according to given input
                 for (int i = 0; i < e.getValue(); i++) {
                     Section s = new Section();
                     List<Function> fl = new ArrayList<>();
                     ParallelFor cloneFn = cloneObject(parFor);
-                    cloneFn.setName(cloneFn.getName() + "_" + i);
                     fl.add(cloneFn);
                     s.setSection(fl);
                     par.getParallelBody().add(s);
+
+                    // rename all functions in that inner branch (including parallelFor)
+                    final int idx = i;
+                    traverseFunctions(fl, fx -> renameFunction(wf, fx,  fx.getName() + "_" + idx));
+
+                    // add the output data to the output data collection of the new parallel
                     if (cloneFn.getDataOuts() != null && cloneFn.getDataOuts().size() > 0) {
                         dataOutsSource[i] = cloneFn.getName() + "/" + cloneFn.getDataOuts().get(0).getName();
                     }
                 }
 
-                // 5. set dataOuts of parallel compound
+                // 7. set dataOuts of parallel compound
                 dataOuts.setSource(String.join(",", dataOutsSource));
                 par.getDataOuts().add(dataOuts);
 
-                // 6. adjust all dataIns / dataOuts with the new source which have used dataIns / dataOuts of parallelFor before adaptation
+                // 8. adjust all dataIns / dataOuts with the new source which have used dataIns / dataOuts of parallelFor before adaptation
                 for (Object dataObj : dataItemsUsed) {
                     dataObj.getClass().getMethod("setSource", String.class).invoke(dataObj, par.getName() + "/" + dataOuts.getName());
                 }
 
-                int index = parentList.indexOf(fn);
-                parentList.set(index, par);
+                // 9. clear properties and constraints of new parallel compound dataIns
+                if (par.getDataIns() != null) {
+                    par.getDataIns().forEach(dataIns -> {
+                        dataIns.setConstraints(new ArrayList<>());
+                        dataIns.setProperties(new ArrayList<>());
+                    });
+                }
             }
         }
 
@@ -83,27 +99,78 @@ public class WorkflowAdaptationService {
     }
 
     /**
-     * moves dataIns from f1 to f2
+     * traverses functions in the workflow recursively and applies consumer on each of it
+     *
+     * @param wf
+     * @param consumer
+     */
+    public static void traverseWorkflow(Workflow wf, Consumer<Function> consumer) {
+        traverseFunctions(wf.getWorkflowBody(), consumer);
+    }
+
+    /**
+     * traverses functions in the list recursively and applies consumer on each of it
+     *
+     * @param functionsList
+     * @param consumer
+     */
+    public static void traverseFunctions(List<Function> functionsList, Consumer<Function> consumer) {
+        if (functionsList == null) {
+            return;
+        }
+        for (Function fn : functionsList) {
+            consumer.accept(fn);
+            if (fn instanceof IfThenElse) {
+                traverseFunctions(((IfThenElse)fn).getThen(), consumer);
+                traverseFunctions(((IfThenElse)fn).getElse(), consumer);
+            }
+            if (fn instanceof Switch) {
+                for (Case c : ((Switch)fn).getCases()) {
+                    traverseFunctions(c.getFunctions(), consumer);
+                }
+            }
+            if (fn instanceof Parallel) {
+                for (Section s : ((Parallel)fn).getParallelBody()) {
+                    traverseFunctions(s.getSection(), consumer);
+                }
+            }
+            if (fn instanceof ParallelFor) {
+                traverseFunctions(((ParallelFor)fn).getLoopBody(), consumer);
+            }
+        }
+    }
+
+    /**
+     * moves dataIns from f1 at port to f2 at port
      * @param f1
      * @param f2
      */
-    public static void moveDataIns(Function f1, Function f2) {
+    public static void moveDataItems(Function f1, Function f2, Class port) {
         // since checking for correct type (compound or atomic) of f1 and f2
         // and their combinations check for the method to get/set dataIns/dataOuts using reflection
         try {
-            Method getDataInsF1 = f1.getClass().getMethod("getDataIns");
-            Method setDataInsF1 = f1.getClass().getMethod("setDataIns", List.class);
-            Method setDataInsF2 = f2.getClass().getMethod("setDataIns", List.class);
+            Method getDataF1 = f1.getClass().getMethod("get" + port.getSimpleName());
+            Method setDataF1 = f1.getClass().getMethod("set" + port.getSimpleName(), List.class);
+            Method setDataF2 = f2.getClass().getMethod("set" + port.getSimpleName(), List.class);
 
-            List<DataIns> dataInsF1 = (List<DataIns>)getDataInsF1.invoke(f1);
-            setDataInsF2.invoke(f2, dataInsF1);
-            setDataInsF1.invoke(f1, new ArrayList<>());
+            List<DataIns> dataInsF1 = (List<DataIns>)getDataF1.invoke(f1);
+            setDataF2.invoke(f2, dataInsF1);
+            setDataF1.invoke(f1, new ArrayList<>());
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassCastException e) {
-            System.out.println("error moving dataIns");
+            System.out.println("error moving data items");
             System.out.println(e);
         }
     }
 
+    /**
+     * generates data flow from f1 to f2, according to given ports (dataIns or dataOuts)
+     *
+     * @param f1
+     * @param f2
+     * @param sourcePort
+     * @param targetPort
+     * @param replace
+     */
     public static void generateDataFlow(Function f1, Function f2, Class sourcePort, Class targetPort, Boolean replace) {
         try {
             Method getDataF1 = f1.getClass().getMethod("get" + sourcePort.getSimpleName());
@@ -159,16 +226,22 @@ public class WorkflowAdaptationService {
         return o;
     }
 
+    public static List<Function> getListContainingFunction(Workflow wf, Function fn) {
+        return getListContainingFunction(wf, fn, null);
+    }
+
     /**
      * Returns the List which contains given Function by searching
-     * AFCL structure of parent object (Workflow or Compound) recursively
+     * parent object (Workflow or Compound) recursively and returning corresponding sub list
      *
      * @param wf
      * @param fn
      * @return
      */
-    public static List<Function> getListContainingFunction(Workflow wf, Function fn) {
-        Object parentObj = getParentObject(wf, fn);
+    public static List<Function> getListContainingFunction(Workflow wf, Function fn, Object parentObj) {
+        if (parentObj == null) {
+            parentObj = getParentObject(wf, fn);
+        }
         List<Function> parentList = null;
         if (parentObj instanceof Workflow) {
             parentList = ((Workflow)parentObj).getWorkflowBody();
@@ -242,20 +315,20 @@ public class WorkflowAdaptationService {
             if (f instanceof Switch) {
                 for (Case c : ((Switch)f).getCases()) {
                     foundFn = getParentObject(c.getFunctions(), fn, f);
-                    if (!(foundFn == null)) { break; }
+                    if (foundFn != null) { break; }
                 }
             }
             if (f instanceof Parallel) {
                 for (Section s : ((Parallel)f).getParallelBody()) {
                     foundFn = getParentObject(s.getSection(), fn, f);
-                    if (!(foundFn == null)) { break; }
+                    if (foundFn != null) { break; }
                 }
             }
             if (f instanceof ParallelFor) {
                 foundFn = getParentObject(((ParallelFor)f).getLoopBody(), fn, f);
             }
-            if (!(foundFn == null)) {
-                return f;
+            if (foundFn != null) {
+                return foundFn;
             }
         }
         return null;
@@ -269,8 +342,8 @@ public class WorkflowAdaptationService {
      * @param name
      * @return
      */
-    public static Function getFunctionWithName(Workflow wf, String name) {
-        return getFunctionWithName(wf.getWorkflowBody(), name);
+    public static Function getFunctionByName(Workflow wf, String name) {
+        return getFunctionByName(wf.getWorkflowBody(), name);
     }
 
     /**
@@ -281,7 +354,7 @@ public class WorkflowAdaptationService {
      * @param name
      * @return
      */
-    public static Function getFunctionWithName(List<Function> list, String name) {
+    public static Function getFunctionByName(List<Function> list, String name) {
         for (Function fn : list) {
             if (fn.getName() == null) {
                 continue;
@@ -291,25 +364,25 @@ public class WorkflowAdaptationService {
             }
             Function foundFn = null;
             if (fn instanceof IfThenElse) {
-                foundFn = getFunctionWithName(((IfThenElse)fn).getThen(), name);
+                foundFn = getFunctionByName(((IfThenElse)fn).getThen(), name);
                 if (foundFn == null) {
-                    foundFn = getFunctionWithName(((IfThenElse)fn).getElse(), name);
+                    foundFn = getFunctionByName(((IfThenElse)fn).getElse(), name);
                 }
             }
             if (fn instanceof Switch) {
                 for (Case c : ((Switch)fn).getCases()) {
-                    foundFn = getFunctionWithName(c.getFunctions(), name);
+                    foundFn = getFunctionByName(c.getFunctions(), name);
                     if (!(foundFn == null)) { break; }
                 }
             }
             if (fn instanceof Parallel) {
                 for (Section s : ((Parallel)fn).getParallelBody()) {
-                    foundFn = getFunctionWithName(s.getSection(), name);
+                    foundFn = getFunctionByName(s.getSection(), name);
                     if (!(foundFn == null)) { break; }
                 }
             }
             if (fn instanceof ParallelFor) {
-                foundFn = getFunctionWithName(((ParallelFor)fn).getLoopBody(), name);
+                foundFn = getFunctionByName(((ParallelFor)fn).getLoopBody(), name);
             }
             if (!(foundFn == null)) {
                 return foundFn;
@@ -321,12 +394,13 @@ public class WorkflowAdaptationService {
     /**
      * returns a list containing all data items (dataIns / dataOuts) having given Function as source
      *
+     *
      * @param sourceFn
      * @param functionList
      *
      * @return
      */
-    public static List<Object> getDataItemsWithSource(Function sourceFn, List<Function> functionList) {
+    public static List<Object> getDataItemsBySource(Function sourceFn, List<Function> functionList) {
         List<Object> currentList = new ArrayList<>();
         if (functionList == null) {
             return currentList;
@@ -335,7 +409,7 @@ public class WorkflowAdaptationService {
             if (functionItem instanceof AtomicFunction) {
                 if (((AtomicFunction)functionItem).getDataIns() != null) {
                     for (DataIns dataIns : ((AtomicFunction) functionItem).getDataIns()) {
-                        if (dataIns.getSource().contains(sourceFn.getName())) {
+                        if (dataIns.getSource().startsWith(sourceFn.getName() + "/")) {
                             currentList.add(dataIns);
                         }
                     }
@@ -344,37 +418,61 @@ public class WorkflowAdaptationService {
             if (functionItem instanceof Compound) {
                 if (((Compound)functionItem).getDataIns() != null) {
                     for (DataIns dataIns : ((Compound) functionItem).getDataIns()) {
-                        if (dataIns.getSource().contains(sourceFn.getName())) {
+                        if (dataIns.getSource().startsWith(sourceFn.getName() + "/")) {
                             currentList.add(dataIns);
                         }
                     }
                 }
                 if (((Compound)functionItem).getDataOuts() != null) {
                     for (DataOuts dataOuts : ((Compound) functionItem).getDataOuts()) {
-                        if (dataOuts.getSource().contains(sourceFn.getName())) {
+                        if (dataOuts.getSource().startsWith(sourceFn.getName() + "/")) {
                             currentList.add(dataOuts);
                         }
                     }
                 }
             }
             if (functionItem instanceof IfThenElse) {
-                currentList.addAll(getDataItemsWithSource(sourceFn, ((IfThenElse)functionItem).getThen()));
-                currentList.addAll(getDataItemsWithSource(sourceFn, ((IfThenElse)functionItem).getElse()));
+                currentList.addAll(getDataItemsBySource(sourceFn, ((IfThenElse)functionItem).getThen()));
+                currentList.addAll(getDataItemsBySource(sourceFn, ((IfThenElse)functionItem).getElse()));
             }
             if (functionItem instanceof Switch) {
                 for (Case c : ((Switch)functionItem).getCases()) {
-                    currentList.addAll(getDataItemsWithSource(sourceFn, c.getFunctions()));
+                    currentList.addAll(getDataItemsBySource(sourceFn, c.getFunctions()));
                 }
             }
             if (functionItem instanceof Parallel) {
                 for (Section s : ((Parallel)functionItem).getParallelBody()) {
-                    currentList.addAll(getDataItemsWithSource(sourceFn, s.getSection()));
+                    currentList.addAll(getDataItemsBySource(sourceFn, s.getSection()));
                 }
             }
             if (functionItem instanceof ParallelFor) {
-                currentList.addAll(getDataItemsWithSource(sourceFn, ((ParallelFor)functionItem).getLoopBody()));
+                currentList.addAll(getDataItemsBySource(sourceFn, ((ParallelFor)functionItem).getLoopBody()));
             }
         }
         return currentList;
+    }
+
+    /**
+     * renames given function and updates all dataIns / dataOuts where that function was used as source
+     *
+     * @param wf
+     * @param fn
+     * @param newName
+     */
+    public static void renameFunction(Workflow wf, Function fn, String newName) {
+        String oldName = fn.getName();
+        Object parentObj = getParentObject(wf, fn);
+        List<Function> remainingList = new ArrayList<>();
+        if (parentObj instanceof Function) {
+            remainingList.add((Function)parentObj);
+        }
+        List<Object> usedDataItems = getDataItemsBySource(fn, remainingList);
+        fn.setName(newName);
+        try {
+            for (Object dataObj : usedDataItems) {
+                String oldSource = (String)dataObj.getClass().getMethod("getSource").invoke(dataObj);
+                dataObj.getClass().getMethod("setSource", String.class).invoke(dataObj, oldSource.replace(oldName, newName));
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {}
     }
 }
