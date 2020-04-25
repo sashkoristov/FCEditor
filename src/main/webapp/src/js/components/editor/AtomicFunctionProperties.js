@@ -29,7 +29,7 @@ class AtomicFunctionProperties extends React.Component {
         return <Card className="p-2">
                 <CardTitle className="h5">AtomicFunction</CardTitle>
                 <div className="mb-3">
-                    <div>Name: {this.props.obj.getName()}</div>
+                    <div>Name: <i>{this.props.obj.getName()}</i></div>
                     <div>Type: <Badge>{this.props.obj.getType()}</Badge></div>
                 </div>
                 <div className="mb-2">

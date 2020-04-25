@@ -35,11 +35,11 @@ class CellProperties extends React.PureComponent {
         return <Card className="p-2">
                 <CardTitle className="h5">Cell</CardTitle>
                 <div>
+                    {typeof this.props.cell.getValue() == 'string' ? <div>Label: <i>{this.props.cell.getValue()}</i></div> : null}
                     <div>Id: <span className="badge badge-secondary">{this.props.cell.id}</span></div>
                     <div>{this.props.cell.isVertex() ? 'Vertex' : 'Edge'}: <span className="badge badge-secondary">true</span></div>
                     {typeof this.props.cell.getType == 'function' && this.props.cell.getType() != null && <div>Type: <span className="badge badge-secondary">{this.props.cell.getType()}</span></div>}
                     <div>Style: <span className="badge badge-secondary">{this.props.cell.getStyle()}</span></div>
-                    {typeof this.props.cell.getValue() == 'string' ? <div>Label: <span className="badge badge-secondary">{this.props.cell.getValue()}</span></div> : null}
                     {childVertices.length > 0 ? <div>Children: <span className="badge badge-secondary">{childVertices.length}</span></div> : null}
                 </div>
                 <div>

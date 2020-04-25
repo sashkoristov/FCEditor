@@ -3,6 +3,8 @@
  *
  * @author Ben Walch, 2018-2019
  */
+import cloneDeep from 'lodash/cloneDeep';
+
 import mxgraph from '../../mxgraph';
 const { mxCell } = mxgraph;
 
@@ -69,7 +71,14 @@ class Cell extends mxCell {
         return this.getChildren().filter(c => c.isVertex() && c.getType() == type)?.[0];
     }
 
-
+    /**
+     * returns a deep copy of the user object
+     *
+     * @return {any}
+     */
+    cloneValue() {
+        return cloneDeep(this.getValue());
+    }
 
 }
 

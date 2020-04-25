@@ -56,7 +56,7 @@ class IfThenElseProperties extends React.Component {
         return <Card className="p-2">
                 <CardTitle className="h5">IfThenElse</CardTitle>
                 <div className="mb-3">
-                    <div>Name: {this.props.obj.getName()}</div>
+                    <div>Name: <i>{this.props.obj.getName()}</i></div>
                 </div>
                 <div className="font-weight-bold text-muted mb-2">Condition</div>
                 <div className="mb-2">

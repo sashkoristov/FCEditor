@@ -3,6 +3,7 @@
  *
  * @author Ben Walch, 2018-2019
  */
+
 import mxgraph from '../../mxgraph';
 const { mxGraph, mxConstants, mxUtils, mxConnectionConstraint, mxPoint, mxRectangle } = mxgraph;
 
@@ -114,14 +115,12 @@ class Graph extends mxGraph {
                 super.cellLabelChanged(cell, newValue, autoSize);
             }
         } else if (cell.isVertex()) {
-            // disallow atomic functions
-            if (cell.getValue() instanceof afcl.functions.AtomicFunction) {
-                return;
-            }
             // but allow the rest
             if (cell.getValue() instanceof afcl.functions.BaseFunction) {
-                cell.getValue().setName(this.getUniqueLabel(newValue, true));
-                super.cellLabelChanged(cell, cell.getValue(), false);
+                // clone for correct undo/redo
+                let _clonedValue = cell.cloneValue();
+                _clonedValue.setName(this.getUniqueLabel(newValue, true));
+                super.cellLabelChanged(cell, _clonedValue, false);
             }
         }
     }
@@ -508,6 +507,7 @@ class Graph extends mxGraph {
      * @return {*|void}
      */
     updateGroupBounds(cells, border, moveGroup, topBorder, rightBorder, bottomBorder, leftBorder) {
+        // https://github.com/jgraph/mxgraph/issues/447
         if (cells != null && Array.isArray(cells)) {
             cells = cells.filter(c => {
                 let style = this.getCellStyle(c);
@@ -532,7 +532,7 @@ class Graph extends mxGraph {
      * @return {*|void}
      */
     moveCells(cells, dx, dy, clone, target, evt, mapping) {
-
+        // https://github.com/jgraph/mxgraph/issues/447
         if (cells != null && Array.isArray(cells)) {
             cells = cells.filter(c => {
                 let style = this.getCellStyle(c);
@@ -541,6 +541,26 @@ class Graph extends mxGraph {
         }
 
         return super.moveCells(cells, dx, dy, clone, target, evt, mapping);
+    }
+
+    /**
+     * after cells were cloned, adjust the labels to be unique
+     *
+     * @param cells
+     * @param dx
+     * @param dy
+     * @param target
+     * @param evt
+     * @param mapping
+     */
+    importCells(cells, dx, dy, target, evt, mapping) {
+        let clonedCells = super.importCells(cells, dx, dy, target, evt, mapping);
+        // update label of each cell to ensure unique labels
+        clonedCells.forEach(c => {
+            c.getValue().setName(this.getUniqueLabel(c.getValue().getName(), true));
+            this.refresh(c);
+        });
+        return clonedCells;
     }
 
 }

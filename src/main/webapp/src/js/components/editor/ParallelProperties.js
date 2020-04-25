@@ -30,7 +30,7 @@ class ParallelProperties extends React.Component {
         return <Card className="p-2">
                 <CardTitle className="h5">Parallel</CardTitle>
                 <div className="mb-3">
-                    <div>Name: {this.props.obj.getName()}</div>
+                    <div>Name: <i>{this.props.obj.getName()}</i></div>
                 </div>
                 <div className="mb-2">
                     <div className="font-weight-bold text-muted mb-1">Input data</div>

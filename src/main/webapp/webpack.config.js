@@ -66,11 +66,14 @@ module.exports = (env, argv) => {
         optimization: {
             minimizer  : [
                 new TerserPlugin({
-                    cache: true,
+                    cache: false,
                     parallel: true,
-                    sourceMap: argv.mode === 'production',
+                    sourceMap: argv.mode !== 'production',
                     terserOptions: {
-                        keep_fnames: true,
+                        keep_classnames: true,
+                        mangle: {
+                            reserved: ['Workflow','DataIns','DataOuts','CompositeCondition','Condition','DataEval','LoopCounter','AtomicFunction','IfThenElse','Parallel','ParallelFor','Switch'],
+                        }
                     }
                 })
             ]
