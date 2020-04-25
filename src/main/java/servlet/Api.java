@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.http.HttpRequest;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -116,7 +117,7 @@ public class Api extends HttpServlet {
 
             if (pathInfo.contains("/workflow/adapt")) {
 
-                Map<String, Integer> adaptationMap = om.convertValue(requestData.get("adaptationMap"), Map.class);
+                Map<String, List> adaptationMap = om.convertValue(requestData.get("adaptationMap"), Map.class);
 
                 afcl.Workflow adaptedWorkflow = WorkflowAdaptationService.getAdaptedWorkflow(w, adaptationMap);
 

@@ -16,11 +16,14 @@ import java.util.function.Consumer;
 
 public class WorkflowAdaptationService {
 
-    public static Workflow getAdaptedWorkflow(Workflow wf, Map<String, Integer> adaptationMap) {
+    public static Workflow getAdaptedWorkflow(Workflow wf, Map<String, List> adaptationMap) {
 
         try {
 
-        for (Map.Entry<String, Integer> e : adaptationMap.entrySet()) {
+        for (Map.Entry<String, List> e : adaptationMap.entrySet()) {
+
+            int numberOfDivides = e.getValue().size();
+
             Function fn = getFunctionByName(wf, e.getKey());
 
             if (fn instanceof ParallelFor) {
@@ -48,13 +51,23 @@ public class WorkflowAdaptationService {
                 DataOuts dataOuts = new DataOuts();
                 dataOuts.setType("collection");
                 dataOuts.setName("OutVal");
-                String[] dataOutsSource = new String[e.getValue()];
+                String[] dataOutsSource = new String[numberOfDivides];
 
                 // 6. multiply parallelFor according to given input
-                for (int i = 0; i < e.getValue(); i++) {
+                for (int i = 0; i < numberOfDivides; i++) {
                     Section s = new Section();
                     List<Function> fl = new ArrayList<>();
                     ParallelFor cloneFn = cloneObject(parFor);
+
+                    // set loop counter according to input
+                    if (cloneFn.getLoopCounter() == null) {
+                        cloneFn.setLoopCounter(new LoopCounter());
+                    }
+                    Map<String, Integer> loopCounterInfo = (Map)e.getValue().get(i);
+                    cloneFn.getLoopCounter().setFrom(loopCounterInfo.get("from").toString());
+                    cloneFn.getLoopCounter().setTo(loopCounterInfo.get("to").toString());
+                    cloneFn.getLoopCounter().setStep(loopCounterInfo.get("step").toString());
+
                     fl.add(cloneFn);
                     s.setSection(fl);
                     par.getParallelBody().add(s);

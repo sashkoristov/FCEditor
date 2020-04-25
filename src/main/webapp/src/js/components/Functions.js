@@ -112,14 +112,13 @@ class Functions extends React.Component {
                                     <Form>
                                         <FormGroup>
                                             <Row>
-                                                <Col xs="8">
+                                                <Col xs="6">
                                                     <Label>Name</Label>
-                                                    <Input value={this.state.newFn.name} onChange={e => this.setState({newFn: {...this.state.newFn, name: e.target.value}})} />
+                                                    <Input value={this.state.newFn.name} onChange={e => this.setState({newFn: {...this.state.newFn, name: e.target.value.replace(/[^a-z0-9\_\-]/gmi, '')}})} />
                                                 </Col>
-                                                <Col xs="4">
+                                                <Col xs="6">
                                                     <Label>Type</Label>
-                                                    <Input value={this.state.newFn.type} onChange={e => this.setState({newFn: {...this.state.newFn, type: e.target.value}})}>
-                                                    </Input>
+                                                    <Input value={this.state.newFn.type} onChange={e => this.setState({newFn: {...this.state.newFn, type: e.target.value.replace(/[^a-z0-9\_\-]/gmi, '')}})} />
                                                 </Col>
                                             </Row>
                                         </FormGroup>
@@ -141,8 +140,8 @@ class Functions extends React.Component {
                                     </Form>
                                 </ModalBody>
                                 <ModalFooter>
-                                    <Button color="primary" onClick={this._addFunction}>Add</Button>{' '}
                                     <Button color="secondary" onClick={this._toggleAddFunctionModal}>Cancel</Button>
+                                    <Button color="primary" onClick={this._addFunction}>Add</Button>{' '}
                                 </ModalFooter>
                             </Modal>
                         </div>

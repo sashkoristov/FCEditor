@@ -2,6 +2,7 @@
  * Workflow Editor Component
  *
  * @author Ben Walch, 2019-2020
+ *
  */
 
 import axios from 'axios';
@@ -9,9 +10,13 @@ import React from 'react';
 import { Prompt } from 'react-router';
 
 import {
+    Button,
     Row,
     Col,
-    Spinner
+    Spinner,
+    Modal,
+    ModalHeader,
+    ModalBody
 } from 'reactstrap';
 
 import FileSaver from 'file-saver';
@@ -51,6 +56,8 @@ import AfclCodec from '../graph/io/AfclCodec';
 import AfclSwimlaneLayout from '../graph/layout/AfclSwimlaneLayout';
 import NestedSwimlaneLayout from '../graph/layout/NestedSwimlaneLayout';
 
+import AdaptationForm from './AdaptationForm';
+
 import Sidebar from './editor/Sidebar';
 import Toolbar from './editor/Toolbar';
 
@@ -87,11 +94,15 @@ class Editor extends React.Component {
             graph: {},
             selectedCell: null,
             isLoading: false,
-            isEditing: false
+            isEditing: false,
+            isAdaptationModalOpen: false
         };
 
         // wether to record undoable changes
         this.recordUndoableChanges = true;
+
+        // check if graph is initialized
+        this.initialized = false;
     }
 
     componentDidMount() {
@@ -137,8 +148,9 @@ class Editor extends React.Component {
         graph.setTooltips(true);
         graph.setConnectable(true);
         graph.setCellsEditable(true);
+        graph.setEnterStopsCellEditing(true);
         graph.setEnabled(true);
-        graph.setHtmlLabels(true);
+        graph.setHtmlLabels(false);
         graph.centerZoom = true;
 
         graph.setDropEnabled(true);
@@ -231,6 +243,13 @@ class Editor extends React.Component {
             this._onCellConnected(edge, source, target, sourcePort, targetPort);
         });
 
+        // on label change
+        graph.addListener(mxEvent.LABEL_CHANGED, (sender, evt) => {
+            // update property view
+            this.setState({
+                selectedCell: evt.getProperty('cell')
+            });
+        });
 
         // key handler
         this._keyHandler = new mxKeyHandler(graph);
@@ -248,8 +267,9 @@ class Editor extends React.Component {
 
         this._keyHandler.bindControlKey(90, () => this._undoManager.undo());
         this._keyHandler.bindControlKey(89, () => this._undoManager.redo());
-        //this._keyHandler.bindControlKey(67, () => mxClipboard.copy(graph));
-        //this._keyHandler.bindControlKey(86, () => mxClipboard.paste(graph));
+
+        this._keyHandler.bindControlKey(67, () => mxClipboard.copy(graph));
+        this._keyHandler.bindControlKey(86, () => mxClipboard.paste(graph));
 
         // fix focus
         this._focusGraph();
@@ -259,6 +279,8 @@ class Editor extends React.Component {
 
         // constraints
         this._setGraphConstraints();
+
+        this.initialized = true;
     };
 
     _setGraphStyle = () => {
@@ -508,55 +530,6 @@ class Editor extends React.Component {
         const xmlModel = enc.encode(workflow);
 
         return mxUtils.getPrettyXml(xmlModel);
-    };
-
-    _adaptWorkflow = () => {
-        const {graph} = this.state;
-
-        if (graph.isEmpty()) {
-            alert('Cannot adapt an empty workflow');
-            return;
-        }
-
-        if (this._validateWorkflow() != null) {
-            alert('Cannot adapt an invalid workflow');
-            return;
-        }
-
-        const parallelForCells = graph.getModel().filterDescendants(c => c instanceof mxGraphOverrides.Cell && c.getType() == cellDefs.parallelFor.type);
-        const adaptationMap = {};
-
-        let errorMsg = '';
-        let userInput = null;
-        for (let c of parallelForCells) {
-            while (isNaN(parseInt(userInput = prompt((errorMsg != null ? errorMsg + '\n\n' : '') + 'Please specify the number of divides for ParallelFor: ' + graph.getLabel(c))))) {
-                if (userInput == null) {
-                    return;
-                }
-                errorMsg = 'Given Value was not a number.'
-            }
-            adaptationMap[c.getValue().getName()] = parseInt(userInput);
-        }
-
-        this.setState({ isLoading: true });
-
-        axios.post(
-            'api/workflow/adapt/fromGraphXml',
-            {
-                adaptationMap: adaptationMap,
-                workflow: this._getWorkflowXml()
-            },
-            {
-                transformResponse: [(data) => { return data; }], //https://github.com/axios/axios/issues/907
-                headers: {
-                    'Content-Type': 'text/xml',
-                    'Accept': 'application/json'
-                }
-            }
-        ).then(response => {
-            this._loadJson(response.data) && this._doLayout();
-            this.setState({ isLoading: false });
-        })
     };
 
     _saveWorkflow = (type) => {
@@ -843,6 +816,69 @@ class Editor extends React.Component {
 
     };
 
+    // === Workflow Adaptation: begin ===
+
+    _onAdaptWorkflowClicked = () => {
+        const {graph} = this.state;
+
+        if (!this.state.isAdaptationModalOpen) {
+            if (graph.isEmpty()) {
+                alert('Cannot adapt an empty workflow');
+                return;
+            }
+
+            if (this._validateWorkflow() != null) {
+                alert('Cannot adapt an invalid workflow');
+                return;
+            }
+            this._toggleAdaptationModal();
+        }
+    };
+
+    _toggleAdaptationModal = () => {
+        this.setState({
+            isAdaptationModalOpen: !this.state.isAdaptationModalOpen
+        });
+    };
+
+    _getNamesForAdaptation() {
+        if (this.initialized) {
+            const {graph} = this.state;
+            return graph.getModel().filterDescendants(c => c instanceof mxGraphOverrides.Cell && c.getType() == cellDefs.parallelFor.type).map(c => c.getValue().getName());
+        }
+        return []
+    }
+
+    _adaptWorkflow = (adaptationMap) => {
+        if (this.state.isAdaptationModalOpen) {
+            this._toggleAdaptationModal();
+        }
+
+        const {graph} = this.state;
+
+        this.setState({ isLoading: true });
+
+        axios.post(
+            'api/workflow/adapt/fromGraphXml',
+            {
+                adaptationMap: adaptationMap,
+                workflow: this._getWorkflowXml()
+            },
+            {
+                transformResponse: [(data) => { return data; }], //https://github.com/axios/axios/issues/907
+                headers: {
+                    'Content-Type': 'text/xml',
+                    'Accept': 'application/json'
+                }
+            }
+        ).then(response => {
+            this._loadJson(response.data) && this._doLayout();
+            this.setState({ isLoading: false });
+        })
+    };
+
+    // === Workflow Adaptation: end ===
+
     render() {
         return <div className="editor-component">
             {this.state.isLoading && <div class="loading-overlay"><Spinner size="lg" /></div>}
@@ -851,6 +887,9 @@ class Editor extends React.Component {
                     <div className="component-view-header">
                         Graph
                         <Toolbar editor={this} />
+                        <Button className="adaptation-btn" color="info" onClick={this._onAdaptWorkflowClicked}>
+                            <span class="cil-diamond"></span> Adapt
+                        </Button>
                     </div>
                     <div className="graph-wrapper animated fadeIn">
                         <Sidebar editor={this} />
@@ -872,6 +911,12 @@ class Editor extends React.Component {
                 </Col>
             </Row>
             <Prompt when={this.state.isEditing} message={location => location.pathname.startsWith('/editor') ? true : 'Are you sure you want to go to ' + location.pathname + "?\n" + 'All unsaved changes will be lost.'} />
+            <Modal isOpen={this.state.isAdaptationModalOpen} size="lg">
+                <ModalHeader toggle={this._toggleAdaptationModal}>Adapt Workflow</ModalHeader>
+                <ModalBody>
+                    <AdaptationForm toAdapt={this._getNamesForAdaptation()} onConfirm={this._adaptWorkflow} onCancel={this._toggleAdaptationModal} />
+                </ModalBody>
+            </Modal>
         </div>
     }
 
