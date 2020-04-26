@@ -3,6 +3,8 @@ import CompositeCondition from '../objects/CompositeCondition';
 
 class IfThenElse extends Compound {
 
+    static name = 'IfThenElse';
+
     constructor(name) {
         super(name);
 

@@ -1,4 +1,7 @@
 class DataEval {
+
+    static name = 'DataEval';
+
     constructor() {
         this.name = '';
         this.type = '';

@@ -2,6 +2,8 @@ import BaseFunction from './BaseFunction';
 
 class AtomicFunction extends BaseFunction {
 
+    static name = 'AtomicFunction';
+
     constructor(name, type = '') {
         super(name);
 

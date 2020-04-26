@@ -13,6 +13,8 @@ import * as cellDefs from '../cells';
 
 class Cell extends mxCell {
 
+    static name = 'Cell';
+
     constructor(value, geometry, style) {
         super(value, geometry, style);
         this.type = null;

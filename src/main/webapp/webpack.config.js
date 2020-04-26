@@ -15,7 +15,6 @@ module.exports = (env, argv) => {
                 },
                 {
                     test: /\.(sass|scss)$/,
-                    exclude: /node_modules/,
                     use: [
                         {
                             loader: "style-loader" // creates style nodes from JS strings
@@ -70,10 +69,9 @@ module.exports = (env, argv) => {
                     parallel: true,
                     sourceMap: argv.mode !== 'production',
                     terserOptions: {
-                        keep_classnames: true,
-                        mangle: {
-                            reserved: ['Workflow','DataIns','DataOuts','CompositeCondition','Condition','DataEval','LoopCounter','AtomicFunction','IfThenElse','Parallel','ParallelFor','Switch'],
-                        }
+                        module: true,
+                        compress: true,
+                        mangle: true,
                     }
                 })
             ]

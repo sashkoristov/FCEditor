@@ -3,6 +3,8 @@ import LoopCounter from '../objects/LoopCounter';
 
 class ParallelFor extends Compound {
 
+    static name = 'ParallelFor';
+
     constructor(name) {
         super(name);
 

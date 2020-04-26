@@ -1,4 +1,7 @@
 class LoopCounter {
+
+    static name = 'LoopCounter';
+
     constructor() {
         this.type = '';
         this.from = '';

@@ -1,4 +1,7 @@
 class CompositeCondition {
+
+    static name = 'CompositeCondition';
+
     constructor() {
         this.combinedWith = '';
         this.conditions = [];

@@ -1,4 +1,7 @@
 class Workflow {
+
+    static name = 'Workflow';
+
     constructor(name) {
         this.name = name;
         this.dataIns = [];

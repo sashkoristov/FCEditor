@@ -3,6 +3,8 @@ import DataEval from "../objects/DataEval";
 
 class Switch extends Compound {
 
+    static name = 'Switch';
+
     constructor(name) {
         super(name);
 

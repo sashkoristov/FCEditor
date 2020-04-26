@@ -14,7 +14,7 @@
 
   <div id="root"></div>
 
-  <script src="dist/main.js"></script>
+  <script src="dist/main.js" charset="utf-8"></script>
 
 </body>
 </html>

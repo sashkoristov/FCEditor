@@ -1,4 +1,7 @@
 class Condition {
+
+    static name = 'Condition';
+
     constructor() {
         this.data1 = '';
         this.data2 = '';

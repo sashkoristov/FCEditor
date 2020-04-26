@@ -1,6 +1,9 @@
 import DataItem from './DataItem';
 
 class DataIns extends DataItem {
+
+    static name = 'DataIns';
+
     constructor() {
         super();
 
