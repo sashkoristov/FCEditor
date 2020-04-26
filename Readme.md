@@ -65,5 +65,5 @@ Run -> Edit Configurations -> Add a configuration and select ``launch.Main`` as 
 
 1. cd into `src/main/webapp`
 2. `npm ci` (recommended when package-lock.json present) or `npm i`
-3. `npm run dev`
+3. `npm run dev` or `npm run build`
 
