@@ -9,10 +9,16 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
+import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -23,7 +29,14 @@ import java.util.List;
 
 public class WorkflowConversionService {
 
-    public static Workflow fromGraphXml(String xml) {
+    /**
+     * parses and converts given workflow xml structure to an afcl workflow
+     *
+     * @param xml
+     * @return
+     * @throws Exception
+     */
+    public static @Nullable Workflow fromGraphXml(String xml) throws Exception {
 
         Workflow w = new Workflow();
 
@@ -43,12 +56,21 @@ public class WorkflowConversionService {
             w.setWorkflowBody(functions);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new Exception("an internal error occured while parsing graph xml");
         }
 
         return w;
     }
 
+    /**
+     * generates a function list by starting at node n out of xml document doc, recursively
+     *
+     * @param n
+     * @param doc
+     * @param functionsList
+     * @return
+     * @throws Exception
+     */
     protected static List<Function> generateFunctions(Node n, Document doc, List<Function> functionsList) throws Exception {
         if (functionsList == null) {
             functionsList = new ArrayList<>();
@@ -90,7 +112,7 @@ public class WorkflowConversionService {
                         Element switchEl = getDirectChild(el, "Switch");
                         Switch sw = generateSwitch(switchEl);
                         // follow the edges
-                        List<Case> cases = new ArrayList();
+                        List<Case> cases = new ArrayList<>();
                         for (int i = 0; i < edges.getLength(); i++) {
                             Element caseEl = (Element) edges.item(i);
                             cases.add(new Case(caseEl.getAttribute("value"), generateFunctions(edges.item(i), doc, null)));
@@ -164,7 +186,16 @@ public class WorkflowConversionService {
         return functionsList;
     }
 
-    protected static Node getNextNodeWithAttributeByFollowingEdges(Node n, String attrName, String attrValue) {
+    /**
+     * returns the next found node in the xml structure which matches given attribute
+     * by following the edge information in the xml structure recursively
+     *
+     * @param n
+     * @param attrName
+     * @param attrValue
+     * @return
+     */
+    protected static @Nullable Node getNextNodeWithAttributeByFollowingEdges(Node n, String attrName, String attrValue) {
         if (n != null && n.getNodeType() == Node.ELEMENT_NODE) {
             Element curEl = (Element) n;
             if (curEl.getAttribute(attrName).equals(attrValue)) {
@@ -182,8 +213,15 @@ public class WorkflowConversionService {
         return null;
     }
 
+    /**
+     * sets primitive fields (string, integer, boolean) on afcl object using reflection
+     * for each field given xml element is searched for a corresponding attribute
+     *
+     * @param fnEl
+     * @param afclObj
+     */
     protected static void setPrimitiveFields(Element fnEl, Object afclObj) {
-        List<Field> primitiveFields = getAllDeclaredFields(new ArrayList<Field>(), afclObj.getClass());
+        List<Field> primitiveFields = getAllDeclaredFields(new ArrayList<>(), afclObj.getClass());
         for (Field primitiveField : primitiveFields) {
             if (
                 primitiveField.getType().equals(String.class) ||
@@ -203,6 +241,13 @@ public class WorkflowConversionService {
         }
     }
 
+    /**
+     * transforms xml string to target class type
+     *
+     * @param s
+     * @param type
+     * @return
+     */
     protected static Object transformValue(String s, Class<?> type) {
         if (type.equals(Boolean.class))
             return s.equals("1") || s.toLowerCase().equals("true");
@@ -211,6 +256,13 @@ public class WorkflowConversionService {
         return s;
     }
 
+    /**
+     * sets constraints and properties as well as dataIns and dataOuts from xml structure
+     * to given afcl object by using reflection
+     *
+     * @param fnEl
+     * @param afclObj
+     */
     protected static void setCommonProperties(Element fnEl, Object afclObj) {
         for (Node propNode = fnEl.getFirstChild(); propNode != null; propNode = propNode.getNextSibling()) {
             if (propNode instanceof Element) {
@@ -270,6 +322,12 @@ public class WorkflowConversionService {
         }
     }
 
+    /**
+     * converts xml element to an AtomicFunction instance
+     *
+     * @param fnEl
+     * @return
+     */
     protected static AtomicFunction generateAtomicFunction(Element fnEl) {
         AtomicFunction f = new AtomicFunction();
         setPrimitiveFields(fnEl, f);
@@ -277,6 +335,11 @@ public class WorkflowConversionService {
         return f;
     }
 
+    /**
+     * converts xml element to an IfThenElse a instance
+     * @param iteEl
+     * @return
+     */
     protected static IfThenElse generateIfThenElse(Element iteEl) {
         IfThenElse ite = new IfThenElse();
         Element compCondEl = getDirectChild(iteEl, "CompositeCondition");
@@ -305,6 +368,12 @@ public class WorkflowConversionService {
         return ite;
     }
 
+    /**
+     * converts xml element to a Switch instance
+     *
+     * @param switchEl
+     * @return
+     */
     protected static Switch generateSwitch(Element switchEl) {
         Switch sw = new Switch();
         Element dataEvalEl = getDirectChild(switchEl, "DataEval");
@@ -318,6 +387,12 @@ public class WorkflowConversionService {
         return sw;
     }
 
+    /**
+     * converts xml element to a Parallel instance
+     *
+     * @param parEl
+     * @return
+     */
     protected static Parallel generateParallel(Element parEl) {
         Parallel par = new Parallel();
         setPrimitiveFields(parEl, par);
@@ -325,6 +400,12 @@ public class WorkflowConversionService {
         return par;
     }
 
+    /**
+     * converts xml element to a ParallelFor instance
+     *
+     * @param parForEl
+     * @return
+     */
     protected static ParallelFor generateParallelFor(Element parForEl) {
         ParallelFor parFor = new ParallelFor();
         Element loopCounterEl = getDirectChild(parForEl, "LoopCounter");
@@ -338,6 +419,12 @@ public class WorkflowConversionService {
         return parFor;
     }
 
+    /**
+     * converts xml element to a DataIns instance
+     *
+     * @param dataInsEl
+     * @return
+     */
     protected static DataIns generateDataIns(Element dataInsEl) {
         DataIns dataIns = new DataIns();
         setPrimitiveFields(dataInsEl, dataIns);
@@ -345,6 +432,12 @@ public class WorkflowConversionService {
         return dataIns;
     }
 
+    /**
+     * converts xml element to a DataOuts instance
+     *
+     * @param dataOutsEl
+     * @return
+     */
     protected static DataOuts generateDataOuts(Element dataOutsEl) {
         DataOuts dataOuts = new DataOuts();
         setPrimitiveFields(dataOutsEl, dataOuts);
@@ -352,6 +445,13 @@ public class WorkflowConversionService {
         return dataOuts;
     }
 
+    /**
+     * returns the first direct child with given tag name
+     *
+     * @param parent
+     * @param tagName
+     * @return
+     */
     protected static Element getDirectChild(Element parent, String tagName) {
         for (Node child = parent.getFirstChild(); child != null; child = child.getNextSibling()) {
             if (child instanceof Element && tagName.equals(child.getNodeName())) return (Element) child;
@@ -359,6 +459,14 @@ public class WorkflowConversionService {
         return null;
     }
 
+    /**
+     * returns all nodes, which match given xPath expression
+     *
+     * @param doc
+     * @param xPathExpr
+     * @return
+     * @throws XPathException
+     */
     protected static NodeList getNodes(Document doc, String xPathExpr) throws XPathException {
         XPathFactory xPathFactory = XPathFactory.newInstance();
         XPath xPath = xPathFactory.newXPath();
@@ -367,6 +475,14 @@ public class WorkflowConversionService {
         return (NodeList) xPathExpression.evaluate(doc, XPathConstants.NODESET);
     }
 
+    /**
+     * returns the first node, which matches given xPath expression
+     *
+     * @param doc
+     * @param xPathExpr
+     * @return
+     * @throws XPathException
+     */
     protected static Node getNode(Document doc, String xPathExpr) throws XPathException {
         XPathFactory xPathFactory = XPathFactory.newInstance();
         XPath xPath = xPathFactory.newXPath();
@@ -375,13 +491,29 @@ public class WorkflowConversionService {
         return (Node) xPathExpression.evaluate(doc, XPathConstants.NODE);
     }
 
-    protected static Document getDocumentFromXmlString(String xml) throws Exception {
+    /**
+     * returns xml document from string
+     *
+     * @param xml
+     * @return
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     */
+    protected static Document getDocumentFromXmlString(String xml) throws SAXException, IOException, ParserConfigurationException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
 
         return builder.parse(new InputSource(new StringReader(xml)));
     }
 
+    /**
+     * returns all declared fields of the given class type, including all inherited fields
+     *
+     * @param fields
+     * @param type
+     * @return
+     */
     public static List<Field> getAllDeclaredFields(List<Field> fields, Class<?> type) {
         fields.addAll(Arrays.asList(type.getDeclaredFields()));
 

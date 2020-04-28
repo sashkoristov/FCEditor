@@ -36,8 +36,6 @@ const {
     mxUtils,
     mxPoint,
     mxUndoManager,
-    mxLayoutManager,
-    mxSwimlaneManager,
     mxImage
 } = mxgraph;
 
@@ -83,7 +81,8 @@ class Editor extends React.Component {
         'text/vnd.yaml',
         'application/vnd.yaml',
         'text/x-yaml',
-        'application/x-yaml'
+        'application/x-yaml',
+        'text/yaml'
     ];
 
     constructor(props) {
@@ -520,7 +519,7 @@ class Editor extends React.Component {
         return graph.validateGraph();
     };
 
-    _getWorkflowXml = () => {
+    _getWorkflowXml = (prettyPrint) => {
         const {workflow} = this.state;
         const {graph} = this.state;
 
@@ -529,7 +528,7 @@ class Editor extends React.Component {
         const enc = new mxCodec(mxUtils.createXmlDocument());
         const xmlModel = enc.encode(workflow);
 
-        return mxUtils.getPrettyXml(xmlModel);
+        return prettyPrint ? mxUtils.getPrettyXml(xmlModel) : mxUtils.getXml(xmlModel);
     };
 
     _saveWorkflow = (type) => {
@@ -849,7 +848,7 @@ class Editor extends React.Component {
         return []
     }
 
-    _adaptWorkflow = (adaptationMap) => {
+    _adaptWorkflow = (adaptations) => {
         if (this.state.isAdaptationModalOpen) {
             this._toggleAdaptationModal();
         }
@@ -861,7 +860,7 @@ class Editor extends React.Component {
         axios.post(
             'api/workflow/adapt/fromGraphXml',
             {
-                adaptationMap: adaptationMap,
+                adaptations: adaptations,
                 workflow: this._getWorkflowXml()
             },
             {

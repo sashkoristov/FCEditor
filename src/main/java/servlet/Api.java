@@ -15,11 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 
+import org.xml.sax.SAXException;
 import persistence.*;
 import service.*;
 
@@ -50,9 +53,12 @@ public class Api extends HttpServlet {
         String pathInfo = req.getPathInfo();
         String[] pathSegments = pathInfo.split("/");
         ObjectMapper om = new ObjectMapper();
+        YAMLFactory yf = new YAMLFactory();
+        yf.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
+        ObjectMapper yamlOm = new ObjectMapper(yf);
 
 
-        if (pathInfo == null || pathInfo.equals("/")) {
+        if (pathInfo.equals("/")) {
             sendResponseJson(resp, "Not allowed", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
         }
@@ -60,38 +66,74 @@ public class Api extends HttpServlet {
         String payload = getRequestPayload(req);
 
         if (pathInfo.equals("/function")) {
-            persistence.dto.Function f = om.readValue(payload, persistence.dto.Function.class);
-            f.id = UUID.randomUUID().toString();
 
-            if (f == null) {
-                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+            persistence.dto.Function f = null;
+
+            try {
+                f = om.readValue(payload, persistence.dto.Function.class);
+                f.id = UUID.randomUUID().toString();
+            } catch (JsonParseException jpe) {
+                sendResponseJson(resp, "Could not parse request body: " + jpe.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            } catch (JsonMappingException jme) {
+                sendResponseJson(resp, "Invalid data given: " + jme.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
             functionRepository.add(f);
-
             sendResponseJson(resp, f);
         }
         if (pathInfo.contains("/workflow")) {
 
-            String contentType = req.getContentType();
             String targetType = req.getHeader("Accept");
+            Map<String, Object> requestData = null;
 
-            Map<String, Object> requestData = om.readValue(payload, new TypeReference<Map<String, Object>>() {});
+            try {
+                requestData = om.readValue(payload, new TypeReference<Map<String, Object>>() {});
+            } catch (JsonParseException jpe) {
+                sendResponseJson(resp, "Could not parse request body: " + jpe.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            } catch (JsonMappingException jme) {
+                sendResponseJson(resp, "Invalid data given: " + jme.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
 
             afcl.Workflow w = null;
+            Object workflowData = null;
+            try {
+                workflowData = requestData.get("workflow");
+            } catch (NullPointerException npe) {
+                sendResponseJson(resp, "no workflow data found", HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
 
-            if (pathSegments[pathSegments.length-1].contains("fromGraphXml")) {
-                if (!contentType.equals("application/xml") && !contentType.equals("text/xml")) {
-                    sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+            if (pathSegments[pathSegments.length-1].equals("fromGraphXml")) {
+                try {
+                    w = WorkflowConversionService.fromGraphXml((String)workflowData);
+                } catch (Exception e) {
+                    sendResponseJson(resp, e, HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
-
-                w = WorkflowConversionService.fromGraphXml((String)requestData.get("workflow"));
+            }
+            if (pathSegments[pathSegments.length-1].equals("fromYaml")) {
+                try {
+                    w = yamlOm.readValue((String)workflowData, afcl.Workflow.class);
+                } catch (Exception e) {
+                    sendResponseJson(resp, "could not parse from afcl yaml: " + e.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+            }
+            if (pathSegments[pathSegments.length-1].equals("fromJson")) {
+                try {
+                    w = om.convertValue(workflowData, afcl.Workflow.class);
+                } catch (IllegalArgumentException iae) {
+                    sendResponseJson(resp, "could not parse from afcl json: " + iae.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
             }
 
             if (w == null) {
-                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+                sendResponseJson(resp, "Could not read workflow. Invalid format", HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
@@ -99,11 +141,9 @@ public class Api extends HttpServlet {
 
                 switch (targetType) {
                     case "application/x-yaml":
+                    case "text/x-yaml":
                     case "text/yaml":
-                        YAMLFactory yf = new YAMLFactory();
-                        yf.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
-                        ObjectMapper yamlOm = new ObjectMapper(yf);
-
+                    case "text/vnd.yaml":
                         sendResponseFile(resp, yamlOm.writeValueAsBytes(w), targetType, w.getName() + ".yaml");
                         return;
                     case "application/json":
@@ -117,11 +157,18 @@ public class Api extends HttpServlet {
 
             if (pathInfo.contains("/workflow/adapt")) {
 
-                Map<String, List> adaptationMap = om.convertValue(requestData.get("adaptationMap"), Map.class);
+                Map<String, List> adaptations = null;
+                try {
+                    adaptations = om.convertValue(requestData.get("adaptations"), new TypeReference<Map<String, List>>() {});
+                } catch (IllegalArgumentException iae) {
+                    sendResponseJson(resp, "invalid adaptations given: " + iae.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
 
-                afcl.Workflow adaptedWorkflow = WorkflowAdaptationService.getAdaptedWorkflow(w, adaptationMap);
+                afcl.Workflow adaptedWorkflow = WorkflowAdaptationService.getAdaptedWorkflow(w, adaptations);
 
                 sendResponseJson(resp, adaptedWorkflow);
+                return;
             }
 
             sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
@@ -143,35 +190,20 @@ public class Api extends HttpServlet {
             String[] pathSegments = pathInfo.split("/");
 
             if (pathSegments.length != 3) {
-                sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+                sendResponseJson(resp, "Invalid path", HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
             String id = pathSegments[pathSegments.length-1];
 
             if (functionRepository.findOne(id) == null) {
-                sendResponseJson(resp, "Not Found", HttpServletResponse.SC_NOT_FOUND);
+                sendResponseJson(resp, "Not found", HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
 
             functionRepository.remove(id);
             sendResponseJson(resp, "Deleted");
         }
-    }
-
-    private void sendResponseXml(HttpServletResponse resp, String text) throws IOException {
-        resp.setContentType("text/xml");
-        resp.setStatus(HttpServletResponse.SC_OK);
-
-        if (text != null) {
-            PrintWriter out = resp.getWriter();
-            out.print(text);
-            out.flush();
-        }
-    }
-
-    private void sendResponseJson(HttpServletResponse resp) throws IOException {
-        sendResponseJson(resp, null, HttpServletResponse.SC_OK);
     }
 
     private void sendResponseJson(HttpServletResponse resp, Object obj) throws IOException {
