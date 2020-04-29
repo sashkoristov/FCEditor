@@ -8,11 +8,14 @@ import afcl.functions.objects.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class WorkflowAdaptationService {
@@ -83,7 +86,7 @@ public class WorkflowAdaptationService {
 
                         // rename all functions in that inner branch (including parallelFor)
                         final int idx = i;
-                        traverseFunctions(fl, fx -> renameFunction(wf, fx, fx.getName() + "_" + idx));
+                        traverseFunctions(fl, (fx, parent) -> renameFunction(wf, fx, fx.getName() + "_" + idx));
 
                         // add the output data to the output data collection of the new parallel
                         if (cloneFn.getDataOuts() != null && cloneFn.getDataOuts().size() > 0) {
@@ -125,8 +128,12 @@ public class WorkflowAdaptationService {
      * @param wf
      * @param consumer
      */
-    public static void traverseWorkflow(Workflow wf, Consumer<Function> consumer) {
-        traverseFunctions(wf.getWorkflowBody(), consumer);
+    public static void traverseWorkflow(Workflow wf, BiConsumer<Function, Object> consumer) {
+        traverseFunctions(wf.getWorkflowBody(), consumer, wf);
+    }
+
+    public static void traverseFunctions(List<Function> functionsList, BiConsumer<Function, Object> consumer) {
+        traverseFunctions(functionsList, consumer, null);
     }
 
     /**
@@ -135,28 +142,28 @@ public class WorkflowAdaptationService {
      * @param functionsList
      * @param consumer
      */
-    public static void traverseFunctions(List<Function> functionsList, Consumer<Function> consumer) {
+    public static void traverseFunctions(List<Function> functionsList, BiConsumer<Function, Object> consumer, Object currentParent) {
         if (functionsList == null) {
             return;
         }
         for (Function fn : functionsList) {
-            consumer.accept(fn);
+            consumer.accept(fn, currentParent);
             if (fn instanceof IfThenElse) {
-                traverseFunctions(((IfThenElse) fn).getThen(), consumer);
-                traverseFunctions(((IfThenElse) fn).getElse(), consumer);
+                traverseFunctions(((IfThenElse) fn).getThen(), consumer, fn);
+                traverseFunctions(((IfThenElse) fn).getElse(), consumer, fn);
             }
             if (fn instanceof Switch) {
                 for (Case c : ((Switch) fn).getCases()) {
-                    traverseFunctions(c.getFunctions(), consumer);
+                    traverseFunctions(c.getFunctions(), consumer, fn);
                 }
             }
             if (fn instanceof Parallel) {
                 for (Section s : ((Parallel) fn).getParallelBody()) {
-                    traverseFunctions(s.getSection(), consumer);
+                    traverseFunctions(s.getSection(), consumer, fn);
                 }
             }
             if (fn instanceof ParallelFor) {
-                traverseFunctions(((ParallelFor) fn).getLoopBody(), consumer);
+                traverseFunctions(((ParallelFor) fn).getLoopBody(), consumer, fn);
             }
         }
     }
@@ -323,41 +330,13 @@ public class WorkflowAdaptationService {
      * @return
      */
     public static Object getParentObject(List<Function> list, Function fn, Object currentParent) {
-        for (Function f : list) {
-            if (f.equals(fn)) {
-                return currentParent;
+        AtomicReference<Object> parentObjRef = new AtomicReference<>(currentParent);
+        traverseFunctions(list, (functionItem, parentObj) -> {
+            if (functionItem.equals(fn)) {
+                parentObjRef.set(parentObj);
             }
-            Object foundFn = null;
-            if (f instanceof IfThenElse) {
-                foundFn = getParentObject(((IfThenElse) f).getThen(), fn, f);
-                if (foundFn == null) {
-                    foundFn = getParentObject(((IfThenElse) f).getElse(), fn, f);
-                }
-            }
-            if (f instanceof Switch) {
-                for (Case c : ((Switch) f).getCases()) {
-                    foundFn = getParentObject(c.getFunctions(), fn, f);
-                    if (foundFn != null) {
-                        break;
-                    }
-                }
-            }
-            if (f instanceof Parallel) {
-                for (Section s : ((Parallel) f).getParallelBody()) {
-                    foundFn = getParentObject(s.getSection(), fn, f);
-                    if (foundFn != null) {
-                        break;
-                    }
-                }
-            }
-            if (f instanceof ParallelFor) {
-                foundFn = getParentObject(((ParallelFor) f).getLoopBody(), fn, f);
-            }
-            if (foundFn != null) {
-                return foundFn;
-            }
-        }
-        return null;
+        }, currentParent);
+        return parentObjRef.get();
     }
 
     /**
@@ -381,44 +360,13 @@ public class WorkflowAdaptationService {
      * @return
      */
     public static Function getFunctionByName(List<Function> list, String name) {
-        for (Function fn : list) {
-            if (fn.getName() == null) {
-                continue;
+        final AtomicReference<Function> foundFnRef = new AtomicReference<>();
+        traverseFunctions(list, (fn, parentObj) -> {
+            if (fn.getName() != null && fn.getName().equals(name)) {
+                foundFnRef.set(fn);
             }
-            if (fn.getName().equals(name)) {
-                return fn;
-            }
-            Function foundFn = null;
-            if (fn instanceof IfThenElse) {
-                foundFn = getFunctionByName(((IfThenElse) fn).getThen(), name);
-                if (foundFn == null) {
-                    foundFn = getFunctionByName(((IfThenElse) fn).getElse(), name);
-                }
-            }
-            if (fn instanceof Switch) {
-                for (Case c : ((Switch) fn).getCases()) {
-                    foundFn = getFunctionByName(c.getFunctions(), name);
-                    if (!(foundFn == null)) {
-                        break;
-                    }
-                }
-            }
-            if (fn instanceof Parallel) {
-                for (Section s : ((Parallel) fn).getParallelBody()) {
-                    foundFn = getFunctionByName(s.getSection(), name);
-                    if (!(foundFn == null)) {
-                        break;
-                    }
-                }
-            }
-            if (fn instanceof ParallelFor) {
-                foundFn = getFunctionByName(((ParallelFor) fn).getLoopBody(), name);
-            }
-            if (!(foundFn == null)) {
-                return foundFn;
-            }
-        }
-        return null;
+        });
+        return foundFnRef.get();
     }
 
     /**
@@ -433,50 +381,35 @@ public class WorkflowAdaptationService {
         if (functionList == null) {
             return currentList;
         }
-        for (Function functionItem : functionList) {
-            if (functionItem instanceof AtomicFunction) {
-                if (((AtomicFunction) functionItem).getDataIns() != null) {
-                    for (DataIns dataIns : ((AtomicFunction) functionItem).getDataIns()) {
-                        if (dataIns.getSource().startsWith(sourceFn.getName() + "/")) {
-                            currentList.add(dataIns);
+        traverseFunctions(functionList, (functionItem, parentObj) -> {
+            try {
+                if (functionItem instanceof AtomicFunction) {
+                    if (((AtomicFunction) functionItem).getDataIns() != null) {
+                        for (DataIns dataIns : ((AtomicFunction) functionItem).getDataIns()) {
+                            if (dataIns.getSource().startsWith(sourceFn.getName() + "/")) {
+                                currentList.add(dataIns);
+                            }
                         }
                     }
                 }
-            }
-            if (functionItem instanceof Compound) {
-                if (((Compound) functionItem).getDataIns() != null) {
-                    for (DataIns dataIns : ((Compound) functionItem).getDataIns()) {
-                        if (dataIns.getSource().startsWith(sourceFn.getName() + "/")) {
-                            currentList.add(dataIns);
+                if (functionItem instanceof Compound) {
+                    if (((Compound) functionItem).getDataIns() != null) {
+                        for (DataIns dataIns : ((Compound) functionItem).getDataIns()) {
+                            if (dataIns.getSource().startsWith(sourceFn.getName() + "/")) {
+                                currentList.add(dataIns);
+                            }
+                        }
+                    }
+                    if (((Compound) functionItem).getDataOuts() != null) {
+                        for (DataOuts dataOuts : ((Compound) functionItem).getDataOuts()) {
+                            if (dataOuts.getSource().startsWith(sourceFn.getName() + "/")) {
+                                currentList.add(dataOuts);
+                            }
                         }
                     }
                 }
-                if (((Compound) functionItem).getDataOuts() != null) {
-                    for (DataOuts dataOuts : ((Compound) functionItem).getDataOuts()) {
-                        if (dataOuts.getSource().startsWith(sourceFn.getName() + "/")) {
-                            currentList.add(dataOuts);
-                        }
-                    }
-                }
-            }
-            if (functionItem instanceof IfThenElse) {
-                currentList.addAll(getDataItemsBySource(sourceFn, ((IfThenElse) functionItem).getThen()));
-                currentList.addAll(getDataItemsBySource(sourceFn, ((IfThenElse) functionItem).getElse()));
-            }
-            if (functionItem instanceof Switch) {
-                for (Case c : ((Switch) functionItem).getCases()) {
-                    currentList.addAll(getDataItemsBySource(sourceFn, c.getFunctions()));
-                }
-            }
-            if (functionItem instanceof Parallel) {
-                for (Section s : ((Parallel) functionItem).getParallelBody()) {
-                    currentList.addAll(getDataItemsBySource(sourceFn, s.getSection()));
-                }
-            }
-            if (functionItem instanceof ParallelFor) {
-                currentList.addAll(getDataItemsBySource(sourceFn, ((ParallelFor) functionItem).getLoopBody()));
-            }
-        }
+            } catch (NullPointerException npe ) {}
+        });
         return currentList;
     }
 

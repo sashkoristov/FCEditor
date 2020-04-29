@@ -556,7 +556,7 @@ class Editor extends React.Component {
                 break;
             case 'yaml':
                 axios.post(
-                    'api/workflow/convert/fromGraphXml',
+                    'api/workflow/convert/fromEditorXml',
                     {
                         workflow: this._getWorkflowXml()
                     },
@@ -573,7 +573,7 @@ class Editor extends React.Component {
                 break;
             case 'json':
                 axios.post(
-                    'api/workflow/convert/fromGraphXml',
+                    'api/workflow/convert/fromEditorXml',
                     {
                         workflow: this._getWorkflowXml()
                     },
@@ -858,7 +858,7 @@ class Editor extends React.Component {
         this.setState({ isLoading: true });
 
         axios.post(
-            'api/workflow/adapt/fromGraphXml',
+            'api/workflow/adapt/fromEditorXml',
             {
                 adaptations: adaptations,
                 workflow: this._getWorkflowXml()

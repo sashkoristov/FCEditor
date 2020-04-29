@@ -7,10 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Type;
-import java.net.http.HttpRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 
-import org.xml.sax.SAXException;
 import persistence.*;
 import service.*;
 
@@ -38,13 +34,12 @@ public class Api extends HttpServlet {
 
         if (pathInfo == null || pathInfo.equals("/")){
 
-            sendResponseJson(resp, "ACFL Toolkit API");
+            sendResponseText(resp, "ACFL Toolkit API", HttpServletResponse.SC_OK);
             return;
         }
 
         if (pathInfo.equals("/function")) {
             sendResponseJson(resp, functionRepository.findAll());
-            return;
         }
     }
 
@@ -59,7 +54,7 @@ public class Api extends HttpServlet {
 
 
         if (pathInfo.equals("/")) {
-            sendResponseJson(resp, "Not allowed", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            sendResponse(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
         }
 
@@ -73,10 +68,10 @@ public class Api extends HttpServlet {
                 f = om.readValue(payload, persistence.dto.Function.class);
                 f.id = UUID.randomUUID().toString();
             } catch (JsonParseException jpe) {
-                sendResponseJson(resp, "Could not parse request body: " + jpe.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                sendResponseMessage(resp, "Could not parse request body: " + jpe.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
                 return;
             } catch (JsonMappingException jme) {
-                sendResponseJson(resp, "Invalid data given: " + jme.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                sendResponseMessage(resp, "Invalid data given: " + jme.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
@@ -91,10 +86,10 @@ public class Api extends HttpServlet {
             try {
                 requestData = om.readValue(payload, new TypeReference<Map<String, Object>>() {});
             } catch (JsonParseException jpe) {
-                sendResponseJson(resp, "Could not parse request body: " + jpe.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                sendResponseMessage(resp, "Could not parse request body: " + jpe.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
                 return;
             } catch (JsonMappingException jme) {
-                sendResponseJson(resp, "Invalid data given: " + jme.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                sendResponseMessage(resp, "Invalid data given: " + jme.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
@@ -103,15 +98,15 @@ public class Api extends HttpServlet {
             try {
                 workflowData = requestData.get("workflow");
             } catch (NullPointerException npe) {
-                sendResponseJson(resp, "no workflow data found", HttpServletResponse.SC_BAD_REQUEST);
+                sendResponseMessage(resp, "no workflow data found", HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
-            if (pathSegments[pathSegments.length-1].equals("fromGraphXml")) {
+            if (pathSegments[pathSegments.length-1].equals("fromEditorXml")) {
                 try {
                     w = WorkflowConversionService.fromGraphXml((String)workflowData);
                 } catch (Exception e) {
-                    sendResponseJson(resp, e, HttpServletResponse.SC_BAD_REQUEST);
+                    sendResponseMessage(resp, "could not parse from Editor XML:" + e.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
             }
@@ -119,7 +114,7 @@ public class Api extends HttpServlet {
                 try {
                     w = yamlOm.readValue((String)workflowData, afcl.Workflow.class);
                 } catch (Exception e) {
-                    sendResponseJson(resp, "could not parse from afcl yaml: " + e.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                    sendResponseMessage(resp, "could not parse from AFCL YAML: " + e.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
             }
@@ -127,13 +122,13 @@ public class Api extends HttpServlet {
                 try {
                     w = om.convertValue(workflowData, afcl.Workflow.class);
                 } catch (IllegalArgumentException iae) {
-                    sendResponseJson(resp, "could not parse from afcl json: " + iae.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                    sendResponseMessage(resp, "could not parse from AFCL JSON: " + iae.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
             }
 
             if (w == null) {
-                sendResponseJson(resp, "Could not read workflow. Invalid format", HttpServletResponse.SC_BAD_REQUEST);
+                sendResponseMessage(resp, "Could not read workflow. Invalid format", HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
@@ -144,10 +139,10 @@ public class Api extends HttpServlet {
                     case "text/x-yaml":
                     case "text/yaml":
                     case "text/vnd.yaml":
-                        sendResponseFile(resp, yamlOm.writeValueAsBytes(w), targetType, w.getName() + ".yaml");
+                        sendResponseText(resp, yamlOm.writeValueAsString(w), HttpServletResponse.SC_OK);
                         return;
                     case "application/json":
-                        sendResponseFile(resp, om.writeValueAsBytes(w), targetType, w.getName() + ".json");
+                        sendResponseJson(resp, w);
                         return;
                     default:
                         break;
@@ -161,7 +156,7 @@ public class Api extends HttpServlet {
                 try {
                     adaptations = om.convertValue(requestData.get("adaptations"), new TypeReference<Map<String, List>>() {});
                 } catch (IllegalArgumentException iae) {
-                    sendResponseJson(resp, "invalid adaptations given: " + iae.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
+                    sendResponseMessage(resp, "invalid adaptations given: " + iae.getLocalizedMessage(), HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
 
@@ -171,7 +166,7 @@ public class Api extends HttpServlet {
                 return;
             }
 
-            sendResponseJson(resp, "Bad Request", HttpServletResponse.SC_BAD_REQUEST);
+            sendResponse(resp, HttpServletResponse.SC_BAD_REQUEST);
         }
 
     }
@@ -181,7 +176,7 @@ public class Api extends HttpServlet {
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || pathInfo.equals("/")) {
-            sendResponseJson(resp, "Not allowed", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            sendResponse(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
         }
 
@@ -190,20 +185,29 @@ public class Api extends HttpServlet {
             String[] pathSegments = pathInfo.split("/");
 
             if (pathSegments.length != 3) {
-                sendResponseJson(resp, "Invalid path", HttpServletResponse.SC_BAD_REQUEST);
+                sendResponseMessage(resp, "Invalid path", HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
             String id = pathSegments[pathSegments.length-1];
 
             if (functionRepository.findOne(id) == null) {
-                sendResponseJson(resp, "Not found", HttpServletResponse.SC_NOT_FOUND);
+                sendResponse(resp, HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
 
             functionRepository.remove(id);
-            sendResponseJson(resp, "Deleted");
+            sendResponse(resp, HttpServletResponse.SC_OK);
         }
+    }
+
+    private void sendResponse(HttpServletResponse resp, int code) throws IOException {
+        resp.setStatus(code);
+    }
+
+    private void sendResponseMessage(HttpServletResponse resp, String error, int status) throws IOException {
+        Map<String, Object> errObj = Map.of("message", error);
+        sendResponseJson(resp, errObj, status);
     }
 
     private void sendResponseJson(HttpServletResponse resp, Object obj) throws IOException {
@@ -221,15 +225,15 @@ public class Api extends HttpServlet {
         }
     }
 
-    private void sendResponseFile(HttpServletResponse resp, byte[] content, String contentType, String downloadName) throws IOException {
-        resp.setContentType(contentType);
-        resp.setHeader("Content-Disposition", "filename=" + downloadName);
-        resp.setContentLength(content.length);
+    private void sendResponseText(HttpServletResponse resp, String content, int status) throws IOException {
+        resp.setContentType("text/plain");
+        resp.setStatus(status);
 
-        OutputStream os = resp.getOutputStream();
-
-        os.write(content, 0, content.length);
-        os.close();
+        if (content != null) {
+            PrintWriter out = resp.getWriter();
+            out.print(content);
+            out.close();
+        }
     }
 
     private String getRequestPayload(HttpServletRequest req) throws IOException {

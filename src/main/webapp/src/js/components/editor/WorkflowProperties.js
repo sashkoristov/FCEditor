@@ -58,7 +58,7 @@ class WorkflowProperties extends React.Component {
                     <Button size="sm" color="link" className="px-0" onClick={() => this.setState({isWorkflowDebugOpen: !this.state.isWorkflowDebugOpen})}>Debug Information</Button>
                     <Collapse isOpen={this.state.isWorkflowDebugOpen}>
                         <pre>
-                            {this.state.isWorkflowDebugOpen && this.props.editor._getWorkflowXml()}
+                            {this.state.isWorkflowDebugOpen && this.props.editor._getWorkflowXml(true)}
                         </pre>
                     </Collapse>
                 </div>
