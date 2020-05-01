@@ -19,20 +19,20 @@
 
 \refsection{0}
   \datalist[entry]{nty/global//global/global}
-    \entry{online-afcl-docs-dps}{online}{}
+    \entry{online-afcl-dps}{online}{}
       \field{sortinit}{A}
       \field{sortinithash}{d77c7cdd82ff690d4c3ef13216f92f0b}
       \field{labeltitlesource}{title}
-      \field{title}{AFCL Documentation}
+      \field{title}{AFCL - Abstract Function Choreography Language}
       \field{urlday}{10}
       \field{urlmonth}{4}
       \field{urlyear}{2020}
       \field{urldateera}{ce}
       \verb{urlraw}
-      \verb http://dps.uibk.ac.at/projects/afcl/files/documentation/index.html
+      \verb http://dps.uibk.ac.at/projects/afcl/
       \endverb
       \verb{url}
-      \verb http://dps.uibk.ac.at/projects/afcl/files/documentation/index.html
+      \verb http://dps.uibk.ac.at/projects/afcl/
       \endverb
     \endentry
     \entry{articles-rise-of-serverless-castro}{article}{}
@@ -294,6 +294,39 @@
       \range{pages}{2}
       \verb{doi}
       \verb 10.1145/3171583
+      \endverb
+    \endentry
+    \entry{online-smashingmagazine-rest-vs-rpc}{online}{}
+      \name{author}{1}{}{%
+        {{hash=d3e948d3a3666bee354b8dc0954d6fee}{%
+           family={Sturgeon},
+           familyi={S\bibinitperiod},
+           given={Phil},
+           giveni={P\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Smashing Media AG}%
+      }
+      \strng{namehash}{d3e948d3a3666bee354b8dc0954d6fee}
+      \strng{fullhash}{d3e948d3a3666bee354b8dc0954d6fee}
+      \strng{bibnamehash}{d3e948d3a3666bee354b8dc0954d6fee}
+      \strng{authorbibnamehash}{d3e948d3a3666bee354b8dc0954d6fee}
+      \strng{authornamehash}{d3e948d3a3666bee354b8dc0954d6fee}
+      \strng{authorfullhash}{d3e948d3a3666bee354b8dc0954d6fee}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Understanding RPC Vs REST For HTTP APIs}
+      \field{urlday}{29}
+      \field{urlmonth}{4}
+      \field{urlyear}{2020}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.smashingmagazine.com/2016/09/understanding-rest-and-rpc-for-http-apis/
+      \endverb
+      \verb{url}
+      \verb https://www.smashingmagazine.com/2016/09/understanding-rest-and-rpc-for-http-apis/
       \endverb
     \endentry
   \enddatalist
