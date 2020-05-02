@@ -16,7 +16,6 @@ class Toolbar extends React.Component {
             <UncontrolledButtonDropdown className="mr-1" title="Zoom">
                 <DropdownToggle caret>
                     <span className="cil-zoom mr-1" /> {this.state.currentZoom * 100}%
-                    &nbsp;
                 </DropdownToggle>
                 <DropdownMenu className="small">
                     <DropdownItem onClick={() => this.props.editor._zoomTo(0.5) || this.setState({currentZoom: 0.5 })}>50%</DropdownItem>
@@ -28,15 +27,12 @@ class Toolbar extends React.Component {
             </UncontrolledButtonDropdown>
             <Button className="btn mx-1" onClick={this.props.editor._undo} title="Undo last change">
                 <span className="cil cil-action-undo" />
-                &nbsp;
             </Button>
             <Button className="btn mx-1" onClick={this.props.editor._redo} title="Redo last change">
                 <span className="cil cil-action-redo" />
-                &nbsp;
             </Button>
             <Button className="btn mx-1" onClick={this.props.editor._removeSelected} title="Remove selection">
                 <span className="cil cil-trash" />
-                &nbsp;
             </Button>
             |
             <Button className="btn mx-1" onClick={this.props.editor._doLayout} title="Perform Auto-Layout">
@@ -58,9 +54,9 @@ class Toolbar extends React.Component {
                     Save
                 </DropdownToggle>
                 <DropdownMenu>
-                    <DropdownItem onClick={() => this.props.editor._saveWorkflow('xml')}>XML<Badge color="secondary">GUI</Badge></DropdownItem>
-                    <DropdownItem onClick={() => this.props.editor._saveWorkflow('yaml')}>YAML</DropdownItem>
-                    <DropdownItem onClick={() => this.props.editor._saveWorkflow('json')}>JSON</DropdownItem>
+                    <DropdownItem onClick={() => this.props.editor._saveWorkflow('xml')}>XML<Badge color="primary">GUI</Badge></DropdownItem>
+                    <DropdownItem onClick={() => this.props.editor._saveWorkflow('json')}>JSON<Badge color="secondary">AFCL</Badge></DropdownItem>
+                    <DropdownItem onClick={() => this.props.editor._saveWorkflow('yaml')}>YAML<Badge color="secondary">AFCL</Badge></DropdownItem>
                 </DropdownMenu>
             </UncontrolledButtonDropdown>
         </div>
