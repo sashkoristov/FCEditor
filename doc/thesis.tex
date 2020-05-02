@@ -7,6 +7,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage{wrapfig}
 \usepackage[pdftex]{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{eso-pic}
 \usepackage{array}
 \usepackage{tabularx}
@@ -247,7 +249,7 @@ A lot of CSS Frameworks also provide their source code in SASS, often served wit
 
 \chapter{Implementation}
 
-This chapter gives the reader a detailed overview over the system architecture as well as the system design.
+This chapter gives the reader a detailed overview over the system architecture, the system design, including evaluations for technology decicions for specific tasks.
 
 AFCL ToolKit should not only visualize AFCL Workflows, but also give non-developers the opportunity to create and edit workflows through a Graphical User Interface (GUI). This GUI ships with a powerful editor, including additional features like real-time validation, versioning (change history) and automatic layouting.\\
 Furthermore, workflows can be adapted at low-level in order to split large parallel loops - for example loops with more iterations than allowed by current providers - into several loops running concurrently. By doing this, AFCL ToolKit also adapts  all existing data flow to the new concurrent structure.
@@ -263,20 +265,23 @@ Furthermore, workflows can be adapted at low-level in order to split large paral
 
 % optional 
 
-AFCL ToolKit is built on top of two sub systems which are operating mostly decoupled from each other. On the one hand there is the backend service, responsible for low-level operations on workflows, on the other hand is the frontend with the GUI. Those interact with each other by sharing JSON-serialized objects through an API the backend provides and the frontend consumes.
+AFCL ToolKit is built on top of two sub systems which are operating mostly decoupled from each other. On the one hand there is the backend, responsible for low-level operations on workflows and persistence of function data. On the other hand is the frontend with the GUI, responsible for user interaction, data visualization and file I/O.\\
+Those two sub systems interact with each other by sharing JSON-serialized objects through an API the backend provides and the frontend consumes.
+
+Note that in this thesis, the whole frontend is served by the web server included in the backend for reasons of simplicity. But technically, the frontend could be delivered from any other web server.
 
 % put scheduler on the left side in this graphic
 % scheduler has interface
 \begin{figure}[H]
   \centering
   \vspace{0.8cm}
-  \includegraphics[scale=0.8]{architecture}
+  \includegraphics{architecture}
   \caption{system architecture}
 \end{figure}
 
 \subsection{Frontend}
 
-The frontend displays and controls the application's user interface. Its core component is the workflow editor, which is responsible for visualizing workflow data and provides the canvas with all additional control elements, allowing the user to compose and edit workflows. All features are described in detail in section  \ref{chap:impl-webinterface}
+The frontend displays and controls the application's user interface. Its core component is the workflow editor, which is responsible for visualizing workflow data and provides a canvas with additional control elements, allowing the user to compose and edit workflows. All features of the web-based user interface are described in detail in section  \ref{chap:impl-webinterface}.
 
 % present only functionalities
 % create workflow
@@ -294,9 +299,9 @@ The frontend displays and controls the application's user interface. Its core co
 
 \subsection{Backend}
 
-The backend is responsible for performing operations on workflows at low-level. The conversion of XML data from the frontend as well as persisting of function data is also a backend task.
-
-The conversion of workflows is needed because the frontend encodes the visual representation of a workflow in XML, which is given as input to the backend. 
+The main purpose of the backend is to perform operations on workflows at low-level. These operations include the conversion of XML data delivered from the frontend, as well as complex workflow modifications.
+For the communication with the world outside, the backend includes a web server, which is used to expose the endpoint for its HTTP-based API to clients. Moreover, the frontend web application is also delivered by this web server. 
+Last but not least, is the persisting of function data which is also covered by the backend.
 
 % interface for adaptation during runtime such that based on the decision of the scheduler also automatic display of new "optimized" workflow
 
@@ -341,7 +346,9 @@ Bootstrap is a toolkit for building web applications.\footnote{https://getbootst
 CoreUI is a free admin panel template, based on bootstrap.\footnote{https://coreui.io/}
 \end{itemize}
 
-%%% TECHNOLOGIES / TOOLS %%%
+\subsubsection{Core Application}
+
+A clean and nested structure of React components guarantees modularity and forms the core application. One of the benefits when using React is that the data model displayed to the user maps most of the time nicely to UI components. Primarily, the components of the application respect the single responsibility principle.\footnote{https://en.wikipedia.org/wiki/Single\_responsibility\_principle}
 
 \subsubsection{Data model}
 
@@ -351,7 +358,7 @@ All AFCL Java model classes have been ported to ECMAScript, to have all classes 
 
 A workflow can be represented as a directed acyclic graph (DAG). DAG's are conventional models to present workflows, where nodes are tasks and edges are communications between tasks.
 
-At the time of implementation, the JavaScript library mxGraph was the best choice\footnote{see \ref{sec:graph-alternatives} to learn why} for the graph visualization part.
+At the time of implementation, the JavaScript library mxGraph was the best choice for the graph visualization part.\footnote{see \ref{sec:graph-alternatives} to learn why}
 It has an outstanding documentation, enriched with a lot of demos and example code which show many use cases and extensive features, as well as a powerful production-grade example.\footnote{https://draw.io}\\
 The authors of mxGraph state:\\
 \begin{quote}
@@ -370,7 +377,8 @@ In mxGraph, vertices and edges are represented by an \texttt{mxCell} model, whic
 % \texttt{mxCell} instances are controlled by the \texttt{mxGraphModel}, its visual representation is rendered by \texttt{mxCellRenderer}.
 Additionally, a \textit{user object} can be associated with a \texttt{mxCell} through the \texttt{value} property. User objects give the graph its context, they store the business logic associated with the visual part. \cite{manuals-mxgraph-user-manual} For simple cases, the user object may be a string to display the cell's label. In more complex applications, the user object may be an object and some property of that object will generally be the label that the visual cell displays. In this application, the cell's user objects are instances of the ported AFCL classes, respectively.
 
-The following table shows the implemented \texttt{mxCell} shapes which are used as graphical elements representing a node in the graph. Beside a short description, the type of the associated user object is denoted.
+The \texttt{mxCell} class has been subclassed in order to have an additional \texttt{type} property, which defines the cell's type. The class name of the subclassed implementation is just \texttt{Cell}.\\
+The following table shows the implemented \texttt{Cell} types which are used as graphical elements representing a node in the graph. Beside a short description, the type of the associated user object is denoted.
 
 \begin{table}[H]
    \centering
@@ -396,16 +404,18 @@ The following table shows the implemented \texttt{mxCell} shapes which are used 
 \hline
 \end{tabular}
 \caption{Implemented Shapes, *: AFCL Object}
+\label{tbl:frontend-impl-shapes}
 \end{table}
 
-\subsubsection{Validation}
+\subsubsection{Graph Validation}
+\label{sec:impl-frontend-graphvalidation}
 
 A DAG which represents a \textit{valid} AFCL workfow always fulfills the following constraints:
 
 \begin{itemize}
-	\item It exists exactly one \textsf{Start}
-	\item It exists exactly one \textsf{End}
-	\item It exist no cycles
+	\item There exists exactly one \textsf{Start}
+	\item There exists exactly one \textsf{End}
+	\item There exist no cycles
     \item Every \textsf{Cell} has a path to \textsf{Start}
     \item Every \textsf{Cell} has a path to \textsf{End}
 	\item \textsf{Function}, \textsf{If-Then-Else}, \textsf{Switch}, \textsf{Parallel}, \textsf{ParallelFor} and \textsf{End} have exactly one incoming edge
@@ -415,23 +425,29 @@ A DAG which represents a \textit{valid} AFCL workfow always fulfills the followi
 	\item \textsf{Merge} has multiple incoming edges
 \end{itemize}
 
+Since compound constructs are visualized as container which enclose their child nodes, the following additional constraints are needed
+
+\begin{itemize}
+	\item Both \textsf{Cell}s taking part in a direct connection, must have the same \textit{nesting level}, what means they must have the same parent cell
+\end{itemize}
+
 These constraints are enforced at two different stages: At modeling-time, when composing a workflow, more specificially when adding and connecting vertices, and before saving or adapting a workflow.
 Due the fact that the user cannot even create an invalid workflow, efficiency increases and errors in the corresponding backend services will be minimized.
 
 
-\subsubsection{Encoding}
+\subsubsection{Graph Encoding}
 
 The visual representation of the workflow and the included data targets human-readability. This data needs to be put into another, proper format for storing. mxGraph provides built-in support for converting the visual representation to XML. An advantage of using XML over JSON is that constructor names (class names) are mapped to the XML node names, no additional property is required.
 What makes XML also very convenient is Java's excellent native support for XML and XPath on the backend side. The XML-encoded workflow is converted on backend-side internally to an AFCL \texttt{Workflow}.
 
 % example of xml what information is stored 
 
-\subsubsection{Layouting}
+\subsubsection{Graph Layouting}
 
-Combination of nested hierarchical layout
+There exists no information in AFCL workflows how to visually arrange the function elements. The constraints This has to be defined 
 
 \label{sec:graph-alternatives}
-\subsubsection{Alternatives}
+\subsubsection{Graph Alternatives}
 
 One of the more difficult tasks was to choose a proper library for graph drawing. Since the graph drawing and visualization is one of the most important features of the frontend, a careful choice has to be made. Of course there exist multiple excellent JavaScript graph drawing libraries, but not all of them are suitable for the requirements of this project.
 
@@ -450,7 +466,7 @@ Below is a list of tested and researched JavaScript graph libraries with additio
 
 The backend  of the application is built entirely with Java, using Maven as package manager and Apache Tomcat as Servlet Implementation.
 
-\subsubsection{Api}
+\subsubsection{API}
  
 The API to interact with the frontend or other clients is based on HTTP and it is inspired by the principles of REST and RPC.
 
@@ -461,13 +477,20 @@ Function data is stored on server-side, thus its API is a REST-based implementat
 
 \subsubsection{Decoding Frontend Data}
 \label{sec:backend-decoding}
- XML is good because built-in XPath support in Java.
+
+Since the frontend encodes its visual representation of the workflow (the graph) in XML, this data has to be converted to AFCL Java objects, to be ready for further processing with the AFCL API. 
+The excellent out-of-the support of Java for XML documents turned out to be very convenient. With the power of XPath expressions, it was quite easy to operate on the XML structure and extract the relevant information to convert the XML-based workflow into an AFCL workflow. Listing \ref{lst:xpath-example} shows an example of a simple XPath expression, which finds all nodes whose node name equals \textsf{AtomicFunction}, having a \textsf{name} attribute whose value equals 'getFlight'.\\
+
+\begin{lstlisting}[caption={Example of an XPath expression.},label={lst:xpath-example}].
+//AtomicFunction[@name='getFlight']
+\end{lstlisting}
 
 \subsubsection{Persistence}
 \label{sec:backend-persistence}
 
-The storing of function data, on the other hand, is abstracted from the user and persisting of the data is handled internally by a repository.
-An interface for the repository was created on the backend side to be capable of supporting any data source.\footnote{https://docs.oracle.com/javase/specs/jls/se7/html/jls-9.html} The repository which implements the interface in this thesis, stores the serialized data into a file. This could be easily replaced with any other implementation, for example an implementation which stores the data in a DBMS.
+The storing of function data is abstracted from the user and persisting of the data is handled internally. For this purpose a \textit{repository interface} was created on the backend side to be capable of supporting any data source.\footnote{https://docs.oracle.com/javase/specs/jls/se7/html/jls-9.html}\\
+The repository which implements the interface in this thesis, stores the serialized data into a file. This could be easily replaced with any other implementation, for example an implementation which stores the data in a DBMS.
+
 
 \begin{lstlisting}[language=Java, caption=Repository Interface]
 public interface Repository<T> {
@@ -487,14 +510,14 @@ In the following paragraphs of this section, terms highlighted with a mono-space
 
 The AFCL Java API in its current state provides classes which define function and control-structure objects, as well as data-flow objects of an AFCL workflow. They can be arranged and nested in a tree structure in order to model the execution flow.
 
-However, the API has some weaknesses. One is that a \texttt{Function} does not have a reference to its \textit{parent object}. The \textit{parent object} can be either a \texttt{Workflow} or \texttt{Compound}, which has its own implementation to access its enclosed functions - there is no common super class or interface providing a common method. The same problem occurs on \texttt{DataIns} \texttt{DataOuts}, and \texttt{DataOutsAtomic}, they do have properties (e.g. \texttt{source}) in common, but each of them has its own implementation to access them. This is also the case for \texttt{AtomicFunction} and \texttt{Compound} and the \texttt{dataIns} property.\\
-Furthermore, tasks like iterating over all \texttt{Function} objects in a \texttt{Workflow} is not supported. 
+However, the API has some weaknesses. One is that a \texttt{Function} does not have a reference to its \textit{parent object}. The \textit{parent object} can be either a \texttt{Workflow} or \texttt{Compound}, which has its own implementation to access its enclosed functions - there is no common super class or interface providing a common method. The same problem occurs on \texttt{DataIns}, \texttt{DataOuts} and \texttt{DataOutsAtomic}, they do have properties (e.g. \texttt{source}) in common, but each of them has its own implementation to access them. This is also the case for \texttt{AtomicFunction} and \texttt{Compound} and the \texttt{dataIns} property.\\
+Furthermore, tasks like iterating over all \texttt{Function} objects in a \texttt{Workflow} are not supported. 
 
-These limitations make it challenging to perform automated modifications and keep the code generic.
+These limitations make it challenging to perform automated modifications while keep the code generic.
 During development, it turned out that the following tasks were required frequently while modifying a workflow programmatically. We define these task  as \textit{general adaptation tasks}:
 \begin{itemize}
 	\item get a \texttt{Function} by its name
-	\item get the \textit{parent object} of a Function
+	\item get the \textit{parent object} of a Function (\texttt{Workflow} or \texttt{Compound})
 	\item get the \texttt{List} which contains a given \texttt{Function}
 	\item get all \texttt{DataIns} and \texttt{DataOuts} which use a given \texttt{Function} as source
 	\item traverse a \texttt{Workflow}, in particular, iterate over all \texttt{Function} objects inside a \texttt{Workflow}
@@ -536,9 +559,9 @@ public static void traverseFunctions(List<Function> functionsList, BiConsumer<Fu
 }
 \end{lstlisting}
 
-As the reader may have noticed, the traverse function accepts Java's \texttt{BiConsumer} as second argument, which makes it very versatile in its usage. The given consumer operation - which can be a function reference or a lambda expression - is executed for every function element in the workflow, providing the element itself and its \textit{parent object} as arguments on traversal. This is indeed very powerful, reduces LOC, therefore improves readability, maintainability and efficiency. The only drawback is that all functions are always visited, because there is no proper way to break out of a lambda expression. There exist approaches by throwing an Exception, however this is considered to be bad practice.
+As the reader may have noticed, the traverse function accepts Java's \texttt{BiConsumer} as second argument, which makes it very versatile in its usage. The given consumer operation - which can be a function reference or a lambda expression - is executed for every function element in the workflow, providing the element itself and its \textit{parent object} as arguments on traversal. This is indeed very powerful, reduces LOC, therefore improves readability, maintainability and efficiency. The only drawback is that all functions are always visited, because there is no proper way to break out of a lambda expression. There exist approaches to break out by throwing an Exception, however this is considered to be bad practice.
 
-For example, getting a function by its name, can be achieved as showed in listing \ref{lst:getFuncByName}. \small Note that mutating variables in lamda expressions is not thread-safe, an \texttt{AtomicReference} is used.
+For example, getting a function by its name, can be achieved as showed in listing \ref{lst:getFuncByName}. \small Note that mutating variables in lamda expressions is not thread-safe, so an \texttt{AtomicReference} is used.
 
 \begin{lstlisting}[language=Java,caption={get a function by its name},label=lst:getFuncByName]
 final AtomicReference<Function> fRef = new AtomicReference<>();
@@ -552,17 +575,21 @@ traverseFunctions(fnList, (fn, parentObj) -> {
 
 As a result, the implementation of the \textit{general adaptation tasks} rely on the \textit{traverse function} and Reflection, which made it possible to overcome mentioned problems of the AFCL Java API for the major part.
 
-The concrete adaptation developed in this thesis, which divides \texttt{ParallelFor} elements into multiple sections in a \texttt{Parallel} element, have been achieved by using a combination of the \textit{general adaptation tasks} and adaptation-specific additional logic.
+The concrete adaptation developed in this thesis, which divides \texttt{ParallelFor} elements into multiple sections in a \texttt{Parallel} element, has been achieved by using a combination of the \textit{general adaptation tasks} and adaptation-specific additional logic.
 
 
 \chapter{Web Interface}
 \label{chap:impl-webinterface}
 
-The layout of the web interface is based on coreUI\footnote{https://coreui.io}, an admin panel template, built on top of the web toolkit Bootstrap\footnote{https://getbootstrap.com}. A clean and nested structure of components, which is typical for a React app, guarantees modularity and forms the whole frontend application. One of the benefits when using React is that the data model displayed to the user maps most of the time nicely to UI components. Basically, the components of the application respect the single responsibility principle\footnote{https://en.wikipedia.org/wiki/Single\_responsibility\_principle}. The main component has four sub-components - where each of them consists again of multiple sub-components - representing the core features of the app.
+In this chapter the user interface and all features of the web application are described in detail.
+
+The layout of the web interface is splitted into a navigation on the left and the main view. The user can change the main view by selecting an item in the left navigation.
+
+In the following sections, the three main components are described.
 
 \section{Dashboard}
 
-The dashboard is the entry point where the user lands after accessing the app. The purpose of this component is to give the user a quick overview of the application, provide short informational texts and links to the specific modules. 
+The dashboard is the entry point where the user lands after accessing the app. The purpose of this component is to give the user a quick overview of the application, provide short informational texts and link to the specific components. 
 
 \begin{figure}[H]
   \centering
@@ -572,7 +599,9 @@ The dashboard is the entry point where the user lands after accessing the app. T
 
 \section{Functions}
 
-A function repository is needed to know about available functions when composing a workflow. An item in the function repository holds the following data: \texttt{name}, \texttt{type} and \texttt{provider}. In the implementation of this thesis, this data is persisted to an internal file.\footnote{see \ref{sec:backend-persistence} for detailed information on how data is persisted}
+The function repository is needed, to know about available functions when composing a workflow.  A list of all functions stored is presented to the user. An item in this list holds the following data: \texttt{name}, \texttt{type} and \texttt{provider}.\\
+The user has the option to remove certain items in the list by clicking on the button with the "trash" icon. Before a function is really deleted, the user has to confirm deletion.
+The user can add new functions by clicking the button "add function" on the upper left.
 
 \begin{figure}[H]
   \centering
@@ -581,18 +610,86 @@ A function repository is needed to know about available functions when composing
 \end{figure}
 
 \section{Editor}
-\par
-The interface of the component responsible for composing workflows is divided into two parts. On the left side is the editor, consisting of a toolbar and a drawing area, on the right side is the property view. In the editor, the user can choose a function from the toolbar to place it in the drawing area below.  For the sake of clarity, each function has a defined shape and style. In the drawing area, these shapes (functions) can then be connected to each other by drag and drop. This leads to a directed graph, which represent the execution flow. The possible connection points (ports) of a shape will be displayed when hovering over it. These ports are input and output for most of the functions. When hovering a port, the port name appears in the tooltip.
-\par
-When selecting a shape in the canvas, the property view changes. It displays each specific property of the selected function, with the ability to change, add or remove properties.
+The interface responsible for composing workflows is divided into two parts. On the left side is the editor, on the right side is the property view. The editor consists of a sidebar (second bar left of figure \ref{fig:editor}), the drawing area (center of figure \ref{fig:editor}) and a toolbar (top of figure \ref{fig:editor}).
 
-Composed workflows are saved to the user's file system by offering a download. The user can then choose the target location.
+In the following, the terms \textit{node}, \textit{cell} or \textit{vertex} refer all to the same meaning: the graphical element which represents a node in the graph.
+
+When selecting a cell in the drawing area, the property view updates and displays information about the selected vertex.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{editor}
   \caption{the editor}
+  \label{fig:editor}
 \end{figure}
+
+\subsection{Sidebar}
+
+The sidebar shows all available graphical elements for composing a workflow. Because the elements have already been technically described in table \ref{tbl:frontend-impl-shapes}, no additional description will be given here.
+
+The user can choose an element from the sidebar by clicking on it, which results in placing a cell of the selected type in the drawing area.
+
+\subsection{Drawing Area}
+
+The drawing area is the part where probably the most user interaction occurs.\\ Cells can be arranged and connected to each other by drag and drop.
+The possible connection points (ports) of a cell will be displayed when hovering over it. These ports are input and output for most of the functions.
+When hovering a port, the port name appears in the tooltip.
+To create a connection between two cells, the output port of the cell can be dragged to an input port of another cell.
+During the connecting process, the application takes care that no invalid graph can be created by validating all constraints mentioned in section \ref{sec:impl-frontend-graphvalidation}. on-the-fly. If the result of the validation is invalid, the target port for the current connection being edited will be disabled, removing the possibility to drag and drop on that port.
+
+\begin{figure}
+\centering
+\begin{subfigure}{.4\textwidth}
+  \centering
+  \includegraphics[width=.4\linewidth]{connect}
+  \caption{Connecting cells}
+  \label{fig:sub1}
+\end{subfigure}
+\begin{subfigure}{.4\textwidth}
+  \centering
+  \includegraphics[width=.4\linewidth]{port-hover}
+  \caption{Hovering over a port}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{graph modeling}
+\label{fig:test}
+\end{figure}
+
+\subsection{Property View}
+
+When the user selects a cell in the drawing area, the property view updates. The property view has two sections. The first (upper) section displays properties of the AFCL object associated with the selected cell. The second (lower) section displays properties of the selected cell itself. Depending on the cell's type (function, control-structure, edge, ...) the displayed information differs.
+
+In the first section, the user can here edit all properties (data input, a.k.a \textit{dataIns}, data output, ...) of the AFCL object associated with the selected cell. Changes at fields inside the property view execute immediately, there is no need to confirm or save those.
+The corresponding properties for each AFCL object are not described here, detailed information about them is available at \citep{online-afcl-dps}.
+
+The cell properties in the second section worth to mention are \textit{name} and \textit{type}. The remaining are mainly for informational and debugging purpose and won't be explained in detail.
+
+\subsection{Toolbar}
+
+To make all actions available to the user, a toolbar is displayed in the top area of the editor. Each button of the toolbar represents one or more actions, which are described in detail in the following.
+
+\subsubsection{Zoom}
+
+The zoom button offers the opportunity to change the scale of the current view in the drawing area. The user can select out of the following values: 50\%, 75\%, 100\%, 125\%, 150\%. The button's label is always the current selected value.
+
+\subsubsection{Undo \& Redo}
+
+With the buttons "Undo" and "Redo", the user can undo or redo actions he/she made in the drawing area. This actions are also available as keyboard shortcuts: \textsf{Ctrl-Z} or \textsf{Ctrl-Y}, respectively.
+
+\subsubsection{Delete}
+
+Selected cells can be removed by clicking the "Delete" button. Alternatively, this can be done with the keyboard shortcut \textsf{Ctrl-Backspace}.
+
+\subsubsection{Validation}
+
+The action behind the "Validate" button validates the constraints described in \ref{sec:impl-frontend-graphvalidation} for each cell in the drawing area. Invalid cells will be marked with a yellow icon. An additional error message is shown in the tooltip when hovering over that icon.
+
+\subsubsection{Load \& Save}
+
+Workflows created earlier using AFCL ToolKit or even existing AFCL workflows can be loaded for visualization or further editing. To load a workflow, the user can click on the "Load" button in the toolbar and choose the desired file in the dialog.
+
+To save a workflow, the user can click on the "Save" button in the toolbar.
+This results in a download offered by the tool. The user can then choose the target location.  When saving a workflow, the desired format can be selected out of XML, JSON or YAML. With XML, additional information about the placement of vertices and edges in the graph is stored. JSON an YAML deliver an AFCL-compliant workflow.
 
 \section{Settings}
 

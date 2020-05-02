@@ -2005,6 +2005,7 @@
     <bcf:citekey order="8">online-afcl-dps</bcf:citekey>
     <bcf:citekey order="9">manuals-mxgraph-user-manual</bcf:citekey>
     <bcf:citekey order="10">online-smashingmagazine-rest-vs-rpc</bcf:citekey>
+    <bcf:citekey order="11">online-afcl-dps</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">
