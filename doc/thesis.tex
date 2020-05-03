@@ -22,7 +22,7 @@
 
 \addbibresource{thesis.bib}
 
-\linespread{1.4}
+\linespread{1.25}
 
 
 % chapters, numbering
@@ -348,7 +348,11 @@ CoreUI is a free admin panel template, based on bootstrap.\footnote{https://core
 
 \subsubsection{Core Application}
 
-A clean and nested structure of React components guarantees modularity and forms the core application. One of the benefits when using React is that the data model displayed to the user maps most of the time nicely to UI components. Primarily, the components of the application respect the single responsibility principle.\footnote{https://en.wikipedia.org/wiki/Single\_responsibility\_principle}
+The core application is divided into multiple modules, where each of them was designed to respect the single responsibility principle.\footnote{https://en.wikipedia.org/wiki/Single\_responsibility\_principle} A clean and nested structure of React components forms the user inteface of the core  application. One of the benefits when using React is that the data model displayed to the user maps most of the time nicely to UI components.
+
+\subsubsection{Connection to the Backend}
+
+\textit{axios} is used to communicate with the backend, by sending HTTP requests to the corresponding backend interface. Data which is sent in the HTTP body, is serialized using JSON, which JavaScript supports out-of-the-box.
 
 \subsubsection{Data model}
 
@@ -444,7 +448,11 @@ What makes XML also very convenient is Java's excellent native support for XML a
 
 \subsubsection{Graph Layouting}
 
-There exists no information in AFCL workflows how to visually arrange the function elements. The constraints This has to be defined 
+When a user loads an AFCL file into the editor, the graphical nodes have be arranged in a way such that the visualization makes sense to the user. There exists no information in AFCL workflows about any visual properties. 
+
+Fortunately, \textit{mxGraph} ships with multiple layouting algorithms.
+For AFCL graphs, the \texttt{mxHierarchicalLayout} algorithm fits best to arrange the graph. This worked pretty well, unless the graph has some container nodes, for which the layouting algorithm broke.
+To overcome this problem, a custom layouting algorithm was developed, which layouts all container elements using \texttt{mxHierarchicalLayout} recursively, beginning at the innermost to the outermost container.
 
 \label{sec:graph-alternatives}
 \subsubsection{Graph Alternatives}
@@ -694,10 +702,12 @@ This results in a download offered by the tool. The user can then choose the tar
 \section{Settings}
 
 
-% interface so that someone can update the yaml file based on 
-% decision
 
 \chapter{Evaluation}
+
+This section evaluates AFCL ToolKit and compares the effort for creating and adapting AFCL workflows using the tool with the effort needed to specify the AFCL workflow manually in a text file or using the Java API.
+
+The \textit{Gate Change Alert} AFCL workflow example from \citep{online-afcl-dps} is used as template. 
 
 % benefit for frontend
 % manually vs modeling -> what is the benefit
