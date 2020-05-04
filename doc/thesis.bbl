@@ -214,6 +214,28 @@
       \verb https://jgraph.github.io/mxgraph/docs/manual.html
       \endverb
     \endentry
+    \entry{books-code-complete-mcconnell}{book}{}
+      \name{author}{1}{}{%
+        {{hash=0a24dd755989d4a28eedb62395b1a514}{%
+           family={McConnell},
+           familyi={M\bibinitperiod},
+           given={Steve},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{0a24dd755989d4a28eedb62395b1a514}
+      \strng{fullhash}{0a24dd755989d4a28eedb62395b1a514}
+      \strng{bibnamehash}{0a24dd755989d4a28eedb62395b1a514}
+      \strng{authorbibnamehash}{0a24dd755989d4a28eedb62395b1a514}
+      \strng{authornamehash}{0a24dd755989d4a28eedb62395b1a514}
+      \strng{authorfullhash}{0a24dd755989d4a28eedb62395b1a514}
+      \field{sortinit}{M}
+      \field{sortinithash}{cfd219b90152c06204fab207bc6c7cab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-0735619678}
+      \field{title}{Code Complete: A Practical Handbook of Software Construction}
+      \field{year}{2004}
+    \endentry
     \entry{reports-workflow-control-patterns-russell}{report}{}
       \name{author}{4}{}{%
         {{hash=f1645e1e99fb959634edc46a4402c490}{%

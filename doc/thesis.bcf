@@ -1995,9 +1995,9 @@
     <bcf:datasource type="file" datatype="bibtex">thesis.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
-    <bcf:citekey order="1">articles-going-serverless-savage</bcf:citekey>
-    <bcf:citekey order="2">articles-rise-of-serverless-castro</bcf:citekey>
-    <bcf:citekey order="3">inproceedings-serverless-beyond-the-cloud-kanso</bcf:citekey>
+    <bcf:citekey order="1">articles-rise-of-serverless-castro</bcf:citekey>
+    <bcf:citekey order="2">inproceedings-serverless-beyond-the-cloud-kanso</bcf:citekey>
+    <bcf:citekey order="3">articles-going-serverless-savage</bcf:citekey>
     <bcf:citekey order="4">articles-rise-of-serverless-castro</bcf:citekey>
     <bcf:citekey order="5">online-what-is-serverless-cloudflare</bcf:citekey>
     <bcf:citekey order="6">thesis-design-serverless-worfklow-system-eyk</bcf:citekey>
@@ -2006,6 +2006,8 @@
     <bcf:citekey order="9">manuals-mxgraph-user-manual</bcf:citekey>
     <bcf:citekey order="10">online-smashingmagazine-rest-vs-rpc</bcf:citekey>
     <bcf:citekey order="11">online-afcl-dps</bcf:citekey>
+    <bcf:citekey order="12">online-afcl-dps</bcf:citekey>
+    <bcf:citekey order="13">books-code-complete-mcconnell</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

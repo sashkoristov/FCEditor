@@ -1,0 +1,74 @@
+\begin{appendix}
+
+
+\chapter{AFCL API functions}
+\label{apx:afcl-functions}
+
+In the following paragraphs of this section, terms highlighted with a mono-spaced font refer to classes or class properties of the AFCL Java API.
+
+The AFCL Java API in its current state provides classes which define function and control-structure objects, as well as data-flow objects of an AFCL workflow. They can be arranged and nested in a tree structure in order to model the execution flow.
+
+However, the API has some weaknesses. One is that a \texttt{Function} does not have a reference to its \textit{parent object}. The \textit{parent object} can be either a \texttt{Workflow} or \texttt{Compound}, which has its own implementation to access its enclosed functions - there is no common super class or interface providing a common method. The same problem occurs on \texttt{DataIns}, \texttt{DataOuts} and \texttt{DataOutsAtomic}, they do have properties (e.g. \texttt{source}) in common, but each of them has its own implementation to access them. This is also the case for \texttt{AtomicFunction} and \texttt{Compound} and the \texttt{dataIns} property.\\
+Furthermore, tasks like iterating over all \texttt{Function} objects in a \texttt{Workflow} are not supported. 
+
+These limitations make it challenging to perform automated modifications while keep the code generic.
+During development, it turned out that the following tasks were required frequently while modifying a workflow programmatically. We define these task  as \textit{general adaptation tasks}:
+\begin{itemize}
+	\item get a \texttt{Function} by its name
+	\item get the \textit{parent object} of a Function (\texttt{Workflow} or \texttt{Compound})
+	\item get the \texttt{List} which contains a given \texttt{Function}
+	\item get all \texttt{DataIns} and \texttt{DataOuts} which use a given \texttt{Function} as source
+	\item traverse a \texttt{Workflow}, in particular, iterate over all \texttt{Function} objects inside a \texttt{Workflow}
+\end{itemize}
+
+The generic requirement was achieved one the one hand by using \textit{Reflection}, on the other hand by developing a generic \textit{traverse function}, shown in listings \ref{lst:traverseWorkflow} and \ref{lst:traverseFunctions}.
+
+\begin{lstlisting}[language=Java,caption={Traverse workflow},label={lst:traverseWorkflow}]
+public static void traverseWorkflow(Workflow wf, BiConsumer<Function, Object> consumer) {
+    traverseFunctions(wf.getWorkflowBody(), consumer, wf);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Java,caption={Traverse functions},label={lst:traverseFunctions}]
+public static void traverseFunctions(List<Function> functionsList, BiConsumer<Function, Object> consumer, Object currentParent) {
+    if (functionsList == null) {
+        return;
+    }
+    for (Function fn : functionsList) {
+        consumer.accept(fn, currentParent);
+        if (fn instanceof IfThenElse) {
+            traverseFunctions(((IfThenElse) fn).getThen(), consumer, fn);
+            traverseFunctions(((IfThenElse) fn).getElse(), consumer, fn);
+        }
+        if (fn instanceof Switch) {
+            for (Case c : ((Switch) fn).getCases()) {
+                traverseFunctions(c.getFunctions(), consumer, fn);
+            }
+        }
+        if (fn instanceof Parallel) {
+            for (Section s : ((Parallel) fn).getParallelBody()) {
+                traverseFunctions(s.getSection(), consumer, fn);
+            }
+        }
+        if (fn instanceof ParallelFor) {
+            traverseFunctions(((ParallelFor) fn).getLoopBody(), consumer, fn);
+        }
+    }
+}
+\end{lstlisting}
+
+As the reader may have noticed, the traverse function accepts Java's \texttt{BiConsumer} as second argument, which makes it very versatile in its usage. The given consumer operation - which can be a function reference or a lambda expression - is executed for every function element in the workflow, providing the element itself and its \textit{parent object} as arguments on traversal. This is indeed very powerful, reduces LOC, therefore improves readability, maintainability and efficiency. The only drawback is that all functions are always visited, because there is no proper way to break out of a lambda expression. There exist approaches to break out by throwing an Exception, however this is considered to be bad practice.
+
+For example, getting a function by its name, can be achieved as showed in listing \ref{lst:getFuncByName}. \small Note that mutating variables in lamda expressions is not thread-safe, so an \texttt{AtomicReference} is used.
+
+\begin{lstlisting}[language=Java,caption={get a function by its name},label=lst:getFuncByName]
+final AtomicReference<Function> fRef = new AtomicReference<>();
+traverseFunctions(fnList, (fn, parentObj) -> {
+    if (fn.getName() != null && fn.getName().equals(name)) {
+        fRef.set(fn);
+    }
+});
+// do something with found function in fRef.get();
+\end{lstlisting}
+
+\end{appendix}
