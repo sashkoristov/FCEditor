@@ -46,33 +46,32 @@
 	\renewcommand{\headrulewidth}{0pt}
 }
 
-%\chapterstyle{hangnum}
+\definecolor{gray}{rgb}{0.4,0.4,0.4}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{cyan}{rgb}{0.0,0.6,0.6}
+\definecolor{green}{rgb}{0,0.6,0}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
 
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
-
-\lstdefinestyle{mystyle}{
-    backgroundcolor=\color{backcolour},   
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
-    numberstyle=\tiny\color{codegray},
-    stringstyle=\color{codepurple},
-    basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=false,         
-    breaklines=true,                 
-    captionpos=b,                    
-    keepspaces=true,                 
-    numbers=left,                    
-    numbersep=5pt,                  
-    showspaces=false,                
-    showstringspaces=false,
-    showtabs=false,                  
-    tabsize=2
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  showstringspaces=false,
+  captionpos=b,
+  commentstyle=\color{gray}\upshape,
+  keywordstyle=\color{blue},       % keyword style
+  stringstyle=\color{mauve},
 }
 
-\lstset{style=mystyle}
+\lstdefinelanguage{XML}
+{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  stringstyle=\color{black},
+  identifierstyle=\color{darkblue},
+  keywordstyle=\color{cyan},
+  morekeywords={xmlns,version,type,name,as,id,style,x,y,width,height}% list your attributes here
+}
 
 % define medatata
 \def\MOrg{Leopold-Franzens-University Innsbruck}
@@ -138,39 +137,40 @@ The aim of this bachelor project is to develop a visual workflow editor, which m
 
 % In the FaaS world, there exist many providers who offer serverless execution of code (functions) in the cloud. Each of them has its own specifications and definitions on how functions are deployed and executed, and how workflows are created and executed.
 "Run code, not Servers" is a recent term in the cloud computing world.
-With the rise of serverless technologies during the last years, \emph{Function-as-a-Service} (FaaS) became more and more popular. This cloud computing concept offers new advantages for software development: very high flexibility, nearly unlimited scalability and pay-per-use pricing. An entire program can be defined by a workflow, which in turn consists of serverless functions, data dependencies and control structure. Workflows, though, can be executed using serverless technology in the cloud.
+With the rise of serverless technologies during the last years, \emph{Function-as-a-Service} (FaaS) became more and more popular. This cloud computing concept offers new advantages for software development: very high flexibility, nearly unlimited scalability and pay-per-use pricing. Entire programs can be defined in workflows and can be executed using serverless technology in the cloud.
 
-However, each provider has its own definitions on how a workflow is expressed, as well as different pricing models, limits and quotas. For example, the maximum number of concurrent function invocations is limited to 1000 concurrent invocations for current FaaS providers at time of writing.\footnote{checked providers: AWS, Google, IBM and Microsoft}
-Additionally, different providers also support different programming languages. That being said, a workflow from one system is not compatible with another, what means, the user is bound to a specific provider (vendor lock-in), if the workflow is considered to be reused.
+However, each serverless provider has its own definitions on how a workflow is expressed, as well as different pricing models, limits and quotas. For example, the maximum number of concurrent function invocations is limited to 1000 concurrent invocations for current FaaS providers at time of writing.\footnote{checked providers: AWS, Google, IBM and Microsoft}
+In addition, different providers also support different programming languages. That being said, a workflow from one system is not compatible with another, what means, the user is bound to a specific provider (vendor lock-in), if the workflow is considered to be reused.
 
-Many FaaS providers offer a tool which supports creation of workflows in their systems. Nevertheless, this is still a complex task. Most of the time, a software developer is needed, because others simply lack the neccessary know-how; but even for developers, this task can be tedious and time-consuming.
+Many FaaS providers offer tools which should support and simplify creation of workflows in their environment. Nevertheless, this is still a complex task. Most of the time, a software developer is needed, because others simply lack the neccessary know-how; and even for developers, this task can be tedious and time-consuming.
 
-The distributed and parallel systems group developed a specification to describe serverless workflows at a high abstraction level. This specification is called \emph{Abstract Function Choreography Language} (AFCL) and was created to overcome weaknesses  of current FaaS platforms; for example incompatibility of workflows between different providers. With the development of the AFCL specification, also a Java API was developed, which focuses on creating AFCL compliant workflows by writing Java code.
+The distributed and parallel systems group developed a specification to describe serverless workflows at a high abstraction level. This specification is called \emph{Abstract Function Choreography Language} (AFCL) and was created to overcome weaknesses  of current FaaS platforms; for example incompatibility of workflows between different providers, which would make also cross-cloud workflow execution possible.
 
 Castro et al. mentions that "One of the major challenges slowing the adoption of serverless is the lack of tools and frameworks" \cite{articles-rise-of-serverless-castro}.\\
 Therefore, the goal for this thesis is to implement a new tool providing a system, able to create AFCL workflows at a high level of abstraction. In addition, visualizing - in particular loading, displaying and editing - of existing AFCL workflows in should be supported.
 The system should also provide an interface for performing workflow adaptations at low-level, based on specific inputs.
 
 This thesis fulfills above goals and overcomes mentioned problems.
-With the developed system, which we call "AFCL ToolKit" in the further text, it is possible for non-developers to create a workflow in less time it would take a developer to write the workflow in AFCL.\\
-Another advantage is that exported workflows are compliant with the API and the rate of human errors are minimized.
-Regarding provider limitations, a scheduler (which is not part of this thesis) should decide to distribute one big concurrent loop - with more iterations than the maximum number of function invocations allowed by the provider - onto multiple FaaS providers. For this purpose, a service is provided which offers an interface for workflow adaptations on low-level.
+With the developed system, which we call "AFCL ToolKit" in the further text, it is possible for non-developers to create a workflow in less time than it would have taken a developer to write the workflow in AFCL.\\
+Another advantage is that workflows created with AFCL ToolKit are guaranteed to be valid AFCL, which minimizes the rate of human errors.
+
+Regarding provider limitations, a scheduler (which is not part of this thesis) would decide to distribute for example one big concurrent loop - with more iterations than the maximum number of function invocations allowed by the provider - onto multiple FaaS providers. For this purpose, a service is provided which offers an interface for specific workflow adaptations.
 
 % with the GUI it is easier to use the API, such that non-developers can develop an application which is compliant with the API.
 % optimization: goal of scheduler is to convert AFCL to CFCL based on the decision which function is executed where. an interface is offered such that the scheduler. Regarding limits of each provider, the scheduler should adapt the workflow to distribute on big loop in multiple providers. For this purpose, we will provide a service, which offers this low-level adaptation.
 
 It is assumed that concrete implementations of the functions are already developed and deployed to a FaaS provider.
 
-%Describing the implementation in the next section 2
+In the next chapter, we will give background information to topics related to this thesis. After that, a detailed 
 
-This thesis is structured in three parts. In the beginning, a short introduction to the serverless topic, followed by explanations and additional information about AFCL and important tools and technologies is given. In the next chapter, implementation, details about the required system and how these goals have been achieved are given. In the chapter 
+In the beginning, an introduction to the serverless topic, followed by explanations and additional information about AFCL and important tools and technologies is given. In the next chapter, implementation, details about the required system and how these goals have been achieved are given. In the chapter 
 %After that 
 
 \label{chap:background}
 \chapter{Background}
 
 This chapter contains important details on the terms and technologies used in this thesis and helps the reader to better understand the further topics.\\
-First of all, the serverless concept, in particular Function-as-a-Service, Serverless Functions and Workflows are explained, before giving a short overview about AFCL. The tools and technologies used for the development are also presented to readers who are not yet familiar with them.
+First of all, the serverless concept, in particular Function-as-a-Service, Serverless Functions and Workflows are explained, before giving a brief overview about AFCL. The tools and technologies used for development are also presented to readers who are not yet familiar with them.
 
 \section{Serverless Computing}
 
@@ -243,7 +243,7 @@ The \textit{node package manager} is the world's largest software registry, wher
 
 \subsection{ECMAScript}
 
-The scripting language specification \textit{ECMAScript} (ES) was created to standardize JavaScript. With the release of ES6 (also known as \textit{ECMAScript 2015}), features like class declarations, module imports and arrow function expressions became possible. After ES6, every year a new edition of the ECMAScript standard was finalized and released, offering new features. Worth mentioning here is the rest/spread operator released with ES9, which was used a lot in this thesis.
+The scripting language specification \textit{ECMAScript} (ES) was created to standardize JavaScript. With the release of ES6 (also known as ECMAScript 2015), features like class declarations, module imports and arrow function expressions became possible. After ES6, every year a new edition of the ECMAScript standard was finalized and released, offering new features. Worth mentioning here is the rest/spread operator released with ES9, which was used a lot in this thesis.
 
 \subsection{Babel}
 Since current browsers only have partial support of ECMAScript, a \textit{transcompiler} or \textit{transpiler} is needed to transform the ECMAScript source code to JavaScript, which common browsers are capable of interpreting.
@@ -254,12 +254,12 @@ Since current browsers only have partial support of ECMAScript, a \textit{transc
 CSS, in its pure form, reaches its limits when one thinks about using variables, functions or nested rules. \textit{SASS} is a stylesheet language, which is\footnote{https://sass-lang.com} - similiar to ES - compiled to CSS and offers the mentioned and even more features.
 A lot of CSS Frameworks also provide their source code in SASS, often served with a large variable set which makes customization easy.
 
-\chapter{Implementation}
+\chapter{AFCL ToolKit}
 
-This chapter gives the reader a detailed overview over the system architecture, the system design, including evaluations for technology decicions for specific tasks.
+This chapter gives the reader a detailed overview over the system architecture and the system design, including evaluations for technology decicions for specific tasks.
 
-AFCL ToolKit should not only visualize AFCL Workflows, but also give non-developers the opportunity to create and edit workflows through a Graphical User Interface (GUI). This GUI ships with a powerful editor, including additional features like real-time validation, versioning (change history), clipboard (copy-paste) and automatic layouting.\\
-Furthermore, workflows can be adapted at low-level in order to split large parallel loops - for example loops with more iterations than allowed by current providers - into several loops running concurrently. By doing this, AFCL ToolKit also adapts  all existing data flow to the new structure.
+AFCL ToolKit should not only visualize AFCL Workflows, but also give non-developers the opportunity to create and edit workflows through a Graphical User Interface (GUI). This GUI ships with a powerful editor, including additional features like real-time validation, change history (versioning), clipboard (copy-paste) and automatic layouting.\\
+Furthermore, workflows can be adapted at low-level in order to divide large parallel loops - for example loops with more iterations than allowed by current providers - into several loops which run in parallel. By doing this, AFCL ToolKit also adapts  all existing data flow to respect the new structure.
 
 \section{System Architecture}
 % what was built
@@ -272,10 +272,9 @@ Furthermore, workflows can be adapted at low-level in order to split large paral
 
 % optional 
 
-AFCL ToolKit is built on top of two sub systems which are operating mostly decoupled from each other. On the one hand there is the backend, responsible for low-level operations on workflows and persistence of function data. On the other hand is the frontend with the GUI, responsible for user interaction, data visualization and file I/O.\\
+AFCL ToolKit is built on top of two sub systems which are operating mostly decoupled from each other. On the one hand there is the backend, responsible for low-level operations persistence of function data.\\
+On the other hand is the frontend with the GUI, responsible for user interaction, data visualization and file I/O.\\
 Those two sub systems interact with each other by sharing JSON-serialized objects through an API the backend provides and the frontend consumes.
-
-Note that in this thesis, the whole frontend is served by the backend's included web server for reasons of simplicity. But technically, the frontend could be delivered from any other web server.
 
 % put scheduler on the left side in this graphic
 % dashed lines / transparency interface for later
@@ -294,9 +293,9 @@ Note that in this thesis, the whole frontend is served by the backend's included
 
 % explain user's actions, how the system works ...
 
-The frontend displays and controls the application's user interface. Its core component is the workflow editor, which is responsible for visualizing workflow data and provides a drawing area with additional control elements, allowing the user to compose and edit workflows. 
+The frontend displays and controls the application's user interface. Its core component is the workflow editor, which is responsible for visualizing workflow data and provides a drawing area, allowing the user to compose and edit workflows in WYSIWYG manner.\footnote{https://en.wikipedia.org/wiki/WYSIWYG}
 
-The frontend allows the user to load, create, edit and save AFCL workflows using an editor, which visualizes the current workflow as a graph. The editing is constantly validated by a set of constraints to ensure valid workflows. The editor includes an action history which enables undo and redo, as well as a clipboard for copy and paste.
+The editor allows the user to load, create, edit and save AFCL workflows (YAML or JSON), which visualizes the current workflow as a graph. While editing, actions are constantly validated to a set of constraints which ensures workflows validity. The editor includes an action history which enables undo and redo, as well as a clipboard for copy and paste.
 
 All features of the web-based user interface are described in detail in section \ref{chap:impl-webinterface}.
 
@@ -367,11 +366,11 @@ CoreUI is a free admin panel template, based on bootstrap.\footnote{https://core
 
 \subsubsection{Core Application}
 
-The core application is divided into multiple modules, where each of them was designed to respect the single responsibility principle.\footnote{https://en.wikipedia.org/wiki/Single\_responsibility\_principle} A clean and nested structure of React components forms the user inteface of the core  application. One of the benefits when using React is that the data model displayed to the user maps most of the time nicely to UI components.
+The core application is divided into multiple modules, where each of them was designed to respect the single responsibility principle.\footnote{https://en.wikipedia.org/wiki/Single\_responsibility\_principle} A clean and nested structure of React components forms the user interface of the core  application. One of the benefits when using React is that the data model displayed to the user maps most of the time nicely to UI components.
 
 \subsubsection{Connection to the Backend}
 
-\textit{axios} is used to communicate with the backend, by sending HTTP requests to the corresponding backend interface. Data which is sent in the HTTP body, is serialized using JSON, which JavaScript supports out-of-the-box.
+\textit{axios} is used to communicate with the backend, by sending HTTP requests to the corresponding backend endpoint. Data which is sent in the HTTP body, is serialized using JSON, which JavaScript supports out-of-the-box.
 
 \subsubsection{Data model}
 
@@ -388,7 +387,9 @@ The authors of mxGraph state:\\
 ``mxGraph is pretty much feature complete, production tested in many large enterprises and stable for many years. We actively fix bugs and add features [...].''
 \end{quote}
 
-In mxGraph, vertices and edges are represented by an \texttt{mxCell} model, which stores information about the cell's position, dimension, geometry and style.
+\subsubsection{Graph model}
+
+In mxGraph, vertices and edges are represented by an \texttt{mxCell} model, which stores information about the position, dimension, geometry and style of the visual element. The \texttt{mxCell} class has been subclassed in a custom class \texttt{Cell}, in order to add user defined logic and an additional \texttt{type} property.
 
 \begin{figure}[H]
   \centering
@@ -397,12 +398,25 @@ In mxGraph, vertices and edges are represented by an \texttt{mxCell} model, whic
   \caption{\texttt{mxCell} model}
 \end{figure}
 
-% \texttt{mxCell} instances are controlled by the \texttt{mxGraphModel}, its visual representation is rendered by \texttt{mxCellRenderer}.
-Additionally, a \textit{user object} can be associated with a \texttt{mxCell} through the \texttt{value} property. User objects give the graph its context, they store the business logic associated with the visual part. \cite{manuals-mxgraph-user-manual} For simple cases, the user object may be a string to display the cell's label. In more complex applications, the user object may be an object and some property of that object will generally be the label that the visual cell displays. In this application, the cell's user objects are instances of the ported AFCL classes, and the function name of the AFCL object is used as the label, respectively.
+In the further text, the term \textit{cell} refers to the visual element (which can be a vertex or an edge) in the graph, which represents always an instance of \texttt{Cell}, respectively.
 
-The \texttt{mxCell} class has been subclassed in a custom class \texttt{Cell}, in order to have an additional \texttt{type} property.\\
+\subsubsection{Graph context}
 
-The following table shows the implemented \texttt{Cell} types which are used as graphical elements representing a node in the graph. Beside a short description, the type of the associated user object is denoted.
+% \texttt{mxCell} instances are controlled by the \texttt{mxGraphModel}, its visual representation is rendered by \texttt{mxCellRenderer}
+
+A \textit{user object} can be associated with a \texttt{mxCell} through the \texttt{value} property. User objects give the graph its context, they store the business logic associated with the visual part. \cite{manuals-mxgraph-user-manual} For simple cases, the user object may be a string to display the cell's label. In more complex applications, the user object may be an object and some property of that object will generally be the label that the visual cell displays.\\
+In this application, the cell's user objects are instances of the ported AFCL classes, and the function name of the AFCL object is used as the label.
+
+\begin{figure}[H]
+  \centering
+  \vspace{0.5cm}
+  \includegraphics[]{cell-user-objects}
+  \caption{Graph example: Cells with their associated user objects}
+\end{figure}
+
+\newpage
+
+The following table shows the implemented \texttt{Cell} types which are used as visual elements representing a node in the graph. Beside a short description, the type of the associated user object is denoted.
 
 \begin{table}[H]
    \centering
@@ -427,9 +441,11 @@ The following table shows the implemented \texttt{Cell} types which are used as 
 \makecell{\includegraphics[width=50pt,height=32pt]{cell-compound} \\ \textsf{ParallelFor}}  & \makecell{A container, where each child cell\\ is meant to be executed in a parallel for loop.} & \texttt{ParallelFor} * \\
 \hline
 \end{tabular}
-\caption{Implemented Shapes, *: AFCL Object}
+\caption{Implemented Cells, *: AFCL Object}
 \label{tbl:frontend-impl-shapes}
 \end{table}
+
+\newpage
 
 \subsubsection{Graph Validation}
 \label{sec:impl-frontend-graphvalidation}
@@ -468,6 +484,26 @@ Due the fact that the user cannot even create an invalid workflow in terms of ex
 
 The visual representation of the workflow and the included data targets human-readability. This data needs to be put into another, proper format for storing. mxGraph provides built-in support for converting the visual representation to XML. An advantage of using XML over JSON is that constructor names (class names) are mapped to the XML node names, no additional property is required.
 What makes XML also very convenient is Java's excellent native support for XML and XPath on the backend side. The XML-encoded workflow is converted on backend-side internally to an AFCL workflow.
+
+\begin{lstlisting}[language=XML,caption={Example of a XML-encoded Workflow.},label={lst:xml-workflow-example}]
+<Workflow name="Untitled">
+  <Array as="dataIns" />
+  <Array as="dataOuts" />
+  <Array as="body">
+    ...
+    <Cell id="4" style="fn" type="AtomicFunction" ...>
+      <AtomicFunction name="f1" type="f1Type" as="value">
+        <Array as="properties" />
+        <Array as="constraints" />
+        <Array as="dataIns" />
+        <Array as="dataOuts" />
+      </AtomicFunction>
+      <mxGeometry x="40" y="40" width="88" height="32" as="geometry" />
+    </Cell>
+    ...
+  </Array>
+</Workflow>
+\end{lstlisting}
 
 % example of xml what information is stored 
 
@@ -546,10 +582,37 @@ These functions can be found at \ref{apx:afcl-functions}.
 % explain here the steps needed for the concrete adaptation
 %
 
-As a result, the implementation of the \textit{general adaptation tasks} rely on the \textit{traverse function} and Reflection, which made it possible to overcome mentioned problems of the AFCL Java API for the major part.
+The concrete workflow adaptation developed in this thesis is to divide \texttt{ParallelFor} elements into multiple sections in a \texttt{Parallel} element.
+To achieve this, the following steps were neccesary:
 
-The concrete adaptation developed in this thesis, which divides \texttt{ParallelFor} elements into multiple sections in a \texttt{Parallel} element, has been achieved by using a combination of the \textit{general adaptation tasks} and adaptation-specific additional logic.
+\textbf{Preparation}
+\begin{enumerate}
+\item get \texttt{ParallelFor} which will be divided
+\item create new \texttt{Parallel}
+\item replace \texttt{ParallelFor} with \texttt{Parallel}
+\item move data items (\texttt{dataIns}, \texttt{dataOuts}) from new \texttt{ParallelFor} to created \texttt{Parallel}
+\item generate data flow from new \texttt{Parallel} to \texttt{ParallelFor}
+\item create a new \texttt{DataOuts} to collect output data from inner branches
+\end{enumerate}
 
+\textbf{Dividing}
+\begin{enumerate}
+\setcounter{enumi}{6}
+\item for each branch:
+\begin{enumerate}
+\item clone \texttt{ParallelFor}
+\item set \texttt{LoopCounter} of cloned element according to input
+\item rename all functions in created branch (includes adjusting source of all subsequent \texttt{DataIns} and \texttt{DataOuts}), 
+\item add output data to the prepared \texttt{DataOuts} from 6.
+\end{enumerate}
+\end{enumerate}
+
+\textbf{Adjusting}
+\begin{enumerate}
+\setcounter{enumi}{7}
+\item set prepared \texttt{DataOuts} to created \texttt{Parallel}
+\item adjust source of all subsequent \texttt{DataIns}/\texttt{DataOuts}
+\end{enumerate}
 
 \chapter{Web Interface}
 \label{chap:impl-webinterface}
@@ -585,7 +648,7 @@ New functions can be added by clicking the button "add function" on the upper le
 \section{Editor}
 The interface responsible for composing workflows is divided into two parts. On the left side is the editor, on the right side is the property view. The editor consists of a sidebar (second bar left of figure \ref{fig:editor}), the drawing area (center of figure \ref{fig:editor}) and a toolbar (top of figure \ref{fig:editor}).
 
-In the following, the terms \textit{node}, \textit{cell} or \textit{vertex} refer all to the same meaning: the graphical element which represents a node in the graph.
+In the following, the terms \textit{node}, \textit{cell} or \textit{vertex} refer all to the same meaning: the visual element which represents a node in the graph.
 
 \begin{figure}[H]
   \centering
