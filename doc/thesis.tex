@@ -161,9 +161,10 @@ Regarding provider limitations, a scheduler (which is not part of this thesis) w
 
 It is assumed that concrete implementations of the functions are already developed and deployed to a FaaS provider.
 
-In the next chapter, we will give background information to topics related to this thesis. After that, a detailed 
+In the next chapter, we will give background information to topics related to this thesis. After that, we will look closer at the implementation af AFCL ToolKit, in particular the system architecture and design, before the application's interface is presented and explained. 
 
-In the beginning, an introduction to the serverless topic, followed by explanations and additional information about AFCL and important tools and technologies is given. In the next chapter, implementation, details about the required system and how these goals have been achieved are given. In the chapter 
+After that, we evaluate AFCL ToolKit, which clarifies the benefit of the developed system.
+
 %After that 
 
 \label{chap:background}
@@ -411,7 +412,7 @@ In this application, the cell's user objects are instances of the ported AFCL cl
   \centering
   \vspace{0.5cm}
   \includegraphics[]{cell-user-objects}
-  \caption{Graph example: Cells with their associated user objects}
+  \caption{A graph showing cells and their associated user objects}
 \end{figure}
 
 \newpage
@@ -548,8 +549,9 @@ Function data is stored on server-side, thus its API is a REST-based implementat
 \label{sec:backend-decoding}
 
 Since the frontend encodes its visual representation of the workflow (the graph) in XML, this data has to be converted to AFCL Java objects in order process it with the AFCL Java API.
-The excellent out-of-the support of Java for XML documents turned out to be very convenient. With the power of XPath expressions, it was quite easy to operate on the XML structure and extract the relevant information to convert the XML-based workflow into an AFCL workflow. Listing \ref{lst:xpath-example} shows an example of a simple XPath expression, which finds all nodes whose node name equals \textsf{AtomicFunction}, having a \textsf{name} attribute whose value equals 'getFlight'.\\
+The excellent out-of-the support of Java for XML documents turned out to be very convenient. With the power of XPath expressions, it was quite easy to operate on the XML structure and extract the relevant information to convert the XML-based workflow into an AFCL workflow. Listing \ref{lst:xpath-example} shows an example of a simple XPath expression, which finds all nodes whose node name equals \textsf{AtomicFunction}, having a \textsf{name} attribute whose value equals 'getFlight'.
 
+\vspace{0.25cm}
 \begin{lstlisting}[caption={Example of an XPath expression.},label={lst:xpath-example}].
 //AtomicFunction[@name='getFlight']
 \end{lstlisting}
@@ -560,7 +562,7 @@ The excellent out-of-the support of Java for XML documents turned out to be very
 The storing of function data is abstracted from the user and persisting of the data is handled internally. For this purpose a \textit{repository interface} was created on the backend side to be capable of supporting any data source.\footnote{https://docs.oracle.com/javase/specs/jls/se7/html/jls-9.html}\\
 The repository which implements the interface in this thesis, stores the serialized data into a file. This could be easily replaced with any other implementation, for example an implementation which stores the data in a DBMS.
 
-
+\vspace{0.25cm}
 \begin{lstlisting}[language=Java, caption=Repository Interface]
 public interface Repository<T> {
     public Collection<T> findAll();
@@ -572,10 +574,16 @@ public interface Repository<T> {
 }
 \end{lstlisting}
 
-\subsubsection{Adaptation}
-The adaptation service, which has been developed in context of this thesis, is designed to be as generic as possible, such that certain functions can be reused later or in other projects for any other kind of workflow modifications. 
+\newpage
 
-These functions can be found at \ref{apx:afcl-functions}.
+\subsubsection{Adaptation}
+\label{sec:backend-adaptation}
+
+Modifications on a workflow, programmatical or manual, consist always of operations modifying control structure (execution flow) and operations modifying data input and/or output elements associated to control structure elements (data flow). Most of the time, a modification on a workflow's execution flow (e.g. by adding, modifying or removing control structure) entails modifications on dependent data elements.
+
+In order to support not only one specific kind of workflow adaptation, a service providing general workflow operations has been developed. The service is designed to be as generic as possible, such that certain functions can be reused later or in other projects for any other kind of workflow modifications. 
+
+Part of these functions can be found in \ref{apx:afcl-functions}.
 
 % put into appendix
 
@@ -583,31 +591,53 @@ These functions can be found at \ref{apx:afcl-functions}.
 %
 
 The concrete workflow adaptation developed in this thesis is to divide \texttt{ParallelFor} elements into multiple sections in a \texttt{Parallel} element.
-To achieve this, the following steps were neccesary:
+Note that the \texttt{loopCounter} property on the newly created \texttt{ParallelFor} elements is adjusted such that the iterations of the original loop are distributed onto the newly created ones.\\
+Figure \ref{fig:workflow-adaptation} visualizes the core part of this adaptation in its simplest form.
+This adaptation is useful when the number of iterations reaches the maximum number of concurrent function invocations of the FaaS provider. To be able to scale independently of this limitation, the execution of the inner loops of the adapted workflow could be distributed over multiple FaaS systems. In addition, this adaptation can also save costs and may increase performance.
 
-\textbf{Preparation}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.28\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{adaptation-before}
+  \caption{before adaptation}
+\end{subfigure}
+\begin{subfigure}{.54\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{adaptation-after}
+  \caption{after dividing the parallelFor into two parallelFor elements}
+\end{subfigure}
+\caption{workflow adaptation}
+\label{fig:workflow-adaptation}
+\end{figure}
+
+While the mentioned steps modify the workflow's execution flow, it is important that the data-flow has to be updated according to the new structure, to ensure the workflow's execution works as it did before the modification. This includes the creation and rearrangement of associated \texttt{DataIns} and \texttt{DataOuts} elements, as well as updating the \texttt{source} property on all affected elements. 
+
+The whole procedure can be structured into three logical phases, consisting of different tasks.
+
+\textbf{Phase A - Preparation}
 \begin{enumerate}
 \item get \texttt{ParallelFor} which will be divided
 \item create new \texttt{Parallel}
 \item replace \texttt{ParallelFor} with \texttt{Parallel}
-\item move data items (\texttt{dataIns}, \texttt{dataOuts}) from new \texttt{ParallelFor} to created \texttt{Parallel}
+\item move data items (\texttt{dataIns}, \texttt{dataOuts}) from \texttt{ParallelFor} to created \texttt{Parallel}
 \item generate data flow from new \texttt{Parallel} to \texttt{ParallelFor}
 \item create a new \texttt{DataOuts} to collect output data from inner branches
 \end{enumerate}
 
-\textbf{Dividing}
+\textbf{Phase B - Dividing}
 \begin{enumerate}
 \setcounter{enumi}{6}
 \item for each branch:
 \begin{enumerate}
 \item clone \texttt{ParallelFor}
 \item set \texttt{LoopCounter} of cloned element according to input
-\item rename all functions in created branch (includes adjusting source of all subsequent \texttt{DataIns} and \texttt{DataOuts}), 
+\item rename all functions in created branch (includes adjusting \texttt{source} of all subsequent affected \texttt{DataIns} and \texttt{DataOuts}), 
 \item add output data to the prepared \texttt{DataOuts} from 6.
 \end{enumerate}
 \end{enumerate}
 
-\textbf{Adjusting}
+\textbf{Phase C - Adjusting}
 \begin{enumerate}
 \setcounter{enumi}{7}
 \item set prepared \texttt{DataOuts} to created \texttt{Parallel}
@@ -690,7 +720,7 @@ The user can choose an element from the sidebar by clicking on it, which results
 \begin{figure}[H]
 \centering
 \includegraphics[width=.4\textwidth]{sidebar}
-\caption{the sidebar with open dropdown}
+\caption{the sidebar with a dropdown open}
 \label{fig:editor-sidebar}
 \end{figure}
 
@@ -705,7 +735,14 @@ The cell properties in the second section worth to mention are \textit{name} and
 
 \subsection{Toolbar}
 
-To make all actions available to the user, a toolbar is displayed in the top area of the editor. Each button of the toolbar represents one or more actions, which are described in detail in the following.
+To make all actions available to the user, a toolbar is displayed in the top area of the editor. Each button of the toolbar represents an action, which are described in detail in the following.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{toolbar}
+\caption{the toolbar}
+\label{fig:editor-toolbar}
+\end{figure}
 
 \subsubsection{Zoom}
 
@@ -713,16 +750,17 @@ The zoom button offers the opportunity to change the scale of the current view i
 
 \subsubsection{Action History (Undo \& Redo)}
 
-With the buttons "Undo" and "Redo", the user can undo or redo actions he/she made in the drawing area. This actions are also available as keyboard shortcuts: \textsf{Ctrl-Z} or \textsf{Ctrl-Y}, respectively.
+With the buttons \includegraphics[height=12pt]{editor-toolbar-undo} (undo) and \includegraphics[height=12pt]{editor-toolbar-redo} (redo), the user can undo or redo actions he/she made in the drawing area. This actions are also available as keyboard shortcuts: \textsf{Ctrl-Z} or \textsf{Ctrl-Y}, respectively.
 
 \subsubsection{Clipboard (Copy \& Paste)}
 
-The editor includes a clipboard. It is possible to transfer selected cells using the button "Copy" or the keyboard shortcut \textsf{Ctrl-C} to the clipboard.
-The contents of the clipboard can then be pasted by using the "Paste" button or the keyboard shortcut \textsf{Ctrl-V}
+The editor includes a clipboard. It is possible to transfer selected cells using the \includegraphics[height=12pt]{editor-toolbar-clone}
+ button (copy) or the keyboard shortcut \textsf{Ctrl-C} to the clipboard.
+The contents of the clipboard can then be pasted by using the \includegraphics[height=12pt]{editor-toolbar-clipboard} button (paste) or the keyboard shortcut \textsf{Ctrl-V}
 
 \subsubsection{Delete}
 
-Selected cells can be removed by clicking the "Delete" button. Alternatively, this can be done with the keyboard shortcut \textsf{Backspace}.
+Selected cells can be removed by clicking the \includegraphics[height=12pt]{editor-toolbar-trash} button (delete). Alternatively, this can be done with the keyboard shortcut \textsf{Backspace}.
 
 \subsubsection{Validation}
 
@@ -758,17 +796,19 @@ The purpose of the Settings component is to provide an interface to view and adj
 
 \chapter{Evaluation}
 
-This section evaluates AFCL ToolKit and compares the effort for creating and adapting AFCL workflows using the tool with the effort needed to write the AFCL workflow manually in a text file or using the Java API.
+This section evaluates AFCL ToolKit and compares the effort for creating and adapting AFCL workflows using the tool with the effort needed to write or adapt the AFCL workflow manually in a text file or using the Java API.
 
-The \textit{Gate Change Alert}  (GCA), and \textit{Anomaly Detection} (AD) and \textit{Genome} (GEN) AFCL workflow examples from \citep{online-afcl-dps} are used as evaluation data.
+The \textit{Gate Change Alert}  (GCA), and \textit{Anomaly Detection} (AD) and \textit{Genome} (GEN) AFCL workflow examples from \citep{online-afcl-dps} are used as evaluation models.
 
-In the following, only the time it took to get the final result - which is the AFCL workflow in a YAML file - is evaluated.
+It has to be noted, that only the time it took to get the final result - which is an AFCL workflow in a YAML file - is evaluated.
 The learning time to understand the AFCL function choreography system, the Java API or to become familiar with AFCL Toolkit is not considered in this study.
 
 \section{Methodology}
 
+In this section, the methodology for the evaluations in sections \ref{sec:evaluation-composing} and \ref{sec:evaluation-adapting} is explained:
+
 One computer science student learned the workflow language AFCL, its Java-based API and knows how to use AFCL ToolKit.
-Then the different workflows are composed by
+Then the different workflows are composed (section \ref{sec:evaluation-composing} or adapted (section \ref{sec:evaluation-adapting}) by
 \begin{enumerate}[label={(\arabic*)}]
 	\item editing the text file manually (writing YAML by hand),
 	\item using the AFCL Java API,
@@ -778,16 +818,17 @@ Then the different workflows are composed by
 The results are then compared to each other.
 
 \section{Composing Workflows}
+\label{sec:evaluation-composing}
 
-In this section, the development effort of the three example workflows is measured, using the three introduced methods to create them.
+In this section, the development effort of the three example workflows is measured, using the three introduced methods.
 
 It took approximately 55 minutes to compose the GCA workflow with method (1), approximately 25 minutes with method (2) and approximately 22 minutes with method (3).\\
 For the AD workflow it took approximately 75 minutes with method (1), approximately 42 minutes with method (2) and approximately 37 minutes with method (3).\\
 The GEN workflow took approximately 49 minutes with method (1), approximately 24 minutes with method (2) and approximately 20 minutes with method (3).
 
-Figure \ref{fig:evaluation-developmenteffort} shows a visualization of the evaluation.
+Figure \ref{fig:evaluation-composing} shows a visualization of the evaluation.
 
-\begin{figure}
+\begin{figure}[h]
 \begin{tikzpicture}
 \begin{axis}[
     ybar,
@@ -806,26 +847,48 @@ Figure \ref{fig:evaluation-developmenteffort} shows a visualization of the evalu
 \end{axis}
 \end{tikzpicture}
 \caption{Evaluated development effort for creating GCA, AD and GEN AFCL workflows using different methods.\\ \small{method (1): edit text file manually, method (2): AFCL Java API, method (3): AFCL ToolKit}}
-\label{fig:evaluation-developmenteffort}
+\label{fig:evaluation-composing}
 \end{figure}
 
 % toolkit has to insert functions first
 % java has to set up a project with AFCL API JAR
-These evaluations show that using AFCL ToolKit can speed up the process for creating AFCL workflows significantly.\\
+This evaluation shows, that using AFCL ToolKit can speed up the process for creating AFCL workflows significantly.\\
 A big benefit of using AFCL ToolKit over using the Java API is, that anyone with knowledge about AFCL could create the workflow, there is no need to be a programmer.\\
 Additionally, human errors are minimized. According to \cite{books-code-complete-mcconnell} the error rate of a developer is between 1.5\% and 5\% in average.
 With AFCL ToolKits' immediate validation while creating a workflow, such errors are minimized further. 
 
 \section{Adapting Workflows}
+\label{sec:evaluation-adapting}
 
-In this section, the development effort for adapting an existing workflow is measured.
+In this section, the effort for doing a workflow adaptation as described in \ref{sec:backend-adaptation} is measured.
 
-% benefit for frontend
-% manually vs modeling -> what is the benefit
-% compare manually vs modeling (time)
-% for a workflow of size X benefit is 30%
-% more quality typo-safe
-% if there is time: paper, how many errors developers do in average -> bugs will be eliminated
+For this evaluation, it is sufficient only measure the effort needed to divide a loop manually into two loops. Since the procedure would be the same for every additional loop, the total approximated effort can then be determined by multiplying the effort which was needed for a divide into two loops, with the number of divides.
+In the following, we will only consider the GCA workflow example, since this includes one \texttt{ParallelFor} loop.
+The effort is also dependent of the number of affected data elements in the subsequent functions, which have to be adjusted. In the GCA workflow, there are twelve data elements which needs update after a divide.
+
+To divide the loop of the GCA workflow into two loops, it took approximately 27 minutes using method (1), approximately 19 minutes using method (2) and 1 minute using method (3).
+
+\begin{figure}[h]
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    enlargelimits=0.15,
+    legend style={at={(0.5,-0.25)},
+      anchor=north,legend columns=-1},
+    ylabel={development effort [min]},
+    xlabel={number of divides},
+    xtick=data,
+    nodes near coords align={vertical},
+    ]
+\addplot coordinates {(2,27) (3,54) (4,81) (5,108)};
+\addplot coordinates {(2,19) (3,36) (4,53) (5,71)};
+\addplot coordinates {(2,1) (3,2) (4,2) (5,2)};
+\legend{method (1),method (2),method (3)}
+\end{axis}
+\end{tikzpicture}
+\caption{Evaluated development effort for adapting workflows using different methods.\\ \small{method (1): edit text file manually, method (2): AFCL Java API, method (3): AFCL ToolKit}}
+\label{fig:evaluation-adaptation}
+\end{figure}
 
 % benefit for backend
 % split parallel loops to n loops
