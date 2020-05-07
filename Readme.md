@@ -1,4 +1,6 @@
-# Thesis
+# Modeling of Serverless Application Workflows
+
+A Bachelor's thesis project of Ben Walch.
 
 ## Team
 
@@ -8,8 +10,6 @@ Ben Walch <b.walch@student.uibk.ac.at>
 Sasko Ristov <sashko@dps.uibk.ac.at>
 
 ## Project
-
-### Modeling of Serverless Application Workflows 
 
 "Run code, not Server" is the most recent term of cloud computing providers.
 With the rise of the serverless technology during the last years, _FaaS_ became more and more popular.

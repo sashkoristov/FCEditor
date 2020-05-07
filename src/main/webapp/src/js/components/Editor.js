@@ -264,8 +264,8 @@ class Editor extends React.Component {
         this._keyHandler.bindKey(46, this._removeSelected);
         this._keyHandler.bindKey(8, this._removeSelected);
 
-        this._keyHandler.bindControlKey(90, () => this._undoManager.undo());
-        this._keyHandler.bindControlKey(89, () => this._undoManager.redo());
+        this._keyHandler.bindControlKey(90, this._undo());
+        this._keyHandler.bindControlKey(89, this._redo());
 
         this._keyHandler.bindControlKey(67, () => mxClipboard.copy(graph));
         this._keyHandler.bindControlKey(86, () => mxClipboard.paste(graph));
@@ -467,6 +467,16 @@ class Editor extends React.Component {
 
     _redo = () => {
         this._undoManager.redo();
+    };
+
+    _copy = () => {
+        const {graph} = this.state;
+        mxClipboard.copy(graph);
+    };
+
+    _paste = () => {
+        const {graph} = this.state;
+        mxClipboard.paste(graph);
     };
 
     _doLayout = () => {
@@ -880,14 +890,14 @@ class Editor extends React.Component {
 
     render() {
         return <div className="editor-component">
-            {this.state.isLoading && <div class="loading-overlay"><Spinner size="lg" /></div>}
+            {this.state.isLoading && <div className="loading-overlay"><Spinner size="lg" /></div>}
             <Row className="no-gutters flex-grow-1">
                 <Col className="editor-graph-view">
                     <div className="component-view-header">
                         Graph
                         <Toolbar editor={this} />
                         <Button className="adaptation-btn" color="info" onClick={this._onAdaptWorkflowClicked}>
-                            <span class="cil-diamond"></span> Adapt
+                            <span className="cil-diamond"></span> Adapt
                         </Button>
                     </div>
                     <div className="graph-wrapper animated fadeIn">
