@@ -613,7 +613,7 @@ This adaptation is useful when the number of iterations reaches the maximum numb
 
 While the mentioned steps modify the workflow's execution flow, it is important that the data-flow has to be updated according to the new structure, to ensure the workflow's execution works as it did before the modification. This includes the creation and rearrangement of associated \texttt{DataIns} and \texttt{DataOuts} elements, as well as updating the \texttt{source} property on all affected elements. 
 
-The whole procedure can be structured into three logical phases, consisting of different tasks.
+The whole procedure can be structured into three logical phases, consisting of the following tasks.
 
 \textbf{Phase A - Preparation}
 \begin{enumerate}
@@ -787,7 +787,9 @@ The action behind the "Validate" button validates the constraints described in \
 Workflows created by AFCL ToolKit (XML) or even existing AFCL workflows (YAML/JSON) can be loaded in order to visualize or doing further editing. To load a workflow, the user can click on the "Load" button in the toolbar and choose the desired file in the dialog.
 
 To save a workflow, the user can click on the "Save" button in the toolbar.
-This results in a download offered by the tool. The user can then choose the target location.  When saving a workflow, the desired format can be selected out of XML, JSON or YAML. With XML, additional information about the placement of vertices and edges in the graph is stored. JSON an YAML deliver an AFCL-compliant workflow.
+This results in a download offered by the tool. The user can then choose the target location.  When saving a workflow, the desired format can be selected out of XML, JSON or YAML.\\
+With XML, additional graphical information is stored among the serialized workflow, what means that the workflow will be exactly in the same state when opened later.\\
+JSON an YAML deliver an AFCL compliant workflow.
 
 \section{Settings}
 
@@ -901,7 +903,22 @@ To divide the loop of the GCA workflow into two loops, it took approximately 27 
 
 % Related work (optional)?
 
-\chapter{Conclusion and Future Work}
+\chapter{Conclusion}
+
+With AFCL ToolKit, a system was developed that greatly simplifies the creation and adaptation of AFCL workflows. 
+The implemented system fulfills the requirement of modeling workflows at a high level of abstraction by providing an editor where workflows can be created and edited in a WYSIWYG manner. It even goes further by providing additional user actions like clipboard, versioning, auto-layout and validation, which make the creation process more convenient.
+The system also can load existing AFCL workflows for visualization and further editing and supports three different formats for exporting workflows.
+
+We have shown that the system with its benefits leads to an enormous speed up for workflow development and adaption.
+With these possibilities, AFCL is no longer reserved exclusively for developers. By using this tool, technically anyone is able to develop a workflow.
+
+\section{Future Work}
+
+\begin{itemize}
+	\item additional information in tooltips
+	\item auto-complete for \texttt{source} fields
+	\item visualize data flow
+\end{itemize}
 
 \input{appendix}
 
