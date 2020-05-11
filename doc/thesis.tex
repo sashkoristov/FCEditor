@@ -23,6 +23,8 @@
 \usepackage[english]{babel}
 \usepackage[backend=biber, style=numeric, natbib=true, hyperref=true]{biblatex}
 
+\usepackage{todonotes}
+
 \addbibresource{thesis.bib}
 
 \linespread{1.25}
@@ -134,44 +136,53 @@ The aim of this bachelor project is to develop a visual workflow editor, which m
 % - provider specific implementations
 % - need tool to create easily 
 
+\todo[inline]{The abstract does not show why do we need a GUI to create workflow. I would say that domain experts who know the business, are usually not familiar with serverless technology, thereby they would have difficulties to develop the workflow with the API. Manual is slow, so we need some toolkit to facilitate workflow development... Somehow like this.}
 
 % In the FaaS world, there exist many providers who offer serverless execution of code (functions) in the cloud. Each of them has its own specifications and definitions on how functions are deployed and executed, and how workflows are created and executed.
 "Run code, not Servers" is a recent term in the cloud computing world.
-With the rise of serverless technologies during the last years, \emph{Function-as-a-Service} (FaaS) became more and more popular. This cloud computing concept offers new advantages for software development: very high flexibility, nearly unlimited scalability and pay-per-use pricing. Entire programs can be defined in workflows and can be executed using serverless technology in the cloud.
+With the rise of serverless technologies during the last few years, \emph{Function-as-a-Service} (FaaS) has become increasingly popular. This cloud computing concept offers new advantages for software development: very high flexibility, nearly unlimited scalability and pay-per-use pricing. Entire programs can be defined in workflows and can be executed using serverless technology in the cloud.
 
 However, each serverless provider has its own definitions on how a workflow is expressed, as well as different pricing models, limits and quotas. For example, the maximum number of concurrent function invocations is limited to 1000 concurrent invocations for current FaaS providers at time of writing.\footnote{checked providers: AWS, Google, IBM and Microsoft}
-In addition, different providers also support different programming languages. That being said, a workflow from one system is not compatible with another, what means, the user is bound to a specific provider (vendor lock-in), if the workflow is considered to be reused.
+In addition, different providers also support different programming languages. That being said, a workflow from one system is not compatible with another. This means, the user is bound to a specific provider (vendor lock-in), if they want to reuse a workflow.
 
-Many FaaS providers offer tools which should support and simplify creation of workflows in their environment. Nevertheless, this is still a complex task. Most of the time, a software developer is needed, because others simply lack the neccessary know-how; and even for developers, this task can be tedious and time-consuming.
+Many FaaS providers offer tools which should support and simplify the creation of workflows in their environment. Nevertheless, this is still a complex task. Most of the time, a software developer is needed, because others simply lack the neccessary know-how; and even for developers, this task can be tedious and time-consuming.
 
-The distributed and parallel systems group developed a specification to describe serverless workflows at a high abstraction level. This specification is called \emph{Abstract Function Choreography Language} (AFCL) and was created to overcome weaknesses  of current FaaS platforms; for example incompatibility of workflows between different providers, which would make also cross-cloud workflow execution possible.
+The distributed and parallel systems group developed a specification to describe serverless workflows at a high abstraction level. This specification is called \emph{Abstract Function Choreography Language} (AFCL) and was created to overcome the weaknesses of current FaaS platforms - for example, the incompatibility of workflows between different providers - and makes cross-cloud workflow execution possible.
 
-Castro et al. mentions that "One of the major challenges slowing the adoption of serverless is the lack of tools and frameworks" \cite{articles-rise-of-serverless-castro}.\\
-Therefore, the goal for this thesis is to implement a new tool providing a system, able to create AFCL workflows at a high level of abstraction. In addition, visualizing - in particular loading, displaying and editing - of existing AFCL workflows in should be supported.
+Castro et al. mention that, "One of the major challenges slowing the adoption of serverless is the lack of tools and frameworks" \cite{articles-rise-of-serverless-castro}.\\
+Therefore, the goal for this thesis is to develop a system, which facilitates the development of AFCL workflows and focuses on business logic.
+%\todo[inline]{FCs by default are at a high-level of abstraction. We need a tool that will facilitate its development - focused on business logic}
+
+\todo[inline]{write weaknesses of existing work here (visualization, without development options, which is still manual!), then after the sentence "This thesis ..." you will write our solution and how do you advance compared to state of the art.}
+In addition, visualizing - in particular loading, displaying and editing - of existing AFCL workflows in should be supported.
 The system should also provide an interface for performing workflow adaptations at low-level, based on specific inputs.
 
-This thesis fulfills above goals and overcomes mentioned problems.
-With the developed system, which we call "AFCL ToolKit" in the further text, it is possible for non-developers to create a workflow in less time than it would have taken a developer to write the workflow in AFCL.\\
-Another advantage is that workflows created with AFCL ToolKit are guaranteed to be valid AFCL, which minimizes the rate of human errors.
+This thesis fulfills the above goals and overcomes the aforementioned problems.
+With the developed system, which we will refer to as the "AFCL ToolKit" in the text, below, it is possible for non-developers to create a workflow in less time than it would have taken a developer to write the workflow in AFCL.\\
+Another advantage is that workflows created with AFCL ToolKit are guaranteed to be valid in AFCL, which minimizes the rate of human errors.
 
-Regarding provider limitations, a scheduler (which is not part of this thesis) would decide to distribute for example one big concurrent loop - with more iterations than the maximum number of function invocations allowed by the provider - onto multiple FaaS providers. For this purpose, a service is provided which offers an interface for specific workflow adaptations.
+Regarding provider limitations, a scheduler (which is not part of this thesis) would decide to distribute for example one big concurrent loop - with more iterations than the maximum number of function invocations allowed by the provider - onto multiple FaaS providers. For this purpose, a low-level adaptation service is provided which offers an interface for specific workflow adaptations.
+\todo{I would mention concrete problem and concrete solution. First both problems of SOTA - visualization only, without development, which is manual in text file or in JS, which requires development skills, or needs to adapt the workflow to be able to be executed across multiple pools of resources (e.g. multitple regions or providers - beyond the scope of this thesis.}
+
+\todo[inline]{Why this service is important? Because AFCL has a limit to specify the location of each function. In order to allow a loop to be executed across multiple regions / providers, we need to unroll the loop and specify function locations within a loop. This is missing, which is very important why your work is important. Mention in provider limits in Section 2 that their languages are limited to run workflows within a single region.}
 
 % with the GUI it is easier to use the API, such that non-developers can develop an application which is compliant with the API.
 % optimization: goal of scheduler is to convert AFCL to CFCL based on the decision which function is executed where. an interface is offered such that the scheduler. Regarding limits of each provider, the scheduler should adapt the workflow to distribute on big loop in multiple providers. For this purpose, we will provide a service, which offers this low-level adaptation.
 
 It is assumed that concrete implementations of the functions are already developed and deployed to a FaaS provider.
 
-In the next chapter, we will give background information to topics related to this thesis. After that, we will look closer at the implementation af AFCL ToolKit, in particular the system architecture and design, before the application's interface is presented and explained. 
+\todo[inline]{Better name chapter numbers.}
+In the next chapter \ref{chap:background}, we will give background information on topics related to this thesis. After that, in chapter \ref{chap:implementation}, we will look closer at the implementation of AFCL ToolKit, in particular the system architecture and design, before the application's interface is presented and explained in chapter \ref{chap:impl-webinterface}.
 
-After that, we evaluate AFCL ToolKit, which clarifies the benefit of the developed system.
+Finally, we will evaluate AFCL ToolKit and clarify its benefits to the developed system in chapter \ref{chap:evaluation}.
 
 %After that 
 
-\label{chap:background}
 \chapter{Background}
+\label{chap:background}
 
 This chapter contains important details on the terms and technologies used in this thesis and helps the reader to better understand the further topics.\\
-First of all, the serverless concept, in particular Function-as-a-Service, Serverless Functions and Workflows are explained, before giving a brief overview about AFCL. The tools and technologies used for development are also presented to readers who are not yet familiar with them.
+First of all, the serverless concept, in particular Function-as-a-Service, Serverless Functions and Workflows \todo{Can you switch the term into function choreographies? Define once in introduction and use the abbreviation FC instead of workflow.} are explained, before giving a brief overview about AFCL. The tools and technologies used for development are also presented to readers who are not yet familiar with them.
 
 \section{Serverless Computing}
 
@@ -188,35 +199,38 @@ The term "serverless" can be misleading though, as there are still servers provi
 FaaS is a form of serverless computing, which is disrupting the way applications and systems have been built for decades. By abstracting infrastructure provisioning and deployment, user-provided functions can be invoked and executed remotely. The user only has to worry about development and triggering of the function. This serverless runtime has not only the advantage that it avoids costly pre-allocated or dedicated hardware, but also offers almost unlimited possibilities in scalability. FaaS systems are designed to allow a usage-based billing, what means the user will only be charged for resources required during execution.
 
 \section{Serverless Functions}
-Serverless functions - or tasks - are single-purpose, mostly stateless, programmatic functions that are hosted on cloud infrastructure. These infrastructure is provided through a FaaS platform. They are event-driven and can be invoked through the internet, mainly using HTTP. Like conventional functions, they accept arguments and and return the result of the computation  - with the difference that this is done over a network.
+Serverless functions - or tasks - are single-purpose, mostly stateless, programmatic functions that are hosted on cloud infrastructure. These \todo{This} infrastructure is provided through a FaaS platform. They are event-driven and can be invoked through the internet, mainly using HTTP. Like conventional functions, they accept arguments and and return the result of the computation  - tthe difference being that this is done over a network.
 
 \section{Serverless Workflows}
 On an abstract level, a workflow consists of a set of interdependent tasks that need to be executed to achieve a specific goal. [...] A task within a workflow has the following properties: dependencies on the software or service used by the task to perform its computation (software flow), dependencies on data (data flow), and dependencies on other tasks (control flow) \cite{thesis-design-serverless-worfklow-system-eyk}.\\
+\todo[inline]{I would not mention other works than AFCL, because you do not support those patterns in your toolkit. Just citation \cite{thesis-design-serverless-worfklow-system-eyk} for global control and data flow.}
 Basic and advanced control flow patterns for workflows are shown in \cite{reports-workflow-control-patterns-russell}.
 
 A serverless workflow is a complex workflow defined through the composition of serverless functions, connected by control- and data flow. Serverless workflows make it possible to combine and reuse serverless functions in order to build more complex applications. 
 Workflows can declare the structure of applications - and using formats like YAML, XML or JSON, they can be described in a text-based file.
+\todo[inline]{introduce here how Step, IBM and others create workflows and that the users are unable to port from one to another FC system.}
 
 \section{AFCL}
 
 This section gives the reader a brief overview on AFCL and its features. More detailed information about AFCL as well as the API documentation can be found at \cite{online-afcl-dps}.
 
 The \emph{Abstract Function Choreography Language} (AFCL) was created to overcome weaknesses in current FaaS platform implementations. As the name indicates, this specification describes serverless workflows at a high level of abstraction, forming a step on the way to cross-cloud workflow execution.\\
-Consider a workflow built with AWS Step Functions, should be executed on IBM Cloud. To make that work, the workflow has to be ported to the other platform to be compatible. In other words - it has to be recreated by a skilled programmer - for example by using the exported workflow as a template.
+\todo[inline]{The following paragraph should be moved to the previous section 2.4. Here write only about positive issues of AFCL, because your work is based on it, so based on a good language :)}
+Let us consider a workflow built with AWS Step Functions, which should be executed on IBM Cloud. To make that work, the workflow has to be ported to the other platform to be compatible. In other words - it has to be recreated by a skilled programmer - for example by using the exported workflow as a template.
 
-The AFCL specification also has more extensive control-flow and data-flow constructs available than current FaaS providers offer currently in terms of language features. Therefore, AFCL can not only eliminate the incompatibility of workflows between different providers (vendor lock-in), but also opens the door to execute a workflow by distributing its computation over multiple FaaS providers.
+The AFCL specification also has more extensive control-flow and data-flow constructs available than current FaaS providers offer, in terms of language features. Therefore, AFCL can not only eliminate the incompatibility of workflows between different providers (vendor lock-in), but also opens the door to execute a workflow by distributing its computation over multiple FaaS providers.
 
-To be able to actually execute such multi-cloud workflows, some more tools are needed: an Enactment Engine and a Scheduler.
+To be able to actually execute such multi-cloud workflows, some further tools are needed: an Enactment Engine and a Scheduler.
 
 \subsection{Overview}
 % here the different control structures of AFCL?
 AFCL is based on YAML\footnote{https://yaml.org} and ships with a schema\footnote{http://dps.uibk.ac.at/projects/afcl/files/schema/schema.yaml}. There exist two types of functions, base functions and compound functions, which can be connected by specifying control-flow and data-flow information. While base functions represent a single task, compound functions provide nesting - they can include some base functions or even other compound functions.
 
-Base and compound functions have data input (dataIns) and data output (dataOuts) ports to define input or output data, respectively.
-Data input can refer to another data output or data input of another function by specifying the name in combination with the data ouput port of the other function.
+Base and compound functions have data input (dataIns) and data output (dataOuts) ports.
+Data input can refer to another data output or data input of another function, by specifying the name in combination with the data output port of the other function.
 
 \subsection{Control-flow}
-In AFCL, base or compound functions are specified one after another, which means that they are executed sequential. However, the following control constructs are introduced with AFCL: \texttt{sequence}, \texttt{if-then-else}, \texttt{switch}, \texttt{for}, \texttt{while}, \texttt{parallel} and \texttt{parallelFor}.
+In AFCL, base or compound functions are specified one after another, which means that they are executed sequentially. However, the following control constructs are introduced with AFCL: \texttt{sequence}; \texttt{if-then-else}; \texttt{switch}; \texttt{for}; \texttt{while}; \texttt{parallel}; and \texttt{parallelFor}.
 
 
 \subsection{Properties and Constraints}
@@ -225,16 +239,16 @@ Additional, optional attributes for \texttt{dataIns} and \texttt{dataOuts} ports
 
 % data flow (dag based)
 \subsection{Data-flow}
-AFCL allows to express data-flow by connecting source data ports of functions to target data ports of functions. This offers support for more complex data-flow scenarios and might improve performance of the workflow. A source data port can be the input data port of the whole workflow, or a data port (input or output) of another function. So it is possible to even connect data ports of outer functions with a a lower nesting level to inner functions with a higher nesting level. 
+AFCL allows the expression of data-flow by connecting the source data ports of functions to the target data ports of functions. This offers support for more complex data-flow scenarios and might improve performance of the workflow. A source data port can be the input data port of the whole workflow, or a data port (input or output) of another function. So it is possible to even connect data ports of outer functions, with a a lower nesting level, to inner functions, with a higher nesting level. 
 
 \section{Tools and Technologies}
 \subsection{npm}
 
-The \textit{node package manager} is the world's largest software registry, where open-source software packages of developers and companies are shared all over the world.\footnote{https://www.npmjs.org} Over the last years, \textit{npm} became a de-facto standard for package management in JavaScript development.
+The \textit{node package manager} is the world's largest software registry, where open-source software packages of developers and companies are shared all over the world.\footnote{https://www.npmjs.org} Over the last few years, \textit{npm} has become a de-facto standard for package management in JavaScript development.
 
 \subsection{webpack}
 
-\textit{webpack} is a module bundler, its main purpose is to bundle JavaScript code for the usage in a browser.\footnote{https://webpack.js.org} In particular, multiple modules (often hundreds of) with dependencies [to each other] are processed and bundled into a few files. To be able to process other types of files than JavaScript or JSON, webpack offers the opportunity to configure a \textbf{loader}. In this application, the following loaders are configured:
+\textit{webpack} is a module bundler, its main purpose is to bundle JavaScript code for the usage in a browser.\footnote{https://webpack.js.org} In particular, multiple modules (often hundreds of them) with dependencies [to each other] are processed and bundled into a few files. To be able to process other types of files than JavaScript or JSON, webpack offers the opportunity to configure a \textbf{loader}. In this application, the following loaders are configured:
 \begin{itemize}
 \item babel-loader, to transform ES and React JSX to browser-compatible JavaScript
 \item sass-loader, to transform SASS to CSS
@@ -244,7 +258,7 @@ The \textit{node package manager} is the world's largest software registry, wher
 
 \subsection{ECMAScript}
 
-The scripting language specification \textit{ECMAScript} (ES) was created to standardize JavaScript. With the release of ES6 (also known as ECMAScript 2015), features like class declarations, module imports and arrow function expressions became possible. After ES6, every year a new edition of the ECMAScript standard was finalized and released, offering new features. Worth mentioning here is the rest/spread operator released with ES9, which was used a lot in this thesis.
+The scripting language specification \textit{ECMAScript} (ES) was created to standardize JavaScript. With the release of ES6 (also known as ECMAScript 2015), features like class declarations, module imports and arrow function expressions became possible. After ES6, every year a new edition of the ECMAScript standard was finalized and released, offering new features. It is particularly worth highlighting here is the rest/spread operator feature which was released with ES9, as it was used a lot in this thesis.
 
 \subsection{Babel}
 Since current browsers only have partial support of ECMAScript, a \textit{transcompiler} or \textit{transpiler} is needed to transform the ECMAScript source code to JavaScript, which common browsers are capable of interpreting.
@@ -252,18 +266,21 @@ Since current browsers only have partial support of ECMAScript, a \textit{transc
 
 \subsection{SASS}
 
-CSS, in its pure form, reaches its limits when one thinks about using variables, functions or nested rules. \textit{SASS} is a stylesheet language, which is\footnote{https://sass-lang.com} - similiar to ES - compiled to CSS and offers the mentioned and even more features.
+CSS, in its pure form, reaches its limits when one thinks about using variables, functions or nested rules. \textit{SASS} is a stylesheet language, which is\footnote{https://sass-lang.com} - similiar to ES - compiled to CSS and offers the aforementioned and other features.
 A lot of CSS Frameworks also provide their source code in SASS, often served with a large variable set which makes customization easy.
 
-\chapter{AFCL ToolKit}
+\chapter{AFCL ToolKit \todo{system architecture and design?}}
+\label{chap:implementation}
 
-This chapter gives the reader a detailed overview over the system architecture and the system design, including evaluations for technology decicions for specific tasks.
+This chapter gives the reader a detailed overview on the system architecture and the system design of AFCL Toolkit, including evaluations for technology decisions for specific tasks.
 
 AFCL ToolKit should not only visualize AFCL Workflows, but also give non-developers the opportunity to create and edit workflows through a Graphical User Interface (GUI). This GUI ships with a powerful editor, including additional features like real-time validation, change history (versioning), clipboard (copy-paste) and automatic layouting.\\
 Furthermore, workflows can be adapted at low-level in order to divide large parallel loops - for example loops with more iterations than allowed by current providers - into several loops which run in parallel. By doing this, AFCL ToolKit also adapts  all existing data flow to respect the new structure.
 
 \section{System Architecture}
 % what was built
+
+\todo[inline]{In general, this is too short section. Explain all white boxes, as well as communication with external stakeholders (user, scheduler, ...)}
 
 % show interfaces between modules
 % Input output in each
@@ -273,10 +290,13 @@ Furthermore, workflows can be adapted at low-level in order to divide large para
 
 % optional 
 
+\todo[inline]{refer to Fig. 3.1. Use the same terminology in the figure. Web Frontend - AFCLToolkit Frontend, while instead of Java Backend - use AFCLToolkit Backend.}
+
 AFCL ToolKit is built on top of two sub systems which are operating mostly decoupled from each other. On the one hand there is the backend, responsible for low-level operations persistence of function data.\\
 On the other hand is the frontend with the GUI, responsible for user interaction, data visualization and file I/O.\\
-Those two sub systems interact with each other by sharing JSON-serialized objects through an API the backend provides and the frontend consumes.
+Those two sub systems interact with each other by sharing JSON-serialized objects through an API, which the backend provides and the frontend consumes.
 
+\todo[inline]{mention access to the frontend is through a browser.}
 % put scheduler on the left side in this graphic
 % dashed lines / transparency interface for later
 
@@ -294,9 +314,13 @@ Those two sub systems interact with each other by sharing JSON-serialized object
 
 % explain user's actions, how the system works ...
 
-The frontend displays and controls the application's user interface. Its core component is the workflow editor, which is responsible for visualizing workflow data and provides a drawing area, allowing the user to compose and edit workflows in WYSIWYG manner.\footnote{https://en.wikipedia.org/wiki/WYSIWYG}
+The frontend displays and controls the application's user interface. Its core component is the workflow editor, which is responsible for visualizing workflow data and provides a drawing area, allowing the user to compose and edit workflows in WYSIWYG manner.\footnote{https://en.wikipedia.org/wiki/WYSIWYG}\todo{can you please find some paper or link of report, rather than wikipedia?}
 
-The editor allows the user to load, create, edit and save AFCL workflows (YAML or JSON), which visualizes the current workflow as a graph. While editing, actions are constantly validated to a set of constraints which ensures workflows validity. The editor includes an action history which enables undo and redo, as well as a clipboard for copy and paste.
+
+
+The editor\todo{it seems that core application is the main part as it communicates with all other components. Maybe you do not need to present core app, but the editor? If the editor loads and stores, then shouldn't there be a link to the web browser?} allows the user to load, create, edit and save AFCL workflows (YAML or JSON), which visualizes the current workflow as a graph. While editing, actions are constantly validated to a set of constraints which ensures workflows validity. The editor includes an action history which enables undo and redo, as well as a clipboard for copy and paste.
+
+\todo[inline]{Where are load, export on the architecture? Encoding and decoding should be explained in the text, but user does load and store / export.}
 
 All features of the web-based user interface are described in detail in section \ref{chap:impl-webinterface}.
 
@@ -316,9 +340,11 @@ All features of the web-based user interface are described in detail in section 
 
 \subsection{Backend}
 
-The main purpose of the backend is to perform operations on workflows at low-level. These operations include the conversion of XML data delivered from the frontend, as well as complex workflow modifications.
-For the communication with the world outside, the backend includes a web server, which is used to expose the endpoint for its HTTP-based API to clients. Moreover, the frontend web application is also delivered by this web server. 
+The main purpose of the backend is to perform operations on workflows at low-level. These operations include the conversion of XML\todo{no one knows at this stage about XML representation. Either you explain in the frontend, or use here intermediary representation. I prefer the former.} data delivered from the frontend, as well as complex workflow modifications.
+For the communication with the world outside\todo{show this in the figure}, the backend includes a web server\todo{isn't server a deployment issue? here should be a web service?}, which is used to expose the endpoint for its HTTP-based API to clients. Moreover, the frontend web application is also delivered by this web server. 
 Last but not least, the persisting of function data is also covered by the backend.
+
+\todo[inline]{}
 
 % interface for adaptation during runtime such that based on the decision of the scheduler also automatic display of new "optimized" workflow
 
@@ -328,12 +354,17 @@ Last but not least, the persisting of function data is also covered by the backe
 
 \section{System Design}
 
+\todo[inline]{My main concern about this section is that it tries to explain how did you do the programming, but not how did you solve the functionalities that are presented in Section 3.1. Let me give you an example. You explain the system architecture of a car and you say: I used tires from Goodyear, then wheel from China. Instead, you need to explain how the car moves left when you move the wheel to the left.}
+
 % after overall system was presented, we willl now look deeper into system design
 % again present frontend and backend
-After the overall system architecture was presented, we will now look deeper into the system design.
-This  section  focuses on how the implementation of the system was done.
+Beyond the overall system architecture, we will now look deeper into the system design.
+This  section  focuses on how the implementation of the system was achieved.
 
 \subsection{Frontend}
+
+\todo[inline]{Can you synchronize white boxes of the architecture figure (frontend) with this section? Only core application is a subsection, but libraries, graph and others are not visible in the figure.}
+
 The frontend is built as a web application with HTML, CSS and JavaScript.
 
 The base forms npm, which is used to manage and resolve dependencies.  Webpack is the main part which orchestrates transpiling and bundling all sources and assets into single files by utilizing so-called loaders.
@@ -352,6 +383,7 @@ webpack also executes some optimization plugins when building for production, wh
 
 \subsubsection{Libraries}
 Below is a list of selected libraries in this project. Care has been taken to ensure that all libraries used are open source.
+\todo[inline]{These libraries should be included in background. Here you should write what is their advantage vs. others so that you used them.}
 \begin{itemize}
 \item \textbf{React}\\
 React is an JavaScript library for building user interfaces.\footnote{https://reactjs.org}
@@ -367,7 +399,7 @@ CoreUI is a free admin panel template, based on bootstrap.\footnote{https://core
 
 \subsubsection{Core Application}
 
-The core application is divided into multiple modules, where each of them was designed to respect the single responsibility principle.\footnote{https://en.wikipedia.org/wiki/Single\_responsibility\_principle} A clean and nested structure of React components forms the user interface of the core  application. One of the benefits when using React is that the data model displayed to the user maps most of the time nicely to UI components.
+The core application is divided into multiple modules\todo{which ones? This is important to mention}, where each of them was designed to respect the single responsibility principle.\footnote{https://en.wikipedia.org/wiki/Single\_responsibility\_principle} A clean and nested structure of React components forms the user interface of the core  application. One of the benefits when using React is that the data model displayed to the user typically maps very well to UI components.
 
 \subsubsection{Connection to the Backend}
 
@@ -375,7 +407,7 @@ The core application is divided into multiple modules, where each of them was de
 
 \subsubsection{Data model}
 
-All AFCL Java model classes have been ported to ECMAScript, to have all classes and properties available in the frontend, similiar like they are in the backend. Although plain JavaScript objects would also do the job, this adds a kind of type-safety to the ECMAScript sources and improves readability of the code. Also, the data exchange with the backend and the encoding of the graph benefit from this approach, since the XML node names map to constructor names.
+All AFCL Java model classes have been ported to ECMAScript, to have all classes and properties available in the frontend, similiarly to the backend\todo{this is a recursive definition. We do not know at this stage how it is done in backend}. Although plain JavaScript objects would also do the job, this adds a kind of type-safety to the ECMAScript sources and improves readability of the code. Also, the data exchange with the backend and the encoding of the graph benefit from this approach, since the XML node names map to constructor names.
 
 \subsubsection{Graph drawing}
 
@@ -417,7 +449,7 @@ In this application, the cell's user objects are instances of the ported AFCL cl
 
 \newpage
 
-The following table shows the implemented \texttt{Cell} types which are used as visual elements representing a node in the graph. Beside a short description, the type of the associated user object is denoted.
+The following table shows the implemented \texttt{Cell} types which are used as visual elements representing a node in the graph. As well as a short description, the type of the associated user object is indicated.
 
 \begin{table}[H]
    \centering
@@ -484,7 +516,7 @@ Due the fact that the user cannot even create an invalid workflow in terms of ex
 \subsubsection{Graph Encoding}
 
 The visual representation of the workflow and the included data targets human-readability. This data needs to be put into another, proper format for storing. mxGraph provides built-in support for converting the visual representation to XML. An advantage of using XML over JSON is that constructor names (class names) are mapped to the XML node names, no additional property is required.
-What makes XML also very convenient is Java's excellent native support for XML and XPath on the backend side. The XML-encoded workflow is converted on backend-side internally to an AFCL workflow.
+What makes XML also very convenient is Java's excellent native support for XML and XPath on the backend side. The XML-encoded workflow is converted on the backend-side internally to an AFCL workflow.
 
 \begin{lstlisting}[language=XML,caption={Example of a XML-encoded Workflow.},label={lst:xml-workflow-example}]
 <Workflow name="Untitled">
@@ -513,22 +545,22 @@ What makes XML also very convenient is Java's excellent native support for XML a
 When a user loads an AFCL file into the editor, the cells have to be arranged in a way such that the visualization makes sense. There exists no information in AFCL workflows about any visual properties. 
 
 Fortunately, mxGraph ships with multiple layouting algorithms.
-For AFCL graphs, the \texttt{mxHierarchicalLayout} algorithm fits best to arrange the elements. This worked pretty well, unless the graph has some container nodes, for which the layouting algorithm broke.
+For AFCL graphs, the \texttt{mxHierarchicalLayout} algorithm fits best to arrange the elements. This worked well, unless the graph has some container nodes, which the layouting algorithm is unable to handle.
 To overcome this problem, a custom layouting algorithm was developed, which layouts all container elements using \texttt{mxHierarchicalLayout} recursively, beginning at the innermost to the outermost container.
 
 \label{sec:graph-alternatives}
 \subsubsection{Graph Alternatives}
 
-One of the more difficult tasks was to choose a proper library for graph drawing. Since the graph drawing and visualization is one of the most important features of the frontend, a careful choice has to be made. Of course there exist multiple excellent JavaScript graph drawing libraries, but not all of them are suitable for the requirements of this project.
+One of the more difficult tasks was to choose a proper library for graph drawing. Since the graph drawing and visualization is one of the most important features of the frontend, a careful choice has to be made. Multiple excellent JavaScript graph drawing libraries currently exist, but not all of them are suitable for the requirements of this project.
 
-Below is a list of tested and researched JavaScript graph libraries with additional information why they were insufficient for the project.
+Below is a list of tested and researched JavaScript graph libraries with additional information on why they were insufficient for the project.
 \begin{itemize}
-	\item \textbf{jsPlumb} is a library of great quality and looks like it would fulfill all  requirements for graph drawing and user interaction out of the box. It has a very good documentation, and a lot of examples. Furthermore its animations and drag and drop handling are outstandingly good. Unfortunately this software is closed-source and a license costs a few thousand dollars.
+	\item \textbf{jsPlumb} is a library of great quality and looks like it would fulfill all  requirements for graph drawing and user interaction out of the box. It has very good documentation, and a lot of examples. Furthermore its animations and drag and drop handling are outstandingly good. Unfortunately this software is closed-source and a license costs a few thousand dollars.
 	\item The same goes for \textbf{Rappid} (formerly known as JointJS) and \textbf{GoJS}, which is even more expensive.
-	\item \textbf{diagram-js} is one of the newer diagram libraries. It seems to be a good candidate to draw BPMN graphs.\footnote{http://www.bpmn.org} The lack of an appropriate documentation - even after four years of existence (there exists an open issue on github\footnote{https://github.com/bpmn-io/diagram-js/issues/78} for this) - is still an issue.
-	\item \textbf{Cytoscape.js} is older than mxGraph but the development and the community is not less active. This library has a very good documentation and a lot of demos are provided. But it offers fewer examples and "out-of-the-box" features for modeling flowcharts than mxGraph does.
-	\item \textbf{vis.js} is a star on npmtrends.\footnote{https://www.npmtrends.com/vis}  It has very smooth animations when manipulating the graph. There exists only one example of graph manipulation on its documentation, it is mainly used for visualization only.
-	\item \textbf{Sigma js} is a tiny library with a small documentation. It clearly focuses on displaying and visualizing graphs, not on modeling them. This part would have to be developed manually. Furthermore, the last activity on this project on github was two years ago.
+	\item \textbf{diagram-js} is one of the newer diagram libraries. It seems to be a good candidate to draw BPMN graphs.\footnote{http://www.bpmn.org} The lack of appropriate documentation - even after four years of existence (there exists an open issue on github\footnote{https://github.com/bpmn-io/diagram-js/issues/78} for this) - is still an issue.
+	\item \textbf{Cytoscape.js} is older than mxGraph but the development and the community is not less active. This library has very good documentation and a lot of demos are provided. But it offers fewer examples and "out-of-the-box" features for modeling flowcharts than mxGraph does.
+	\item \textbf{vis.js} is a star on npmtrends.\footnote{https://www.npmtrends.com/vis}  It has very smooth animations when manipulating the graph. There exists only one example of graph manipulation on its documentation, as it is mainly used for visualization only.
+	\item \textbf{Sigma js} is a tiny library with a small documentation. It focuses on displaying and visualizing graphs, not on modeling them. This part would have to be developed manually. Furthermore, the last activity on this project on github was two years ago.
 \end{itemize}
 
 
@@ -543,12 +575,12 @@ The API to interact with the frontend or other clients is based on HTTP and it i
 RPC-based APIs are great for actions (that is, procedures or commands).
 REST-based APIs are great for modeling your domain (that is, resources or entities), making CRUD (create, read, update, delete) available for all of your data. \cite{online-smashingmagazine-rest-vs-rpc}
 
-Function data is stored on server-side, thus its API is a REST-based implementation. Workflows are stored in files on a user's disk and workflow adaptation is a "remote command" which just sends data to the server and asks it to process and return the result. Therefore the API to adapt workflows is RPC-based. All API requests use JSON as format for receiving and returning data.
+Function data is stored server-side, thus its API is a REST-based implementation. Workflows are stored in files on a user's disk and workflow adaptation is a "remote command" which sends data to the server and asks it to process and return the result. Therefore the API to adapt workflows is RPC-based. All API requests use JSON as format for receiving and returning data.
 
 \subsubsection{Decoding Frontend Data}
 \label{sec:backend-decoding}
 
-Since the frontend encodes its visual representation of the workflow (the graph) in XML, this data has to be converted to AFCL Java objects in order process it with the AFCL Java API.
+Since the frontend encodes the visual representation of the workflow (the graph) in XML, this data has to be converted to AFCL Java objects in order to process it with the AFCL Java API.
 The excellent out-of-the support of Java for XML documents turned out to be very convenient. With the power of XPath expressions, it was quite easy to operate on the XML structure and extract the relevant information to convert the XML-based workflow into an AFCL workflow. Listing \ref{lst:xpath-example} shows an example of a simple XPath expression, which finds all nodes whose node name equals \textsf{AtomicFunction}, having a \textsf{name} attribute whose value equals 'getFlight'.
 
 \vspace{0.25cm}
@@ -581,7 +613,7 @@ public interface Repository<T> {
 
 Modifications on a workflow, programmatical or manual, consist always of operations modifying control structure (execution flow) and operations modifying data input and/or output elements associated to control structure elements (data flow). Most of the time, a modification on a workflow's execution flow (e.g. by adding, modifying or removing control structure) entails modifications on dependent data elements.
 
-In order to support not only one specific kind of workflow adaptation, a service providing general workflow operations has been developed. The service is designed to be as generic as possible, such that certain functions can be reused later or in other projects for any other kind of workflow modifications. 
+In order to support more than one specific kind of workflow adaptation, a service providing general workflow operations has been developed. The service is designed to be as generic as possible, such that certain functions can be reused later or in other projects for any other kind of workflow modifications. 
 
 Part of these functions can be found in \ref{apx:afcl-functions}.
 
@@ -590,10 +622,12 @@ Part of these functions can be found in \ref{apx:afcl-functions}.
 % explain here the steps needed for the concrete adaptation
 %
 
+\todo[inline]{I think the following paragraph including Fig. 3.5 should go in system architecture for the backend (What did you do?). Here you write detauls how did you solve that with the three procedures (How did you do?)}
+
 The concrete workflow adaptation developed in this thesis is to divide \texttt{ParallelFor} elements into multiple sections in a \texttt{Parallel} element.
 Note that the \texttt{loopCounter} property on the newly created \texttt{ParallelFor} elements is adjusted such that the iterations of the original loop are distributed onto the newly created ones.\\
 Figure \ref{fig:workflow-adaptation} visualizes the core part of this adaptation in its simplest form.
-This adaptation is useful when the number of iterations reaches the maximum number of concurrent function invocations of the FaaS provider. To be able to scale independently of this limitation, the execution of the inner loops of the adapted workflow could be distributed over multiple FaaS systems. In addition, this adaptation can also save costs and may increase performance.
+This adaptation is useful when the number of iterations reaches the maximum number of concurrent function invocations of the FaaS provider. To be able to scale independently of this limitation, the execution of the inner loops of the adapted workflow could be distributed over multiple FaaS systems. In addition, this adaptation can save costs and may increase performance.
 
 \begin{figure}[H]
 \centering
@@ -617,7 +651,7 @@ The whole procedure can be structured into three logical phases, consisting of t
 
 \textbf{Phase A - Preparation}
 \begin{enumerate}
-\item get \texttt{ParallelFor} which will be divided
+\item get \texttt{ParallelFor}, which will be divided
 \item create new \texttt{Parallel}
 \item replace \texttt{ParallelFor} with \texttt{Parallel}
 \item move data items (\texttt{dataIns}, \texttt{dataOuts}) from \texttt{ParallelFor} to created \texttt{Parallel}
@@ -644,18 +678,23 @@ The whole procedure can be structured into three logical phases, consisting of t
 \item adjust source of all subsequent \texttt{DataIns}/\texttt{DataOuts}
 \end{enumerate}
 
+\todo[inline]{it will be nice to give an example of renaming the innner functions, adding prefixes/suffixes}
+
 \chapter{Web Interface}
 \label{chap:impl-webinterface}
 
+\todo[inline]{Web interface is missing on the architecture figure.}
+
 In this chapter the user interface and all features of the web application are described in detail.
 
-The layout of the web interface is splitted into a navigation on the left and the main view. The user can change the main view by selecting an item in the left navigation.
+The layout of the web interface is split into a navigation on the left and the main view. The user can change the main view by selecting an item in the left navigation.
 
 In the following sections, the three main components are described.
+\todo[inline]{I guess the three components are functions, editor and settings, which are accessible through Dashboard. So, better not to put 4.1 dashboard.}
 
 \section{Dashboard}
 
-The dashboard is the entry point where the user lands after accessing the app. The purpose of this component is to give the user a quick overview of the application, provide short informational texts and link to the specific components. 
+The dashboard is the entry point where the user lands after accessing the app. The purpose of this component is to give the user a quick overview of the application, provide short informational texts and links to the specific components. 
 
 \begin{figure}[H]
   \centering
@@ -664,6 +703,8 @@ The dashboard is the entry point where the user lands after accessing the app. T
 \end{figure}
 
 \section{Functions}
+
+\todo[inline]{You need to connect functions in backend architecture in Section 3.1. That you use a repository so that the user can create a workflow from existing functions? How do you load a workflow if there are no existing functions? }
 
 The function repository is needed, to know about available functions when composing a workflow.  A list of all functions stored is presented to the user. An item in this list holds the following data: \textit{name}, \textit{type} and \textit{provider}.\\
 The user has the option to remove certain items in the list by clicking on the button with the "trash" icon. Before a function is really deleted, the user has to confirm the deletion.
@@ -728,14 +769,14 @@ The user can choose an element from the sidebar by clicking on it, which results
 
 When the user selects a cell in the drawing area, the property view updates. The property view has two sections. The first (upper) section displays properties of the AFCL object associated with the selected cell. The second (lower) section displays properties of the selected cell itself. Depending on the cell's type (function, control-structure, edge, ...) the displayed information differs.
 
-In the first section, the user can here edit all properties (data input, a.k.a \textit{dataIns}, data output, ...) of the AFCL object associated with the selected cell. Changes at fields inside the property view execute immediately, there is no need to confirm or save those.
+In the first section, the user can here edit all properties (data input, a.k.a \textit{dataIns}, data output, ...) of the AFCL object associated with the selected cell. Changes of fields inside the property view execute immediately, there is no need to confirm or save those.
 The corresponding properties for each AFCL object are not described here, detailed information about them is available at \citep{online-afcl-dps}.
 
-The cell properties in the second section worth to mention are \textit{name} and \textit{type}. The remaining are mainly for informational and debugging purpose and won't be explained in detail.
+The cell properties in the second section worth mentioning are \textit{name} and \textit{type}. The remaining properties are mainly for informational and debugging purposes and won't be explained in detail.
 
 \subsection{Toolbar}
 
-To make all actions available to the user, a toolbar is displayed in the top area of the editor. Each button of the toolbar represents an action, which are described in detail in the following.
+To make all actions available to the user, a toolbar is displayed in the top area of the editor. Each button of the toolbar represents an action, which are described in detail in detail below.
 
 \begin{figure}[H]
 \centering
@@ -784,23 +825,26 @@ The action behind the "Validate" button validates the constraints described in \
 
 \subsubsection{Load \& Save}
 
-Workflows created by AFCL ToolKit (XML) or even existing AFCL workflows (YAML/JSON) can be loaded in order to visualize or doing further editing. To load a workflow, the user can click on the "Load" button in the toolbar and choose the desired file in the dialog.
+Workflows created by AFCL ToolKit (XML) or even existing AFCL workflows (YAML/JSON) can be loaded in order to visualize or do further editing. To load a workflow, the user can click on the "Load" button in the toolbar and choose the desired file in the dialog.
 
 To save a workflow, the user can click on the "Save" button in the toolbar.
 This results in a download offered by the tool. The user can then choose the target location.  When saving a workflow, the desired format can be selected out of XML, JSON or YAML.\\
-With XML, additional graphical information is stored among the serialized workflow, what means that the workflow will be exactly in the same state when opened later.\\
-JSON an YAML deliver an AFCL compliant workflow.
+With XML, additional graphical information is stored with the serialized workflow, what means that the workflow will be exactly in the same state when opened later.\\
+JSON and YAML deliver an AFCL compliant workflow.
 
 \section{Settings}
+
+\todo[inline]{too short for a subsection. Give some examples of such constants, maybe also with a figure.}
 
 The purpose of the Settings component is to provide an interface to view and adjust application-wide constants. 
 
 
 \chapter{Evaluation}
+\label{chap:evaluation}
 
 This section evaluates AFCL ToolKit and compares the effort for creating and adapting AFCL workflows using the tool with the effort needed to write or adapt the AFCL workflow manually in a text file or using the Java API.
 
-The \textit{Gate Change Alert}  (GCA), and \textit{Anomaly Detection} (AD) and \textit{Genome} (GEN) AFCL workflow examples from \citep{online-afcl-dps} are used as evaluation models.
+The \textit{Gate Change Alert}  (GCA), \textit{Anomaly Detection} (AD) and \textit{Genome} (GEN) AFCL workflow examples from \citep{online-afcl-dps} are used as evaluation models.
 
 It has to be noted, that only the time it took to get the final result - which is an AFCL workflow in a YAML file - is evaluated.
 The learning time to understand the AFCL function choreography system, the Java API or to become familiar with AFCL Toolkit is not considered in this study.
@@ -809,21 +853,23 @@ The learning time to understand the AFCL function choreography system, the Java 
 
 In this section, the methodology for the evaluations in sections \ref{sec:evaluation-composing} and \ref{sec:evaluation-adapting} is explained:
 
-One computer science student learned the workflow language AFCL, its Java-based API and knows how to use AFCL ToolKit.
-Then the different workflows are composed (section \ref{sec:evaluation-composing} or adapted (section \ref{sec:evaluation-adapting}) by
+One computer science student learned the workflow language AFCL, its Java-based API and how to use AFCL ToolKit.
+Then the different workflows were composed (section \ref{sec:evaluation-composing}) or adapted (section \ref{sec:evaluation-adapting}) by
 \begin{enumerate}[label={(\arabic*)}]
 	\item editing the text file manually (writing YAML by hand),
 	\item using the AFCL Java API,
 	\item using AFCL ToolKit.
 \end{enumerate}
 
-The results are then compared to each other.
+The results were then compared to each other.
 
 \section{Composing Workflows}
 \label{sec:evaluation-composing}
 
 In this section, the development effort of the three example workflows is measured, using the three introduced methods.
+\todo{put names for methods (manual, AFCL API, and AFCToolkit.}
 
+\todo[inline]{Write some \% that your toolkit generates workflows the fastest. Explain why manual is much slower (e.g. in lines of code)}
 It took approximately 55 minutes to compose the GCA workflow with method (1), approximately 25 minutes with method (2) and approximately 22 minutes with method (3).\\
 For the AD workflow it took approximately 75 minutes with method (1), approximately 42 minutes with method (2) and approximately 37 minutes with method (3).\\
 The GEN workflow took approximately 49 minutes with method (1), approximately 24 minutes with method (2) and approximately 20 minutes with method (3).
@@ -857,16 +903,20 @@ Figure \ref{fig:evaluation-composing} shows a visualization of the evaluation.
 This evaluation shows, that using AFCL ToolKit can speed up the process for creating AFCL workflows significantly.\\
 A big benefit of using AFCL ToolKit over using the Java API is, that anyone with knowledge about AFCL could create the workflow, there is no need to be a programmer.\\
 Additionally, human errors are minimized. According to \cite{books-code-complete-mcconnell} the error rate of a developer is between 1.5\% and 5\% in average.
-With AFCL ToolKits' immediate validation while creating a workflow, such errors are minimized further. 
+With AFCL ToolKits' immediate validation while creating a workflow, such errors are minimized even further. 
 
 \section{Adapting Workflows}
 \label{sec:evaluation-adapting}
 
-In this section, the effort for doing a workflow adaptation as described in \ref{sec:backend-adaptation} is measured.
+\todo[inline]{STart here - the full benefit / contribution of the AFCL Toolkit is visible in FC adaptation. }
 
-For this evaluation, it is sufficient only measure the effort needed to divide a loop manually into two loops. Since the procedure would be the same for every additional loop, the total approximated effort can then be determined by multiplying the effort which was needed for a divide into two loops, with the number of divides.
+In this section, the effort required for doing a workflow adaptation as described in \ref{sec:backend-adaptation} is measured.
+
+For this evaluation, it was sufficient to only measure the effort needed to divide a loop manually into two loops. Since the procedure would be the same for every additional loop, the total approximated effort can then be determined by multiplying the effort which was needed for a divide into two loops, with the number of divides.
 In the following, we will only consider the GCA workflow example, since this includes one \texttt{ParallelFor} loop.
-The effort is also dependent of the number of affected data elements in the subsequent functions, which have to be adjusted. In the GCA workflow, there are twelve data elements which needs update after a divide.
+The effort is also dependent of the number of affected data elements in the subsequent functions, which have to be adjusted. In the GCA workflow, there are twelve data elements which need to be updated after a divide.
+
+\todo[inline]{Can you estimate some equation to estimate the speedup? In case of more complex nesting in the loop, AFCL toolkit has few changes only, while other methods need to copy and update many.}
 
 To divide the loop of the GCA workflow into two loops, it took approximately 27 minutes using method (1), approximately 19 minutes using method (2) and 1 minute using method (3).
 
@@ -910,8 +960,9 @@ The implemented system fulfills the requirement of modeling workflows at a high 
 The system also can load existing AFCL workflows for visualization and further editing and supports three different formats for exporting workflows.
 
 We have shown that the system with its benefits leads to an enormous speed up for workflow development and adaption.
-With these possibilities, AFCL is no longer reserved exclusively for developers. By using this tool, technically anyone is able to develop a workflow.
+With these possibilities, AFCL is no longer reserved exclusively for developers. By using this tool, virtually anyone is able to develop a workflow.
 
+\todo[inline]{do not use separate section for future work. Either at least two or zero sections in the chapter. }
 \section{Future Work}
 
 \begin{itemize}
