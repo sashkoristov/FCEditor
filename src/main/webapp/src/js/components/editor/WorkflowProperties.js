@@ -51,7 +51,7 @@ class WorkflowProperties extends React.Component {
                 <DataInsOuts type="dataIns" parentObj={this.props.workflow} />
             </div>
             <div className="mb-2">
-                <div className="font-weight-bold text-muted mb-1">Output Data</div>
+                <div className="font-weight-bold text-muted mb-1">Output data</div>
                 <DataInsOuts type="dataOuts" parentObj={this.props.workflow} />
             </div>
                 <div>

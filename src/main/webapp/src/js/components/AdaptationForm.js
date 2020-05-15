@@ -1,8 +1,11 @@
 import React from 'react';
 
 import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button, Table, Badge, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap';
+import AppContext from "../context/AppContext";
 
 class AdaptationForm extends React.Component {
+
+    static contextType = AppContext;
 
     constructor(props) {
         super(props);
@@ -10,7 +13,13 @@ class AdaptationForm extends React.Component {
         this.state = {};
         for (let name of this.props.toAdapt) {
             this.state[name] = [];
-            this.state[name].push({from: 0, to: 1000, step: 1});
+        }
+    }
+
+    componentDidMount() {
+        for (let i = 0; i < this.props.toAdapt.length; i++) {
+            this.state[this.props.toAdapt[i]].push({from: 0, to: this.context.settings.adaptation.maxConcurrentFunctions, step: 1});
+            this.state[this.props.toAdapt[i]].push({from: this.context.settings.adaptation.maxConcurrentFunctions, to: this.context.settings.adaptation.maxConcurrentFunctions*2, step: 1});
         }
     }
 
@@ -18,7 +27,7 @@ class AdaptationForm extends React.Component {
         let newState = {...this.state};
         newState[name] = [];
         for (let i = 0; i < parseInt(newVal); i++) {
-            newState[name].push({from: (i)*1000, to: (i+1)*1000, step: 1});
+            newState[name].push({from: (i)*this.context.settings.adaptation.maxConcurrentFunctions, to: (i+1)*this.context.settings.adaptation.maxConcurrentFunctions, step: 1});
         }
         this.setState(newState);
     };
@@ -47,7 +56,7 @@ class AdaptationForm extends React.Component {
                         <Col sm="2">
                             <Label>Number of divides</Label>
                             <Input value={this.state[name].length} type="select" onChange={(e) => this._onNumberDividesChange(name, e.target.value)}>
-                                {[1,2,3,4,5,6,7,8].map(num => <option value={num}>{num}</option> )}
+                                {[2,3,4,5,6,7,8].map(num => <option value={num}>{num}</option> )}
                             </Input>
                         </Col>
                         <Col>

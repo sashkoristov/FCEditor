@@ -1,18 +1,25 @@
 import React from 'react';
-import { Container, Row, Col, Form, FormGroup, Label, Input, Button } from 'reactstrap';
-import {AppBreadcrumb} from "@coreui/react";
+import { Container, Col, FormGroup, Label, Input } from 'reactstrap';
+import { AppBreadcrumb } from "@coreui/react";
 import routes from "../routes";
 import * as router from "react-router-dom";
+import AppContext from "../context/AppContext";
 
 class Settings extends React.Component {
 
+    static contextType = AppContext;
+
     constructor(props) {
         super(props);
-
-        this.state = {
-            maxNumberConcurrentFunctions: 1000
-        }
     }
+
+    _onMaxConcurrentFunctionsChanged = (e) => {
+        if (e.target.value.match(/^\d*$/)) {
+            this.context.setSettings({
+                adaptation: { maxConcurrentFunctions: parseInt(e.target.value) || 0 }
+            });
+        }
+    };
 
     render() {
         return (
@@ -20,27 +27,33 @@ class Settings extends React.Component {
                 <AppBreadcrumb appRoutes={routes} router={router} />
                 <Container fluid>
                     <div className="animated fadeIn">
-                        <Form horizontal>
+                        <div className="mb-4">
+                            <h2>User Interface</h2>
+                            <FormGroup row>
+                                <Label md="2">
+                                    Sidebar mode<br/>
+                                    <span className="text-muted small">Select wether the sidebar should stay collapsed or expanded</span>
+                                </Label>
+                                <Col md="2">
+                                    <Input type="select" value={this.context.settings.ui.sidebarCollapsed} onChange={e => this.context.setSetting('ui', {...this.context.settings.ui, sidebarCollapsed: e.target.value === 'true' })}>
+                                        <option value={true}>collapsed</option>
+                                        <option value={false}>expanded</option>
+                                    </Input>
+                                </Col>
+                            </FormGroup>
+                        </div>
+                        <div className="mb-4">
+                            <h2>Adaptation</h2>
                             <FormGroup row>
                                 <Label md="2">
                                     Max concurrent functions<br />
                                     <span className="text-muted small">Specify the maximum number of concurrent function executions</span>
                                 </Label>
-                                <Col md="4">
-                                    <Input type="number" placeholder="Max concurrent functions" value={this.state.maxNumberConcurrentFunctions} onChange={e => this.setState({ maxNumberConcurrentFunctions: e.target.value })} />
+                                <Col md="2">
+                                    <Input placeholder="Max concurrent functions" value={this.context.settings.adaptation.maxConcurrentFunctions} onChange={this._onMaxConcurrentFunctionsChanged} />
                                 </Col>
                             </FormGroup>
-                            <FormGroup row>
-                                <Label md="2">Test 2</Label>
-                                <Col md="4">
-                                    <Input type="select">
-                                        <option>1</option>
-                                        <option>2</option>
-                                        <option>3</option>
-                                    </Input>
-                                </Col>
-                            </FormGroup>
-                        </Form>
+                        </div>
                     </div>
                 </Container>
             </>
