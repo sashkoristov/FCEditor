@@ -5,13 +5,12 @@
  */
 
 import mxgraph from '../../mxgraph';
-const { mxGraph, mxConstants, mxUtils, mxConnectionConstraint, mxPoint, mxRectangle } = mxgraph;
-
 import ConnectionHandler from '../handler/ConnectionHandler';
 import Cell from '../model/Cell';
 import * as afcl from '../../afcl';
 import * as cellDefs from '../cells';
-import * as mxGraphOverrides from "../index";
+
+const { mxGraph, mxConstants, mxUtils, mxConnectionConstraint, mxPoint, mxRectangle } = mxgraph;
 
 /**
  * Graph
@@ -544,6 +543,25 @@ class Graph extends mxGraph {
     }
 
     /**
+     * Overrides the implementation to ensure label uniqueness for afcl.BaseFunctions
+     *
+     * @param cells
+     * @param parent
+     * @param index
+     * @param source
+     * @param target
+     * @param absolute
+     */
+    addCells(cells, parent, index, source, target, absolute) {
+        cells.forEach(c => {
+            if (c.value instanceof afcl.functions.BaseFunction) {
+                c.getValue().setName(this.getUniqueLabel(c.getValue().getName(), true));
+            }
+        });
+        return super.addCells(cells, parent, index, source, target, absolute);
+    }
+
+    /**
      * after cells were cloned, adjust the labels to be unique
      *
      * @param cells
@@ -557,10 +575,24 @@ class Graph extends mxGraph {
         let clonedCells = super.importCells(cells, dx, dy, target, evt, mapping);
         // update label of each cell to ensure unique labels
         clonedCells.forEach(c => {
-            c.getValue().setName(this.getUniqueLabel(c.getValue().getName(), true));
-            this.refresh(c);
+            if (c.value instanceof afcl.functions.BaseFunction) {
+                c.getValue().setName(this.getUniqueLabel(c.getValue().getName(), true));
+                this.refresh(c);
+            }
         });
         return clonedCells;
+    }
+
+    /**
+     *
+     * Returns true if the given cell may be imported from the clipboard.
+     * this implementation respects cloneable style
+     *
+     * @param cell
+     */
+    canImportCell(cell) {
+        let style = this.getCellStyle(cell);
+        return style[mxConstants.STYLE_CLONEABLE] != null ? style[mxConstants.STYLE_CLONEABLE] : true;
     }
 
 }

@@ -24,6 +24,7 @@ start.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
 start.style[mxConstants.STYLE_FILLCOLOR] = '#003554';
 start.style[mxConstants.STYLE_FONTCOLOR] = '#fff';
 start.style[mxConstants.STYLE_STROKECOLOR] = '#051923';
+start.style[mxConstants.STYLE_CLONEABLE] = false;
 
 
 let end = {
@@ -40,6 +41,7 @@ end.style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
 end.style[mxConstants.STYLE_FILLCOLOR] = '#ddd';
 end.style[mxConstants.STYLE_FONTCOLOR] = '#000';
 end.style[mxConstants.STYLE_STROKECOLOR] = '#ccc';
+end.style[mxConstants.STYLE_CLONEABLE] = false;
 
 let merge = {
     name: 'merge',
