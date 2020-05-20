@@ -236,51 +236,6 @@
       \field{title}{Code Complete: A Practical Handbook of Software Construction}
       \field{year}{2004}
     \endentry
-    \entry{reports-workflow-control-patterns-russell}{report}{}
-      \name{author}{4}{}{%
-        {{hash=f1645e1e99fb959634edc46a4402c490}{%
-           family={Russell},
-           familyi={R\bibinitperiod},
-           given={Nick},
-           giveni={N\bibinitperiod}}}%
-        {{hash=97b0f039214b123f96f6af03d24be98a}{%
-           family={Hofstede},
-           familyi={H\bibinitperiod},
-           given={Arthur\bibnamedelimb H.M.\bibnamedelimi ter},
-           giveni={A\bibinitperiod\bibinitdelim H\bibinitperiod\bibinitdelim t\bibinitperiod}}}%
-        {{hash=45fed513d4bd5fb28cebd7bb58a35c4a}{%
-           family={Aalst},
-           familyi={A\bibinitperiod},
-           given={Wil\bibnamedelima M.P.},
-           giveni={W\bibinitperiod\bibinitdelim M\bibinitperiod},
-           prefix={van\bibnamedelima der},
-           prefixi={v\bibinitperiod\bibinitdelim d\bibinitperiod}}}%
-        {{hash=4612c1e2b1a188fd97ee74c9305834d2}{%
-           family={Mulyar},
-           familyi={M\bibinitperiod},
-           given={Nataliya},
-           giveni={N\bibinitperiod}}}%
-      }
-      \strng{namehash}{78150c62ca09fe68c56a1d7d9bd85ee7}
-      \strng{fullhash}{2e0ac4384b5c3e8a6e5d7d338f01d64c}
-      \strng{bibnamehash}{78150c62ca09fe68c56a1d7d9bd85ee7}
-      \strng{authorbibnamehash}{78150c62ca09fe68c56a1d7d9bd85ee7}
-      \strng{authornamehash}{78150c62ca09fe68c56a1d7d9bd85ee7}
-      \strng{authorfullhash}{2e0ac4384b5c3e8a6e5d7d338f01d64c}
-      \field{sortinit}{R}
-      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{BPM Center Report BPM-06-22}
-      \field{title}{Workflow Control-Flow Patterns: A Revised View}
-      \field{year}{2006}
-      \verb{urlraw}
-      \verb http://workflowpatterns.com/documentation/documents/BPM-06-22.pdf
-      \endverb
-      \verb{url}
-      \verb http://workflowpatterns.com/documentation/documents/BPM-06-22.pdf
-      \endverb
-    \endentry
     \entry{articles-going-serverless-savage}{article}{}
       \name{author}{1}{}{%
         {{hash=6f23369450d1a6260497a2a7cb81713d}{%
@@ -349,6 +304,22 @@
       \endverb
       \verb{url}
       \verb https://www.smashingmagazine.com/2016/09/understanding-rest-and-rpc-for-http-apis/
+      \endverb
+    \endentry
+    \entry{online-react-thinking-in-react}{online}{}
+      \field{sortinit}{T}
+      \field{sortinithash}{6f7aff9db9dcfeb7f95fd5bbd2f78df9}
+      \field{labeltitlesource}{title}
+      \field{title}{Thinking in React}
+      \field{urlday}{26}
+      \field{urlmonth}{3}
+      \field{urlyear}{2020}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://reactjs.org/docs/thinking-in-react.html
+      \endverb
+      \verb{url}
+      \verb https://reactjs.org/docs/thinking-in-react.html
       \endverb
     \endentry
   \enddatalist

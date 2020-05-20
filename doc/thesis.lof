@@ -7,37 +7,39 @@
 \defcounter {refsection}{0}\relax 
 \addvspace {10\p@ }
 \defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {3.1}{\ignorespaces system architecture\relax }}{12}% 
+\contentsline {figure}{\numberline {3.1}{\ignorespaces System architecture\relax }}{11}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {3.2}{\ignorespaces frontend stack\relax }}{14}% 
+\contentsline {figure}{\numberline {3.2}{\ignorespaces FC adaptation example\relax }}{14}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {3.3}{\ignorespaces \texttt {mxCell} model\relax }}{17}% 
+\contentsline {figure}{\numberline {3.3}{\ignorespaces frontend stack\relax }}{16}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {3.4}{\ignorespaces A graph showing cells and their associated user objects\relax }}{18}% 
+\contentsline {figure}{\numberline {3.4}{\ignorespaces \texttt {mxCell} model\relax }}{17}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {3.5}{\ignorespaces workflow adaptation\relax }}{26}% 
-\defcounter {refsection}{0}\relax 
-\addvspace {10\p@ }
-\defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {4.1}{\ignorespaces the dashboard\relax }}{30}% 
-\defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {4.2}{\ignorespaces the function repository\relax }}{31}% 
-\defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {4.3}{\ignorespaces the editor\relax }}{32}% 
-\defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {4.4}{\ignorespaces graph modeling\relax }}{33}% 
-\defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {4.5}{\ignorespaces the sidebar with a dropdown open\relax }}{33}% 
-\defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {4.6}{\ignorespaces the toolbar\relax }}{34}% 
-\defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {4.7}{\ignorespaces graph validation\relax }}{35}% 
+\contentsline {figure}{\numberline {3.5}{\ignorespaces A graph's cells and associated user objects\relax }}{18}% 
 \defcounter {refsection}{0}\relax 
 \addvspace {10\p@ }
 \defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {5.1}{\ignorespaces Evaluated development effort for creating GCA, AD and GEN AFCL workflows using different methods. \relax \fontsize {10.95}{13.6}\selectfont \abovedisplayskip 11\p@ plus3\p@ minus6\p@ \abovedisplayshortskip \z@ plus3\p@ \belowdisplayshortskip 6.5\p@ plus3.5\p@ minus3\p@ \def \leftmargin \leftmargini \parsep 5\p@ plus2.5\p@ minus\p@ \topsep 10\p@ plus4\p@ minus6\p@ \itemsep 5\p@ plus2.5\p@ minus\p@ {\leftmargin \leftmargini \topsep 9\p@ plus3\p@ minus5\p@ \parsep 4.5\p@ plus2\p@ minus\p@ \itemsep \parsep }\belowdisplayskip \abovedisplayskip \add@extra@listi {sml}{method (1): edit text file manually, method (2): AFCL Java API, method (3): AFCL ToolKit}\relax }}{38}% 
+\contentsline {figure}{\numberline {4.1}{\ignorespaces the dashboard\relax }}{27}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {figure}{\numberline {5.2}{\ignorespaces Evaluated development effort for adapting workflows using different methods. \relax \fontsize {10.95}{13.6}\selectfont \abovedisplayskip 11\p@ plus3\p@ minus6\p@ \abovedisplayshortskip \z@ plus3\p@ \belowdisplayshortskip 6.5\p@ plus3.5\p@ minus3\p@ \def \leftmargin \leftmargini \parsep 5\p@ plus2.5\p@ minus\p@ \topsep 10\p@ plus4\p@ minus6\p@ \itemsep 5\p@ plus2.5\p@ minus\p@ {\leftmargin \leftmargini \topsep 9\p@ plus3\p@ minus5\p@ \parsep 4.5\p@ plus2\p@ minus\p@ \itemsep \parsep }\belowdisplayskip \abovedisplayskip \add@extra@listi {sml}{method (1): edit text file manually, method (2): AFCL Java API, method (3): AFCL ToolKit}\relax }}{40}% 
+\contentsline {figure}{\numberline {4.2}{\ignorespaces the function repository\relax }}{28}% 
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {4.3}{\ignorespaces the editor\relax }}{29}% 
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {4.4}{\ignorespaces the sidebar with an open drop down menu\relax }}{30}% 
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {4.5}{\ignorespaces graph modeling\relax }}{31}% 
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {4.6}{\ignorespaces the toolbar\relax }}{32}% 
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {4.7}{\ignorespaces graph validation\relax }}{33}% 
+\defcounter {refsection}{0}\relax 
+\addvspace {10\p@ }
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Evaluated development effort for creating GCA, AD and GEN AFCL FC using methods manual, AFCL API, AFCL ToolKit\relax }}{37}% 
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Evaluated development effort for adapting FCs using methods manual, AFCL API and AFCL ToolKit.\relax }}{38}% 
+\defcounter {refsection}{0}\relax 
+\addvspace {10\p@ }
 \defcounter {refsection}{0}\relax 
 \addvspace {10\p@ }
 \defcounter {refsection}{0}\relax 
