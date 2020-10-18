@@ -8,15 +8,14 @@ import afcl.functions.objects.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class WorkflowAdaptationService {
 
@@ -63,9 +62,11 @@ public class WorkflowAdaptationService {
                     DataOuts dataOuts = new DataOuts();
                     dataOuts.setType("collection");
                     dataOuts.setName("OutVal");
+                    dataOuts.setConstraints(Collections.singletonList(new PropertyConstraint("aggregation", "+")));
                     String[] dataOutsSource = new String[numberOfDivides];
 
                     // 6. multiply parallelFor according to given input
+                    int iterationsOffset = 0;
                     for (int i = 0; i < numberOfDivides; i++) {
                         Section s = new Section();
                         List<Function> fl = new ArrayList<>();
@@ -79,6 +80,31 @@ public class WorkflowAdaptationService {
                         cloneFn.getLoopCounter().setFrom(loopCounterInfo.get("from").toString());
                         cloneFn.getLoopCounter().setTo(loopCounterInfo.get("to").toString());
                         cloneFn.getLoopCounter().setStep(loopCounterInfo.get("step").toString());
+                        int iterations = getTotalIterations(cloneFn.getLoopCounter());
+
+                        if (cloneFn.getDataIns() != null) {
+                            for (DataIns dataIns : cloneFn.getDataIns()) {
+                                if (!dataIns.getType().equals("collection") || dataIns.getConstraints() == null) {
+                                    continue;
+                                }
+                                PropertyConstraint distribution =
+                                        getPropertyConstraintByName(dataIns.getConstraints(), "distribution");
+                                if (distribution == null || !distribution.getValue().contains("BLOCK")) {
+                                    continue;
+                                }
+                                int blockSize = Integer.parseInt(distribution.getValue().replaceAll("[^0-9?!.]", ""));
+
+                                // assign a subset of the collection to the current loop by using an element-index
+                                // constraint, note that we assume that the collection size is blockSize*iterations
+                                int startIndex = iterationsOffset * blockSize;
+                                int endIndex = startIndex + iterations * blockSize - 1;
+                                String elementIndexExpr = startIndex != endIndex
+                                        ? startIndex + ":" + endIndex
+                                        : String.valueOf(startIndex);
+                                dataIns.getConstraints().add(new PropertyConstraint("element-index", elementIndexExpr));
+                            }
+                        }
+                        iterationsOffset += iterations;
 
                         fl.add(cloneFn);
                         s.setSection(fl);
@@ -436,5 +462,42 @@ public class WorkflowAdaptationService {
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
         }
+    }
+
+    /**
+     * Returns the total number of iterations of the given loop counter.
+     *
+     * @param loopCounter the loop counter
+     * @return the total number of iterations
+     */
+    protected static int getTotalIterations(LoopCounter loopCounter) {
+        int fromInclusive = Integer.parseInt(loopCounter.getFrom());
+        int toExclusive = Integer.parseInt(loopCounter.getTo());
+
+        if (fromInclusive >= toExclusive) {
+            return 0;
+        }
+
+        int step = Integer.parseInt(loopCounter.getStep());
+        if (step <= 0) {
+            throw new IllegalArgumentException("Endless loop counter");
+        }
+
+        return (toExclusive - 1 - fromInclusive + step) / step;
+    }
+
+    /**
+     * Returns the first property constraint with the given name or {@code null} if it does not exist.
+     *
+     * @param propertyConstraints the property constraints
+     * @param name                the name of the property constraint to be searched for
+     * @return the first property constraint with the given name or {@code null} if it does not exist
+     */
+    protected static PropertyConstraint getPropertyConstraintByName(List<PropertyConstraint> propertyConstraints, String name) {
+        return propertyConstraints
+                .stream()
+                .filter(x -> x.getName().equals(name))
+                .findFirst()
+                .orElse(null);
     }
 }
