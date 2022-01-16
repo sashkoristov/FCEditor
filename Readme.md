@@ -18,7 +18,7 @@ The FCEDitor is accessible at http://fceditor.dps.uibk.ac.at:8180/.
 * Node v12
 
 **Install dependencies**  
-1. Add AFCL API to local maven repo: `mvn install:install-file -Dfile=./src/main/resources/afclAPI.jar -DgroupId=com.dps.afcl -DartifactId=afcl-api -Dversion=1.0 -Dpackaging=JAR`
+1. Add AFCL API to local maven repo: `mvn install:install-file -Dfile=./src/main/resources/afclAPI.jar -DgroupId=com.dps.afcl -DartifactId=afcl-api -Dversion=1.0 -Dpackaging=jar`
 2. Install dependencies: `mvn install`  
 
 If using an IDE, reimport - e.g if using IntelliJ:  
