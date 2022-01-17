@@ -85,6 +85,8 @@ class Editor extends React.Component {
         'text/yaml'
     ];
 
+    YAML_FILE_EXTENSIONS = ['.yaml', '.yml'];
+
     constructor(props) {
         super(props);
 
@@ -608,7 +610,7 @@ class Editor extends React.Component {
 
         FileDialog({
             multiple: false,
-            accept: allMimeTypes
+            accept: allMimeTypes.concat(this.YAML_FILE_EXTENSIONS)
         }).then(async files => {
             let file = files[0];
 
