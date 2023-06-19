@@ -7,7 +7,7 @@ FCEditor is a graphical user interface for building, editing, and exporting func
 - No 'real programming skills' needed for modeling
 - Optimization of created workflows
 
-The FCEDitor is accessible at http://fceditor.dps.uibk.ac.at:8180/.
+The FCEDitor is accessible at http://qe-fceditor.uibk.ac.at:8180/.
 
 ## Getting started
 
@@ -41,7 +41,7 @@ Run -> Edit Configurations -> Add a configuration and select ``launch.Main`` as 
 
 ## Contributions
 
-Several bachelor theses at the distributed and parallel systems group, department of computer science, University of Innsbruck, supervised by Dr. Sashko Ristov contributed to this project:
+Several bachelor theses supervised by Dr. Sashko Ristov contributed to this project:
 
 - "High-Level Modeling and Low-Level Adaptation of Serverless Function Choreographies", Benjamin Walch, SS2020.
 - "Function Choreography Scheduling Framework for Multiple FaaS Systems", Tobias Pockstaller, WS2021.
@@ -49,4 +49,4 @@ Several bachelor theses at the distributed and parallel systems group, departmen
 
 ## Support
 
-If you need any additional information, please do not hesitate to contact sashko@dps.uibk.ac.at.
+If you need any additional information, please do not hesitate to contact me.
